@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.spiritual-library.index-monitor</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/KDP/AITools/scripts/index_monitor_service.sh</string>
+        <string>run</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/KDP/AITools</string>
+    
+    <!-- Run at startup -->
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <!-- Keep alive unless it exits cleanly -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    
+    <!-- Restart delay if crashes -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    
+    <!-- Log files -->
+    <key>StandardOutPath</key>
+    <string>/Users/KDP/AITools/logs/index_monitor_stdout.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/KDP/AITools/logs/index_monitor_stderr.log</string>
+    
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
+        <string>/Users/KDP/SpiritualLibrary</string>
+        <key>SPIRITUAL_LIBRARY_DB_PATH</key>
+        <string>/Users/KDP/AITools/chroma_db</string>
+    </dict>
+    
+    <!-- Nice value for lower priority -->
+    <key>Nice</key>
+    <integer>10</integer>
+    
+    <!-- Process type -->
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

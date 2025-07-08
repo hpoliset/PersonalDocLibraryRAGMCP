@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+venv_mcp/
+venv_mcp_x86_backup/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+logs/
+*.log
+setup_log.txt
+setup_summary.txt
+index_monitor.log
+
+# Database and vector stores
+chroma_db/
+src/core/chroma_db/
+*.sqlite3
+*.db
+
+# Books and documents (user content)
+books/
+SpiritualLibrary/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Configuration files with sensitive data
+config.json
+secrets.json
+claude_config.json
+
+# Backup files
+backup/
+backup_*/
+*.bak
+
+# Cache
+.cache/
+*.cache
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Application specific
+failed_pdfs.json
+index_status.json
+indexing_progress.json
+book_index.json
+
+# Service files (will be recreated)
+*.pid
+*.lock
+
+# Environment variables (user-specific)
+.env
+.env.local
+
+# Deprecated files
+*.deprecated
+
+# Editor temp files
+*~
+\#*\#

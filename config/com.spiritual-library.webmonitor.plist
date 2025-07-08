@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.spiritual-library.webmonitor</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/KDP/AITools/venv_mcp/bin/python</string>
+        <string>/Users/KDP/AITools/src/monitoring/monitor_web_enhanced.py</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/KDP/AITools</string>
+    
+    <!-- Run at startup -->
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <!-- Keep alive unless it exits cleanly -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    
+    <!-- Restart delay if crashes -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    
+    <!-- Log files -->
+    <key>StandardOutPath</key>
+    <string>/Users/KDP/AITools/logs/webmonitor_stdout.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/KDP/AITools/logs/webmonitor_stderr.log</string>
+    
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+        <key>PYTHONPATH</key>
+        <string>/Users/KDP/AITools</string>
+        <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
+        <string>/Users/KDP/Library/Mobile Documents/com~apple~CloudDocs/Documents/Books</string>
+        <key>SPIRITUAL_LIBRARY_DB_PATH</key>
+        <string>/Users/KDP/AITools/chroma_db</string>
+        <key>SPIRITUAL_LIBRARY_LOGS_PATH</key>
+        <string>/Users/KDP/AITools/logs</string>
+        <key>FLASK_ENV</key>
+        <string>production</string>
+    </dict>
+    
+    <!-- Nice value for lower priority -->
+    <key>Nice</key>
+    <integer>5</integer>
+    
+    <!-- Process type -->
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
