@@ -69,7 +69,7 @@ echo ""
 echo "Index Status:"
 if [ -f "$SCRIPT_DIR/../chroma_db/index_status.json" ]; then
     # Extract key fields using python
-    python3 -c "
+    $SCRIPT_DIR/../venv_mcp/bin/python -c "
 import json
 with open('$SCRIPT_DIR/../chroma_db/index_status.json', 'r') as f:
     data = json.load(f)
@@ -93,7 +93,7 @@ fi
 # Check for new PDFs
 echo ""
 echo "Checking for new PDFs..."
-python3 -c "
+$SCRIPT_DIR/../venv_mcp/bin/python -c "
 import sys
 sys.path.append('$SCRIPT_DIR/..')
 try:
