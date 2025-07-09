@@ -122,11 +122,13 @@ class IndexLock:
         def update_loop():
             while not self.stop_update.is_set():
                 try:
-                    # Touch the lock file to update mtime
-                    os.utime(self.lock_file, None)
-                    # Also rewrite content with current timestamp
-                    with open(self.lock_file, 'w') as f:
-                        f.write(f"{os.getpid()}\n{datetime.now().isoformat()}")
+                    # Only update the modification time - don't try to rewrite content
+                    # since the file is already exclusively locked by the main process
+                    if os.path.exists(self.lock_file):
+                        os.utime(self.lock_file, None)
+                    else:
+                        # If lock file doesn't exist, the lock was released
+                        break
                 except Exception as e:
                     logger.warning(f"Failed to update lock timestamp: {e}")
                 # Wait 30 seconds or until stop signal
