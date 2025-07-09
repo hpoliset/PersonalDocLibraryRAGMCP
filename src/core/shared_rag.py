@@ -703,6 +703,11 @@ class SharedRAG:
                 if file.lower().endswith(supported_extensions):
                     filepath = os.path.join(root, file)
                     rel_path = os.path.relpath(filepath, self.books_directory)
+                    
+                    # Skip files that are already marked as failed
+                    if self.is_document_failed(rel_path):
+                        continue
+                    
                     file_hash = self.get_file_hash(filepath)
                     
                     if rel_path not in self.book_index or self.book_index[rel_path].get('hash') != file_hash:
