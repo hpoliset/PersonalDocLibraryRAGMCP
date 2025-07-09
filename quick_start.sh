@@ -100,6 +100,18 @@ else
     libreoffice_missing=false
 fi
 
+if ! command -v ocrmypdf &> /dev/null; then
+    deps_to_install+=("ocrmypdf")
+else
+    echo "✅ OCRmyPDF: Found"
+fi
+
+if ! command -v tesseract &> /dev/null; then
+    deps_to_install+=("tesseract")
+else
+    echo "✅ Tesseract: Found"
+fi
+
 # Install missing dependencies
 if [ ${#deps_to_install[@]} -ne 0 ]; then
     echo ""
@@ -345,6 +357,216 @@ EOL
 
 echo "✅ Configuration file created: claude_config.json"
 
+# Service installation prompts
+echo ""
+echo "📌 Service Installation Options..."
+echo ""
+echo "You can optionally install background services for automatic document monitoring:"
+echo "  1) Index Monitor Service - Automatically indexes new documents when added"
+echo "  2) Web Monitor Service - Provides real-time status at http://localhost:8888"
+echo "  3) Install both services"
+echo "  4) Skip service installation (manual operation)"
+echo ""
+read -p "Choose option (1-4): " service_choice
+
+case $service_choice in
+    1|3)
+        echo ""
+        echo "📌 Installing Index Monitor Service..."
+        # Create directories if needed
+        mkdir -p scripts config
+        # Create service wrapper script
+        cat > scripts/index_monitor_service.sh << 'EOF'
+#!/bin/bash
+# Service wrapper for Index Monitor with proper permissions
+
+# Get the directory of this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR/.."
+
+# Use environment variables for paths
+export SPIRITUAL_LIBRARY_BOOKS_PATH="${SPIRITUAL_LIBRARY_BOOKS_PATH:-$HOME/books}"
+export SPIRITUAL_LIBRARY_DB_PATH="${SPIRITUAL_LIBRARY_DB_PATH:-$PWD/chroma_db}"
+
+# Find Python virtual environment
+if [ -d "venv_mcp" ]; then
+    venv_python="$PWD/venv_mcp/bin/python"
+else
+    echo "ERROR: Virtual environment not found!"
+    exit 1
+fi
+
+# Python script to execute
+python_script="$PWD/src/indexing/index_monitor.py"
+
+# Execute Python process with full permission inheritance
+exec "$venv_python" "$python_script" --service \
+    --books-dir "$SPIRITUAL_LIBRARY_BOOKS_PATH" \
+    --db-dir "$SPIRITUAL_LIBRARY_DB_PATH"
+EOF
+        chmod +x scripts/index_monitor_service.sh
+        
+        # Create LaunchAgent plist (config directory already created)
+        cat > config/com.spiritual-library.index-monitor.plist << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.spiritual-library.index-monitor</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>$CURRENT_DIR/scripts/index_monitor_service.sh</string>
+        <string>run</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>$CURRENT_DIR</string>
+    
+    <!-- Run at startup -->
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <!-- Keep alive unless it exits cleanly -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    
+    <!-- Restart delay if crashes -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    
+    <!-- Log files -->
+    <key>StandardOutPath</key>
+    <string>$CURRENT_DIR/logs/index_monitor_stdout.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>$CURRENT_DIR/logs/index_monitor_stderr.log</string>
+    
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
+        <string>$BOOKS_PATH</string>
+        <key>SPIRITUAL_LIBRARY_DB_PATH</key>
+        <string>$CURRENT_DIR/chroma_db</string>
+    </dict>
+    
+    <!-- Nice value for lower priority -->
+    <key>Nice</key>
+    <integer>10</integer>
+    
+    <!-- Process type -->
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
+EOF
+        
+        # Install the service
+        cp config/com.spiritual-library.index-monitor.plist "$HOME/Library/LaunchAgents/"
+        launchctl load "$HOME/Library/LaunchAgents/com.spiritual-library.index-monitor.plist"
+        
+        echo "✅ Index Monitor Service installed and started"
+        index_service_installed=true
+        ;;
+    *)
+        index_service_installed=false
+        ;;
+esac
+
+case $service_choice in
+    2|3)
+        echo ""
+        echo "📌 Installing Web Monitor Service..."
+        # Create LaunchAgent plist for web monitor
+        cat > config/com.spiritual-library.webmonitor.plist << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.spiritual-library.webmonitor</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>$CURRENT_DIR/venv_mcp/bin/python</string>
+        <string>$CURRENT_DIR/src/monitoring/monitor_web_enhanced.py</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>$CURRENT_DIR</string>
+    
+    <!-- Run at startup -->
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <!-- Keep alive unless it exits cleanly -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    
+    <!-- Restart delay if crashes -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    
+    <!-- Log files -->
+    <key>StandardOutPath</key>
+    <string>$CURRENT_DIR/logs/webmonitor_stdout.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>$CURRENT_DIR/logs/webmonitor_stderr.log</string>
+    
+    <!-- Environment variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+        <key>PYTHONPATH</key>
+        <string>$CURRENT_DIR</string>
+        <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
+        <string>$BOOKS_PATH</string>
+        <key>SPIRITUAL_LIBRARY_DB_PATH</key>
+        <string>$CURRENT_DIR/chroma_db</string>
+        <key>SPIRITUAL_LIBRARY_LOGS_PATH</key>
+        <string>$CURRENT_DIR/logs</string>
+        <key>FLASK_ENV</key>
+        <string>production</string>
+    </dict>
+    
+    <!-- Nice value for lower priority -->
+    <key>Nice</key>
+    <integer>5</integer>
+    
+    <!-- Process type -->
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
+EOF
+        
+        # Install the service
+        cp config/com.spiritual-library.webmonitor.plist "$HOME/Library/LaunchAgents/"
+        launchctl load "$HOME/Library/LaunchAgents/com.spiritual-library.webmonitor.plist"
+        
+        echo "✅ Web Monitor Service installed and started"
+        echo "🌐 Web interface available at: http://localhost:8888"
+        web_service_installed=true
+        ;;
+    *)
+        web_service_installed=false
+        ;;
+esac
+
 # Final system validation
 echo ""
 echo "📌 Validating installation..."
@@ -417,20 +639,63 @@ echo "   cp claude_config.json \"$CLAUDE_CONFIG_PATH\""
 echo ""
 echo "2. Restart Claude Desktop"
 echo ""
-if [ $book_count -gt 0 ]; then
-    echo "3. Index your library ($book_count documents):"
-    echo "   ./scripts/run.sh --index-only"
+
+# Service-specific instructions
+if [ "$index_service_installed" = true ] || [ "$web_service_installed" = true ]; then
+    echo "3. Services installed and running:"
+    if [ "$index_service_installed" = true ]; then
+        echo "   ✅ Index Monitor Service - Auto-indexes new documents"
+        echo "      Logs: tail -f logs/index_monitor_stdout.log"
+    fi
+    if [ "$web_service_installed" = true ]; then
+        echo "   ✅ Web Monitor Service - Real-time status dashboard"
+        echo "      URL: http://localhost:8888"
+    fi
     echo ""
-    echo "4. Monitor indexing progress:"
-    echo "   python src/monitoring/monitor_web_enhanced.py"
-    echo "   Open http://localhost:8888"
+    echo "   Service management:"
+    echo "   - Check status: launchctl list | grep spiritual-library"
+    echo "   - Stop services: launchctl unload ~/Library/LaunchAgents/com.spiritual-library.*.plist"
+    echo "   - Start services: launchctl load ~/Library/LaunchAgents/com.spiritual-library.*.plist"
     echo ""
-    echo "⏱  Estimated indexing time: $(( book_count * 2 / 60 )) - $(( book_count * 5 / 60 )) minutes"
+    
+    if [ $book_count -gt 0 ]; then
+        if [ "$index_service_installed" = true ]; then
+            echo "4. Your library will be indexed automatically by the service"
+            echo "   Monitor progress at: http://localhost:8888"
+        else
+            echo "4. Index your library ($book_count documents):"
+            echo "   ./scripts/run.sh --index-only"
+        fi
+    else
+        echo "4. Add books to: $BOOKS_PATH"
+        echo "   New books will be indexed automatically"
+    fi
 else
-    echo "3. Add books to: $BOOKS_PATH"
+    # Manual operation instructions
+    if [ $book_count -gt 0 ]; then
+        echo "3. Index your library ($book_count documents):"
+        echo "   ./scripts/run.sh --index-only"
+        echo ""
+        echo "4. Monitor indexing progress:"
+        echo "   python src/monitoring/monitor_web_enhanced.py"
+        echo "   Open http://localhost:8888"
+        echo ""
+        echo "⏱  Estimated indexing time: $(( book_count * 2 / 60 )) - $(( book_count * 5 / 60 )) minutes"
+    else
+        echo "3. Add books to: $BOOKS_PATH"
+        echo ""
+        echo "4. Then index your library:"
+        echo "   ./scripts/run.sh --index-only"
+    fi
     echo ""
-    echo "4. Then index your library:"
-    echo "   ./scripts/run.sh --index-only"
+    echo "5. Optional: Install services later:"
+    echo "   ./scripts/install_service.sh        # Index monitor"
+    echo "   ./scripts/install_webmonitor_service.sh  # Web monitor"
 fi
+
+echo ""
+echo "📚 Books directory: $BOOKS_PATH"
+echo "🗄️  Database directory: $CURRENT_DIR/chroma_db"
+echo "📝 Environment variable: SPIRITUAL_LIBRARY_BOOKS_PATH=$BOOKS_PATH"
 echo ""
 echo "Your spiritual library is ready for Apple Silicon! 🎉"
