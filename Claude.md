@@ -177,3 +177,6 @@ The system uses a hybrid approach optimized for both automatic operation and man
 ## Ethics and Consent Guidelines
 - **Consent Management**:
   - Don't use Rosetta without taking explicit consent.
+
+## Best Practices
+- Before creating any new script check if something similar exists

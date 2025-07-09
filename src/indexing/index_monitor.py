@@ -276,6 +276,20 @@ class IndexMonitor:
                     
                     logger.info(f"Processing document {i}/{len(documents_to_index)}: {rel_path}")
                     
+                    # Check if file is in failed list before processing
+                    if self.rag.is_document_failed(rel_path):
+                        logger.info(f"Skipping previously failed file: {rel_path}")
+                        failed_count += 1
+                        # Update status to show we're skipping this file
+                        self.rag.update_status("indexing", {
+                            "current_file": f"Skipping failed: {rel_path}",
+                            "progress": f"{i}/{len(documents_to_index)}",
+                            "success": success_count,
+                            "failed": failed_count,
+                            "percentage": round(i / len(documents_to_index) * 100, 1)
+                        })
+                        continue
+                    
                     # Process document with timeout
                     result = self.rag.process_document_with_timeout(filepath, rel_path)
                     

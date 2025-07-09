@@ -9,6 +9,8 @@ from langchain_community.document_loaders import (
     UnstructuredWordDocumentLoader,
     UnstructuredEPubLoader
 )
+from langchain.schema import Document
+import pypdf
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
@@ -207,6 +209,46 @@ class PDFCleaner:
             logger.error(f"Error cleaning PDF: {e}")
             return False
 
+class FastPDFLoader:
+    """Fast PDF loader using pypdf instead of PyPDFLoader"""
+    
+    def __init__(self, file_path):
+        self.file_path = file_path
+    
+    def load(self):
+        """Load PDF and return list of Document objects"""
+        documents = []
+        logger.info(f"FastPDFLoader starting to load {os.path.basename(self.file_path)}")
+        try:
+            with open(self.file_path, 'rb') as file:
+                pdf_reader = pypdf.PdfReader(file, strict=False)
+                
+                # Process pages in batches for better performance
+                for page_num, page in enumerate(pdf_reader.pages):
+                    try:
+                        text = page.extract_text()
+                        if text.strip():  # Only add non-empty pages
+                            doc = Document(
+                                page_content=text,
+                                metadata={
+                                    'source': self.file_path,
+                                    'page': page_num
+                                }
+                            )
+                            documents.append(doc)
+                    except Exception as e:
+                        logger.warning(f"Error extracting page {page_num}: {e}")
+                        continue
+                        
+            logger.info(f"FastPDFLoader extracted {len(documents)} pages from {os.path.basename(self.file_path)}")
+            return documents
+            
+        except Exception as e:
+            logger.error(f"FastPDFLoader error loading {self.file_path}: {e}")
+            # Fall back to PyPDFLoader if pypdf fails
+            logger.info("Falling back to PyPDFLoader...")
+            return PyPDFLoader(self.file_path).load()
+
 class SharedRAG:
     """Core RAG functionality shared between server and monitor"""
     
@@ -388,10 +430,6 @@ class SharedRAG:
         documents_to_index = []
         
         for root, dirs, files in os.walk(self.books_directory):
-            # Skip originals directory
-            if "originals" in root:
-                continue
-                
             for file in files:
                 if file.lower().endswith(supported_extensions):
                     filepath = os.path.join(root, file)
@@ -412,7 +450,7 @@ class SharedRAG:
         file_ext = os.path.splitext(filepath)[1].lower()
         
         if file_ext == '.pdf':
-            return PyPDFLoader(filepath)
+            return FastPDFLoader(filepath)  # Use our fast PDF loader
         elif file_ext in ['.docx', '.doc']:
             return UnstructuredWordDocumentLoader(filepath)
         elif file_ext == '.epub':
@@ -674,43 +712,54 @@ class SharedRAG:
         
         logger.info(f"Attempting to clean failed PDF: {pdf_name}")
         
-        # Create directories
-        originals_dir = os.path.join(self.books_directory, "originals")
-        os.makedirs(originals_dir, exist_ok=True)
+        # Create tmp directory in db_directory (not in books directory)
+        tmp_dir = os.path.join(self.db_directory, "tmp_cleaned_pdfs")
+        os.makedirs(tmp_dir, exist_ok=True)
         
         # Paths
-        original_backup = os.path.join(originals_dir, pdf_name)
-        temp_cleaned = filepath + ".cleaned.tmp"
+        temp_cleaned = os.path.join(tmp_dir, pdf_name + ".cleaned")
         
         # Try to clean
         if PDFCleaner.clean_pdf(filepath, temp_cleaned):
             try:
-                # Backup original
-                shutil.copy2(filepath, original_backup)
-                # Replace with cleaned
-                shutil.move(temp_cleaned, filepath)
+                # Don't replace the original file - just try indexing the cleaned version
+                logger.info(f"Successfully cleaned {pdf_name}. Trying to index cleaned version.")
                 
-                # Record in log
-                failed_pdfs[pdf_name] = {
-                    "error": error_msg,
-                    "cleaned": True,
-                    "cleaned_at": datetime.now().isoformat(),
-                    "original_backup": original_backup
-                }
+                # Try indexing the cleaned file directly
+                result = self.process_pdf(temp_cleaned, rel_path=os.path.relpath(filepath, self.books_directory))
+                
+                if result:
+                    # If indexing succeeded, we can optionally replace the original
+                    # For now, just mark it as cleaned successfully
+                    failed_pdfs[pdf_name] = {
+                        "error": error_msg,
+                        "cleaned": True,
+                        "cleaned_at": datetime.now().isoformat(),
+                        "indexed_cleaned": True
+                    }
+                else:
+                    # Cleaned but still failed to index
+                    failed_pdfs[pdf_name] = {
+                        "error": error_msg,
+                        "cleaned": True,
+                        "cleaned_at": datetime.now().isoformat(),
+                        "indexed_cleaned": False,
+                        "final_error": "Cleaned but still failed to index"
+                    }
                 
                 with open(self.failed_pdfs_file, 'w') as f:
                     json.dump(failed_pdfs, f, indent=2)
                 
-                logger.info(f"Successfully cleaned {pdf_name}. Will retry indexing.")
+                # Clean up the temp file
+                try:
+                    os.remove(temp_cleaned)
+                except:
+                    pass
                 
-                # Try indexing again
-                return self.process_pdf(filepath)
+                return result
                 
             except Exception as e:
-                logger.error(f"Error during cleaning: {e}")
-                # Restore original if needed
-                if os.path.exists(original_backup) and not os.path.exists(filepath):
-                    shutil.copy2(original_backup, filepath)
+                logger.error(f"Error during cleaning process: {e}")
         else:
             # Record failure
             failed_pdfs[pdf_name] = {
@@ -721,6 +770,18 @@ class SharedRAG:
             with open(self.failed_pdfs_file, 'w') as f:
                 json.dump(failed_pdfs, f, indent=2)
         
+        return False
+    
+    def is_document_failed(self, rel_path):
+        """Check if a document is in the failed list"""
+        if os.path.exists(self.failed_pdfs_file):
+            try:
+                with open(self.failed_pdfs_file, 'r') as f:
+                    failed_docs = json.load(f)
+                    basename = os.path.basename(rel_path)
+                    return basename in failed_docs
+            except:
+                pass
         return False
     
     def remove_book_by_path(self, rel_path, skip_save=False):
