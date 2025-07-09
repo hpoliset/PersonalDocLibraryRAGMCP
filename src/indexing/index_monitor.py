@@ -32,18 +32,49 @@ class BookLibraryHandler(FileSystemEventHandler):
         self.update_lock = threading.Lock()
     
     def on_created(self, event):
-        if not event.is_directory and event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
+        if event.is_directory:
+            # New directory created - scan for all documents inside
+            logger.info(f"New directory detected: {event.src_path}")
+            self.scan_directory_for_documents(event.src_path)
+        elif event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
             logger.info(f"New document detected: {event.src_path}")
             with self.update_lock:
                 self.pending_updates.add(event.src_path)
             self.monitor.schedule_update()
     
     def on_modified(self, event):
-        if not event.is_directory and event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
+        if event.is_directory:
+            # Directory modified - might contain new files, scan contents
+            logger.info(f"Directory modified: {event.src_path}")
+            self.scan_directory_for_documents(event.src_path)
+        elif event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
             logger.info(f"Document modified: {event.src_path}")
             with self.update_lock:
                 self.pending_updates.add(event.src_path)
             self.monitor.schedule_update()
+    
+    def scan_directory_for_documents(self, directory_path):
+        """Scan a directory for all supported documents and add them to pending updates"""
+        try:
+            supported_extensions = ('.pdf', '.docx', '.doc', '.epub')
+            found_files = []
+            
+            # Walk through the directory and find all supported files
+            for root, dirs, files in os.walk(directory_path):
+                for file in files:
+                    if file.lower().endswith(supported_extensions):
+                        filepath = os.path.join(root, file)
+                        found_files.append(filepath)
+            
+            if found_files:
+                logger.info(f"Found {len(found_files)} documents in directory: {directory_path}")
+                with self.update_lock:
+                    for filepath in found_files:
+                        self.pending_updates.add(filepath)
+                self.monitor.schedule_update()
+                
+        except Exception as e:
+            logger.warning(f"Error scanning directory {directory_path}: {e}")
     
     def on_deleted(self, event):
         if not event.is_directory and event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
@@ -241,14 +272,17 @@ class IndexMonitor:
         if not updates:
             return
         
-        documents_to_index = []
-        for filepath in updates:
-            if os.path.exists(filepath):
-                rel_path = os.path.relpath(filepath, self.books_directory)
-                documents_to_index.append((filepath, rel_path))
+        logger.info(f"Processing {len(updates)} pending file updates")
         
-        if documents_to_index:
-            self.process_documents(documents_to_index)
+        # Use the full document discovery mechanism to ensure we don't miss any files
+        # This is especially important when directories are copied with old timestamps
+        all_documents_to_index = self.rag.find_new_or_modified_documents()
+        
+        if all_documents_to_index:
+            logger.info(f"Full scan found {len(all_documents_to_index)} documents to index")
+            self.process_documents(all_documents_to_index)
+        else:
+            logger.info("No new documents found to index")
     
     def process_documents(self, documents_to_index):
         """Process a list of documents with proper locking"""
