@@ -263,51 +263,176 @@ class IndexMonitor:
                 failed_count = 0
                 
                 logger.info(f"About to process {len(documents_to_index)} documents")
-                for i, (filepath, rel_path) in enumerate(documents_to_index, 1):
-                    # Check if paused before processing each document
+                
+                # Import required modules for parallel processing
+                from concurrent.futures import ThreadPoolExecutor, as_completed
+                import multiprocessing
+                import threading
+                import psutil
+                
+                # Thread-safe counters
+                success_lock = threading.Lock()
+                failed_lock = threading.Lock()
+                progress_lock = threading.Lock()
+                
+                # Separate large files from regular files
+                large_files = []
+                regular_files = []
+                
+                for filepath, rel_path in documents_to_index:
+                    try:
+                        file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
+                        if file_size_mb > 100:  # Files over 100MB
+                            large_files.append((filepath, rel_path))
+                        else:
+                            regular_files.append((filepath, rel_path))
+                    except:
+                        regular_files.append((filepath, rel_path))  # If we can't check size, treat as regular
+                
+                logger.info(f"Found {len(large_files)} large files (>100MB) and {len(regular_files)} regular files")
+                
+                # Process large files first, sequentially
+                if large_files:
+                    logger.info("Processing large files sequentially to prevent memory issues...")
+                    for i, (filepath, rel_path) in enumerate(large_files, 1):
+                        if not self.running:
+                            break
+                        
+                        self.wait_if_paused()
+                        
+                        logger.info(f"Processing large file {i}/{len(large_files)}: {rel_path}")
+                        
+                        # Check if file is in failed list
+                        if self.rag.is_document_failed(rel_path):
+                            logger.info(f"Skipping previously failed file: {rel_path}")
+                            failed_count += 1
+                            self.current_document_index += 1
+                            continue
+                        
+                        # Process large file with timeout
+                        result = self.rag.process_document_with_timeout(filepath, rel_path)
+                        
+                        if result:
+                            success_count += 1
+                            logger.info(f"Successfully processed large file: {rel_path}")
+                        else:
+                            failed_count += 1
+                            logger.warning(f"Failed to process large file: {rel_path}")
+                        
+                        self.current_document_index += 1
+                        
+                        # Update status
+                        self.rag.update_status("indexing", {
+                            "current_file": rel_path,
+                            "progress": f"{self.current_document_index}/{len(documents_to_index)}",
+                            "success": success_count,
+                            "failed": failed_count,
+                            "percentage": round(self.current_document_index / len(documents_to_index) * 100, 1),
+                            "processing_mode": "sequential_large_file"
+                        })
+                
+                # Now process regular files in parallel
+                if regular_files and self.running:
+                    # Determine optimal worker count based on system resources
+                    cpu_count = multiprocessing.cpu_count()
+                    # Get available memory in GB
+                    available_memory_gb = psutil.virtual_memory().available / (1024**3)
+                    
+                    # Conservative approach: 1 worker per 2 CPU cores, max 5 workers
+                    # Reduce if low memory (< 2GB per worker)
+                    max_workers = min(
+                        max(1, cpu_count // 2),  # Half the CPU cores
+                        int(available_memory_gb // 2),  # 2GB per worker
+                        5  # Hard limit of 5 workers
+                    )
+                    
+                    logger.info(f"Processing regular files with {max_workers} parallel workers (CPUs: {cpu_count}, Available RAM: {available_memory_gb:.1f}GB)")
+                
+                def process_single_document(doc_info):
+                    """Process a single document with thread-safe progress tracking"""
+                    nonlocal success_count, failed_count
+                    
+                    filepath, rel_path, index = doc_info
+                    
+                    # Check if paused before processing
                     self.wait_if_paused()
                     
                     # Check if still running after pause
                     if not self.running:
-                        break
+                        return None
                     
-                    # Update current index for progress tracking
-                    self.current_document_index = i
-                    
-                    logger.info(f"Processing document {i}/{len(documents_to_index)}: {rel_path}")
+                    logger.info(f"Processing document {index}/{len(documents_to_index)}: {rel_path}")
                     
                     # Check if file is in failed list before processing
                     if self.rag.is_document_failed(rel_path):
                         logger.info(f"Skipping previously failed file: {rel_path}")
-                        failed_count += 1
-                        # Update status to show we're skipping this file
-                        self.rag.update_status("indexing", {
-                            "current_file": f"Skipping failed: {rel_path}",
-                            "progress": f"{i}/{len(documents_to_index)}",
-                            "success": success_count,
-                            "failed": failed_count,
-                            "percentage": round(i / len(documents_to_index) * 100, 1)
-                        })
-                        continue
+                        
+                        with failed_lock:
+                            failed_count += 1
+                        
+                        with progress_lock:
+                            self.current_document_index = max(self.current_document_index, index)
+                            # Update status to show we're skipping this file
+                            self.rag.update_status("indexing", {
+                                "current_file": f"Skipping failed: {rel_path}",
+                                "progress": f"{self.current_document_index}/{len(documents_to_index)}",
+                                "success": success_count,
+                                "failed": failed_count,
+                                "percentage": round(self.current_document_index / len(documents_to_index) * 100, 1)
+                            })
+                        return False
                     
                     # Process document with timeout
                     result = self.rag.process_document_with_timeout(filepath, rel_path)
                     
-                    # Update status with progress AFTER processing starts
-                    self.rag.update_status("indexing", {
-                        "current_file": rel_path,
-                        "progress": f"{i}/{len(documents_to_index)}",
-                        "success": success_count,
-                        "failed": failed_count,
-                        "percentage": round((i-1) / len(documents_to_index) * 100, 1)
-                    })
-                    
+                    # Update counters thread-safely
                     if result:
-                        success_count += 1
+                        with success_lock:
+                            success_count += 1
                         logger.info(f"Successfully processed: {rel_path}")
                     else:
-                        failed_count += 1
+                        with failed_lock:
+                            failed_count += 1
                         logger.warning(f"Failed to process: {rel_path}")
+                    
+                    # Update progress
+                    with progress_lock:
+                        self.current_document_index = max(self.current_document_index, index)
+                        self.rag.update_status("indexing", {
+                            "current_file": rel_path,
+                            "progress": f"{self.current_document_index}/{len(documents_to_index)}",
+                            "success": success_count,
+                            "failed": failed_count,
+                            "percentage": round(self.current_document_index / len(documents_to_index) * 100, 1),
+                            "parallel_workers": max_workers
+                        })
+                    
+                    return result
+                
+                # Process regular documents in parallel
+                with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                        # Prepare document info with indices, adjusting for already processed large files
+                        doc_infos = [(filepath, rel_path, self.current_document_index + i) 
+                                   for i, (filepath, rel_path) in enumerate(regular_files, 1)]
+                        
+                        # Submit all tasks
+                        futures = {executor.submit(process_single_document, doc_info): doc_info 
+                                 for doc_info in doc_infos}
+                        
+                        # Process completed futures
+                        for future in as_completed(futures):
+                            if not self.running:
+                                # Cancel remaining futures if stopped
+                                for f in futures:
+                                    f.cancel()
+                                break
+                            
+                            try:
+                                result = future.result()
+                            except Exception as e:
+                                logger.error(f"Error processing document: {e}")
+                                with failed_lock:
+                                    failed_count += 1
                 
                 # Final status update
                 self.rag.update_status("idle", {

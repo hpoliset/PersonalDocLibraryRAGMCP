@@ -40,7 +40,7 @@
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
         <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
         <string>/Users/KDP/SpiritualLibrary</string>
         <key>SPIRITUAL_LIBRARY_DB_PATH</key>

@@ -46,7 +46,7 @@
         <key>PYTHONPATH</key>
         <string>/Users/KDP/AITools</string>
         <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
-        <string>/Users/KDP/Library/Mobile Documents/com~apple~CloudDocs/Documents/Books</string>
+        <string>/Users/KDP/SpiritualLibrary</string>
         <key>SPIRITUAL_LIBRARY_DB_PATH</key>
         <string>/Users/KDP/AITools/chroma_db</string>
         <key>SPIRITUAL_LIBRARY_LOGS_PATH</key>

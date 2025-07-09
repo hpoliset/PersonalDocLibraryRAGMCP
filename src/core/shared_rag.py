@@ -150,11 +150,13 @@ class IndexLock:
         self.clean_stale_lock()
         
         self.lock_fd = open(self.lock_file, 'w')
+        lock_acquired = False
         try:
             if blocking:
                 fcntl.flock(self.lock_fd, fcntl.LOCK_EX)
             else:
                 fcntl.flock(self.lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            lock_acquired = True
             self.lock_fd.write(f"{os.getpid()}\n{datetime.now().isoformat()}")
             self.lock_fd.flush()
             # Start periodic update thread
@@ -163,13 +165,17 @@ class IndexLock:
         except IOError:
             if self.lock_fd:
                 self.lock_fd.close()
+                self.lock_fd = None  # Set to None after closing
             logger.warning("Could not acquire index lock - another process may be indexing")
             raise
         finally:
             # Stop periodic update thread
             self.stop_periodic_update()
-            if self.lock_fd:
-                fcntl.flock(self.lock_fd, fcntl.LOCK_UN)
+            if self.lock_fd and lock_acquired:
+                try:
+                    fcntl.flock(self.lock_fd, fcntl.LOCK_UN)
+                except:
+                    pass
                 self.lock_fd.close()
                 try:
                     os.remove(self.lock_file)
@@ -180,7 +186,7 @@ class PDFCleaner:
     """Handles PDF cleaning for problematic files"""
     
     @staticmethod
-    def clean_pdf(input_path, output_path, timeout_minutes=10):
+    def clean_pdf(input_path, output_path, timeout_minutes=30):
         """Clean a PDF using Ghostscript"""
         try:
             logger.info(f"Cleaning {os.path.basename(input_path)}...")
@@ -209,38 +215,292 @@ class PDFCleaner:
             logger.error(f"Error cleaning PDF: {e}")
             return False
 
-class FastPDFLoader:
-    """Fast PDF loader using pypdf instead of PyPDFLoader"""
+class OCRPDFLoader:
+    """PDF loader with OCR capability for scanned documents"""
     
     def __init__(self, file_path):
         self.file_path = file_path
+    
+    def needs_ocr(self):
+        """Check if PDF needs OCR by analyzing text content"""
+        try:
+            import pypdf
+            with open(self.file_path, 'rb') as file:
+                pdf_reader = pypdf.PdfReader(file, strict=False)
+                total_pages = len(pdf_reader.pages)
+                
+                # Sample first 10 pages to check for text
+                sample_pages = min(10, total_pages)
+                text_pages = 0
+                
+                for i in range(sample_pages):
+                    try:
+                        text = pdf_reader.pages[i].extract_text()
+                        if text and len(text.strip()) > 50:  # More than 50 chars of text
+                            text_pages += 1
+                    except:
+                        continue
+                
+                # If less than 20% of sampled pages have text, likely needs OCR
+                text_ratio = text_pages / sample_pages if sample_pages > 0 else 0
+                logger.info(f"PDF text analysis: {text_pages}/{sample_pages} pages have text (ratio: {text_ratio:.2f})")
+                
+                return text_ratio < 0.2
+        except Exception as e:
+            logger.error(f"Error checking if PDF needs OCR: {e}")
+            return False
+    
+    def perform_ocr(self, output_path=None):
+        """Perform OCR on the PDF using ocrmypdf"""
+        if output_path is None:
+            output_path = self.file_path + ".ocr.pdf"
+        
+        try:
+            logger.info(f"Performing OCR on {os.path.basename(self.file_path)}...")
+            
+            cmd = [
+                'ocrmypdf',
+                '--skip-text',     # Skip pages that already have text
+                '--optimize', '1', # Optimize output size
+                '--output-type', 'pdf',  # Regular PDF output to avoid color space issues
+                '--tesseract-timeout', '300',  # 5 min timeout per page
+                self.file_path,
+                output_path
+            ]
+            
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)  # 1 hour timeout
+            
+            if result.returncode == 0 and os.path.exists(output_path):
+                logger.info(f"OCR completed successfully: {output_path}")
+                return output_path
+            else:
+                logger.error(f"OCR failed: {result.stderr}")
+                return None
+                
+        except subprocess.TimeoutExpired:
+            logger.error("OCR timeout after 1 hour")
+            return None
+        except Exception as e:
+            logger.error(f"OCR error: {e}")
+            return None
+    
+    def load(self):
+        """Load PDF, performing OCR if needed"""
+        # First check if OCR is needed
+        if self.needs_ocr():
+            logger.info(f"PDF appears to be scanned, performing OCR...")
+            
+            # Create OCR output path
+            ocr_dir = os.path.join(os.path.dirname(self.file_path), ".ocr_cache")
+            os.makedirs(ocr_dir, exist_ok=True)
+            ocr_path = os.path.join(ocr_dir, os.path.basename(self.file_path) + ".ocr.pdf")
+            
+            # Check if we already have an OCR'd version
+            if os.path.exists(ocr_path) and os.path.getmtime(ocr_path) > os.path.getmtime(self.file_path):
+                logger.info(f"Using cached OCR version: {ocr_path}")
+                # Use FastPDFLoader on the OCR'd version
+                return FastPDFLoader(ocr_path).load()
+            
+            # Perform OCR
+            ocr_result = self.perform_ocr(ocr_path)
+            if ocr_result:
+                # Use FastPDFLoader on the OCR'd version
+                return FastPDFLoader(ocr_result).load()
+            else:
+                logger.warning("OCR failed, falling back to regular extraction")
+        
+        # Use appropriate loader based on file size
+        file_size_mb = os.path.getsize(self.file_path) / (1024 * 1024)
+        if file_size_mb > 200:  # Files over 200MB
+            return UltraLargePDFLoader(self.file_path).load()
+        else:
+            return FastPDFLoader(self.file_path).load()
+
+class UltraLargePDFLoader:
+    """Special PDF loader for extremely large files (>200MB) with aggressive memory management"""
+    
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.chunk_size = 50  # Process 50 pages at a time for ultra-large files
+    
+    def load(self):
+        """Load ultra-large PDF in small chunks to avoid memory issues"""
+        documents = []
+        file_size_mb = os.path.getsize(self.file_path) / (1024 * 1024)
+        logger.info(f"UltraLargePDFLoader processing {os.path.basename(self.file_path)} ({file_size_mb:.1f}MB)")
+        
+        try:
+            import pypdf
+            import gc  # For garbage collection
+            
+            # First pass - just get page count
+            with open(self.file_path, 'rb') as file:
+                pdf_reader = pypdf.PdfReader(file, strict=False)
+                total_pages = len(pdf_reader.pages)
+                logger.info(f"PDF has {total_pages} pages")
+            
+            # Process in chunks
+            successful_chunks = 0
+            for chunk_start in range(0, total_pages, self.chunk_size):
+                chunk_end = min(chunk_start + self.chunk_size, total_pages)
+                logger.info(f"Processing chunk: pages {chunk_start}-{chunk_end}")
+                
+                try:
+                    # Re-open file for each chunk to avoid memory buildup
+                    with open(self.file_path, 'rb') as file:
+                        pdf_reader = pypdf.PdfReader(file, strict=False)
+                        
+                        for page_num in range(chunk_start, chunk_end):
+                            try:
+                                page = pdf_reader.pages[page_num]
+                                text = page.extract_text()
+                                if text and text.strip():
+                                    doc = Document(
+                                        page_content=text,
+                                        metadata={
+                                            'source': self.file_path,
+                                            'page': page_num
+                                        }
+                                    )
+                                    documents.append(doc)
+                            except Exception as e:
+                                # Log but continue - we expect many errors with corrupted PDFs
+                                if page_num % 10 == 0:  # Only log every 10th page to reduce noise
+                                    logger.debug(f"Error on page {page_num}: {str(e)[:100]}")
+                                continue
+                    
+                    successful_chunks += 1
+                    # Force garbage collection after each chunk
+                    gc.collect()
+                    
+                except Exception as e:
+                    logger.warning(f"Error processing chunk {chunk_start}-{chunk_end}: {e}")
+                    continue
+            
+            logger.info(f"UltraLargePDFLoader extracted {len(documents)} pages from {total_pages} total pages")
+            
+            # If we got very little content, it might be a scanned PDF
+            if len(documents) < total_pages * 0.1:  # Less than 10% of pages have text
+                logger.warning(f"Very low text extraction rate ({len(documents)}/{total_pages}). May be a scanned PDF.")
+            
+            return documents
+            
+        except Exception as e:
+            logger.error(f"UltraLargePDFLoader fatal error: {e}")
+            return []
+
+class FastPDFLoader:
+    """Fast PDF loader using pypdf with parallel processing for large files"""
+    
+    def __init__(self, file_path):
+        self.file_path = file_path
+    
+    def _extract_page_batch(self, pdf_reader, start_page, end_page):
+        """Extract text from a batch of pages"""
+        documents = []
+        for page_num in range(start_page, min(end_page, len(pdf_reader.pages))):
+            try:
+                page = pdf_reader.pages[page_num]
+                text = page.extract_text()
+                if text.strip():  # Only add non-empty pages
+                    doc = Document(
+                        page_content=text,
+                        metadata={
+                            'source': self.file_path,
+                            'page': page_num
+                        }
+                    )
+                    documents.append(doc)
+            except Exception as e:
+                logger.warning(f"Error extracting page {page_num}: {e}")
+                continue
+        return documents
     
     def load(self):
         """Load PDF and return list of Document objects"""
         documents = []
         logger.info(f"FastPDFLoader starting to load {os.path.basename(self.file_path)}")
+        
         try:
+            # Check file size to determine processing strategy
+            file_size_mb = os.path.getsize(self.file_path) / (1024 * 1024)
+            
             with open(self.file_path, 'rb') as file:
                 pdf_reader = pypdf.PdfReader(file, strict=False)
+                total_pages = len(pdf_reader.pages)
+                logger.info(f"PDF has {total_pages} pages, size: {file_size_mb:.1f}MB")
                 
-                # Process pages in batches for better performance
-                for page_num, page in enumerate(pdf_reader.pages):
-                    try:
-                        text = page.extract_text()
-                        if text.strip():  # Only add non-empty pages
-                            doc = Document(
-                                page_content=text,
-                                metadata={
-                                    'source': self.file_path,
-                                    'page': page_num
-                                }
-                            )
-                            documents.append(doc)
-                    except Exception as e:
-                        logger.warning(f"Error extracting page {page_num}: {e}")
-                        continue
+                # For large PDFs (>100MB or >1000 pages), use parallel processing
+                if file_size_mb > 100 or total_pages > 1000:
+                    logger.info(f"Using parallel processing for large PDF ({total_pages} pages)")
+                    batch_size = 100  # Process 100 pages per batch
+                    
+                    from concurrent.futures import ThreadPoolExecutor, as_completed
+                    with ThreadPoolExecutor(max_workers=4) as executor:
+                        # Submit batch jobs
+                        futures = []
+                        for start_page in range(0, total_pages, batch_size):
+                            end_page = start_page + batch_size
+                            future = executor.submit(self._extract_page_batch, pdf_reader, start_page, end_page)
+                            futures.append((start_page, future))
+                        
+                        # Collect results in order
+                        batch_results = {}
+                        for start_page, future in futures:
+                            try:
+                                batch_docs = future.result(timeout=60)  # 1 minute timeout per batch
+                                batch_results[start_page] = batch_docs
+                                logger.info(f"Processed pages {start_page}-{start_page+batch_size}")
+                            except Exception as e:
+                                logger.error(f"Error processing batch starting at page {start_page}: {e}")
+                        
+                        # Combine results in order
+                        for start_page in sorted(batch_results.keys()):
+                            documents.extend(batch_results[start_page])
+                else:
+                    # Process small PDFs sequentially
+                    for page_num, page in enumerate(pdf_reader.pages):
+                        try:
+                            text = page.extract_text()
+                            if text.strip():  # Only add non-empty pages
+                                doc = Document(
+                                    page_content=text,
+                                    metadata={
+                                        'source': self.file_path,
+                                        'page': page_num
+                                    }
+                                )
+                                documents.append(doc)
+                        except Exception as e:
+                            logger.warning(f"Error extracting page {page_num}: {e}")
+                            continue
                         
             logger.info(f"FastPDFLoader extracted {len(documents)} pages from {os.path.basename(self.file_path)}")
+            
+            # For large PDFs with extraction issues, be more lenient
+            if not documents and file_size_mb > 100:
+                logger.warning(f"Large PDF {os.path.basename(self.file_path)} had no successful page extractions")
+                # Try one more time with a simpler approach - just get any text we can
+                try:
+                    emergency_text = []
+                    for i, page in enumerate(pdf_reader.pages[:10]):  # Try first 10 pages
+                        try:
+                            text = page.extract_text()
+                            if text and text.strip():
+                                emergency_text.append(text)
+                        except:
+                            continue
+                    
+                    if emergency_text:
+                        logger.info(f"Emergency extraction got {len(emergency_text)} pages of content")
+                        combined_text = "\n\n".join(emergency_text)
+                        return [Document(
+                            page_content=combined_text, 
+                            metadata={"source": self.file_path, "page": "0-9", "extraction": "emergency"}
+                        )]
+                except Exception as e:
+                    logger.error(f"Emergency extraction also failed: {e}")
+            
             return documents
             
         except Exception as e:
@@ -268,6 +528,11 @@ class SharedRAG:
         self.failed_pdfs_file = os.path.join(self.db_directory, "failed_pdfs.json")
         self.book_index = self.load_book_index()
         self.lock = IndexLock()
+        
+        # Thread safety for parallel processing
+        import threading
+        self._index_lock = threading.Lock()  # For book_index updates
+        self._status_lock = threading.Lock()  # For status file updates
         
         # Simple search cache for performance
         self._search_cache = {}
@@ -303,20 +568,22 @@ class SharedRAG:
         return {}
     
     def save_book_index(self):
-        """Save the book index to disk"""
+        """Save the book index to disk (thread-safe)"""
         os.makedirs(self.db_directory, exist_ok=True)
-        with open(self.index_file, 'w') as f:
-            json.dump(self.book_index, f, indent=2)
+        with self._index_lock:
+            with open(self.index_file, 'w') as f:
+                json.dump(self.book_index, f, indent=2)
     
     def update_status(self, status, details=None):
-        """Update indexing status file"""
+        """Update indexing status file (thread-safe)"""
         status_data = {
             "status": status,
             "timestamp": datetime.now().isoformat(),
             "details": details or {}
         }
-        with open(self.status_file, 'w') as f:
-            json.dump(status_data, f, indent=2)
+        with self._status_lock:
+            with open(self.status_file, 'w') as f:
+                json.dump(status_data, f, indent=2)
     
     def get_indexing_status(self):
         """Get current indexing status"""
@@ -450,7 +717,7 @@ class SharedRAG:
         file_ext = os.path.splitext(filepath)[1].lower()
         
         if file_ext == '.pdf':
-            return FastPDFLoader(filepath)  # Use our fast PDF loader
+            return OCRPDFLoader(filepath)  # Use OCR-enabled PDF loader
         elif file_ext in ['.docx', '.doc']:
             return UnstructuredWordDocumentLoader(filepath)
         elif file_ext == '.epub':
@@ -471,21 +738,29 @@ class SharedRAG:
         
         return type_mapping.get(file_ext, 'Document')
     
-    def process_document_with_timeout(self, filepath, rel_path=None, timeout_minutes=10):
+    def process_document_with_timeout(self, filepath, rel_path=None, timeout_minutes=30):
         """Process any supported document with timeout protection"""
+        # For very large files, don't record as permanently failed on timeout
+        file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
+        is_large_file = file_size_mb > 100
+        
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(self.process_document, filepath, rel_path)
             try:
                 return future.result(timeout=timeout_minutes * 60)
             except FutureTimeoutError:
                 logger.error(f"Processing timeout after {timeout_minutes} minutes for {filepath}")
-                self.handle_failed_document(filepath, f"Processing timeout after {timeout_minutes} minutes - file too large or complex")
+                if not is_large_file:
+                    # Only record smaller files as failed
+                    self.handle_failed_document(filepath, f"Processing timeout after {timeout_minutes} minutes - file too large or complex")
+                else:
+                    logger.info(f"Large file {rel_path} timed out but not marking as permanently failed - will retry next time")
                 return False
             except Exception as e:
                 logger.error(f"Error in thread: {e}")
                 return False
     
-    def process_pdf_with_timeout(self, filepath, rel_path=None, timeout_minutes=10):
+    def process_pdf_with_timeout(self, filepath, rel_path=None, timeout_minutes=30):
         """Legacy method - now calls process_document_with_timeout for backward compatibility"""
         return self.process_document_with_timeout(filepath, rel_path, timeout_minutes)
     
@@ -551,7 +826,7 @@ class SharedRAG:
             
             # Check file size before processing
             file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
-            if file_size_mb > 500:  # Skip files larger than 500MB
+            if file_size_mb > 2048:  # Skip files larger than 2GB (2048MB)
                 logger.warning(f"Skipping {rel_path}: File too large ({file_size_mb:.1f}MB)")
                 self.handle_failed_document(filepath, f"File too large: {file_size_mb:.1f}MB")
                 return False
@@ -627,14 +902,15 @@ class SharedRAG:
             self.vectorstore.persist()
             self.update_progress("completed", total_pages=total_sections, chunks_generated=len(chunks), current_file=rel_path)
             
-            # Update index
-            self.book_index[rel_path] = {
-                'hash': self.get_file_hash(filepath),
-                'chunks': len(chunks),
-                'pages': total_sections,  # For non-PDFs, this represents sections/documents
-                'document_type': doc_type,
-                'indexed_at': datetime.now().isoformat()
-            }
+            # Update index (thread-safe)
+            with self._index_lock:
+                self.book_index[rel_path] = {
+                    'hash': self.get_file_hash(filepath),
+                    'chunks': len(chunks),
+                    'pages': total_sections,  # For non-PDFs, this represents sections/documents
+                    'document_type': doc_type,
+                    'indexed_at': datetime.now().isoformat()
+                }
             self.save_book_index()
             
             logger.info(f"Successfully indexed {rel_path}: {len(chunks)} chunks from {total_sections} sections")
@@ -795,8 +1071,9 @@ class SharedRAG:
             collection = self.vectorstore._collection
             collection.delete(where={"book": book_name})
             
-            # Remove from index
-            del self.book_index[rel_path]
+            # Remove from index (thread-safe)
+            with self._index_lock:
+                del self.book_index[rel_path]
             if not skip_save:
                 self.save_book_index()
             

@@ -35,13 +35,13 @@ if ! python -c "import watchdog" 2>/dev/null; then
 fi
 
 # Set environment variables for proper path resolution
-export SPIRITUAL_LIBRARY_BOOKS_PATH="/Users/KDP/Library/Mobile Documents/com~apple~CloudDocs/Documents/Books"
+export SPIRITUAL_LIBRARY_BOOKS_PATH="/Users/KDP/SpiritualLibrary"
 export SPIRITUAL_LIBRARY_DB_PATH="$(pwd)/chroma_db"
 export PYTHONPATH="$(pwd):$PYTHONPATH"
 
 # Start monitor
 echo "📌 Starting index monitor..."
-echo "   Monitor will watch for changes in CloudDocs/Documents/Books"
+echo "   Monitor will watch for changes in /Users/KDP/SpiritualLibrary"
 echo "   Press Ctrl+C to stop"
 echo ""
 python src/indexing/index_monitor.py
