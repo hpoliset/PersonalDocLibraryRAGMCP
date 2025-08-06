@@ -4,6 +4,13 @@
 import json
 import hashlib
 import os
+import sys
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from src.core.config import config
 
 def get_file_hash(filepath):
     """Calculate MD5 hash of a file"""
@@ -15,11 +22,12 @@ def get_file_hash(filepath):
     return hash_md5.hexdigest()
 
 # Load book index
-with open('chroma_db/book_index.json', 'r') as f:
+book_index_path = config.db_directory / 'book_index.json'
+with open(book_index_path, 'r') as f:
     book_index = json.load(f)
 
 # Get actual hash of the problematic file
-problematic_file = 'books/Whispers/Whispers Vol 6 - Lowres.pdf'
+problematic_file = config.books_directory / 'Whispers/Whispers Vol 6 - Lowres.pdf'
 if os.path.exists(problematic_file):
     print(f"Calculating hash for {problematic_file}...")
     actual_hash = get_file_hash(problematic_file)

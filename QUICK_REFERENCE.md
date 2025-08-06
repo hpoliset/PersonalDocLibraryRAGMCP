@@ -77,10 +77,7 @@ Update your `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "args": ["/Users/KDP/AITools/src/servers/mcp_complete_server.py"],
       "env": {
         "PYTHONUNBUFFERED": "1",
-        "OMP_NUM_THREADS": "4",
-        "OLLAMA_NUM_PARALLEL": "2",
-        "OLLAMA_MAX_LOADED_MODELS": "1",
-        "OLLAMA_KEEP_ALIVE": "5m"
+        "OMP_NUM_THREADS": "4"
       }
     }
   }

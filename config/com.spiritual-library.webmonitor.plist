@@ -7,12 +7,11 @@
     
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/KDP/AITools/venv_mcp/bin/python</string>
-        <string>/Users/KDP/AITools/src/monitoring/monitor_web_enhanced.py</string>
+        <string>/Users/hpoliset/AITools/scripts/webmonitor_service.sh</string>
     </array>
     
     <key>WorkingDirectory</key>
-    <string>/Users/KDP/AITools</string>
+    <string>/Users/hpoliset/AITools</string>
     
     <!-- Run at startup -->
     <key>RunAtLoad</key>
@@ -31,33 +30,27 @@
     
     <!-- Log files -->
     <key>StandardOutPath</key>
-    <string>/Users/KDP/AITools/logs/webmonitor_stdout.log</string>
+    <string>/Users/hpoliset/AITools/logs/webmonitor_stdout.log</string>
     
     <key>StandardErrorPath</key>
-    <string>/Users/KDP/AITools/logs/webmonitor_stderr.log</string>
+    <string>/Users/hpoliset/AITools/logs/webmonitor_stderr.log</string>
     
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
-        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
         <key>PYTHONUNBUFFERED</key>
         <string>1</string>
-        <key>PYTHONPATH</key>
-        <string>/Users/KDP/AITools</string>
         <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
-        <string>/Users/KDP/SpiritualLibrary</string>
+        <string>/Users/hpoliset/SpiritualLibrary</string>
         <key>SPIRITUAL_LIBRARY_DB_PATH</key>
-        <string>/Users/KDP/AITools/chroma_db</string>
-        <key>SPIRITUAL_LIBRARY_LOGS_PATH</key>
-        <string>/Users/KDP/AITools/logs</string>
-        <key>FLASK_ENV</key>
-        <string>production</string>
+        <string>/Users/hpoliset/AITools/chroma_db</string>
     </dict>
     
     <!-- Nice value for lower priority -->
     <key>Nice</key>
-    <integer>5</integer>
+    <integer>10</integer>
     
     <!-- Process type -->
     <key>ProcessType</key>

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """Find PDFs that haven't been indexed yet."""
 import os
+import sys
 import json
 from pathlib import Path
 
-books_dir = Path("books")
-index_file = Path("chroma_db/book_index.json")
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from src.core.config import config
+
+books_dir = config.books_directory
+index_file = config.db_directory / "book_index.json"
 
 # Load existing index
 with open(index_file) as f:

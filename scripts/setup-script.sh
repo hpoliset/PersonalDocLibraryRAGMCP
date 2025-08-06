@@ -44,7 +44,6 @@ if [ ! -f "requirements.txt" ]; then
 langchain==0.1.0
 chromadb==0.4.22
 sentence-transformers==2.2.2
-ollama==0.1.7
 fastapi==0.109.0
 uvicorn==0.27.0
 pypdf2==3.0.1
@@ -82,45 +81,10 @@ else
     echo "✅ Books directory exists with $pdf_count PDF files"
 fi
 
-# Check for Ollama
+# Note: Ollama is no longer required
 echo ""
-echo "📌 Checking for Ollama..."
-if ! command -v ollama &> /dev/null; then
-    echo "⚠️  WARNING: Ollama not found!"
-    echo ""
-    echo "Please install Ollama to use the LLM features:"
-    echo "  brew install ollama"
-    echo ""
-    echo "After installing, run:"
-    echo "  ollama serve"
-    echo "  ollama pull llama3.1:70b-instruct-q8_0"
-else
-    echo "✅ Ollama is installed"
-    
-    # Check if Ollama is running
-    if ! pgrep -x "ollama" > /dev/null; then
-        echo ""
-        echo "📌 Starting Ollama service..."
-        ollama serve > /dev/null 2>&1 &
-        sleep 3
-    fi
-    
-    # Check for required model
-    echo ""
-    echo "📌 Checking for required Ollama model..."
-    if ! ollama list 2>/dev/null | grep -q "llama3.1:70b"; then
-        echo "📥 Downloading llama3.1:70b model (this may take a while)..."
-        ollama pull llama3.1:70b-instruct-q8_0
-        if [[ $? -eq 0 ]]; then
-            echo "✅ Model downloaded successfully"
-        else
-            echo "⚠️  WARNING: Failed to download model. You can manually run:"
-            echo "  ollama pull llama3.1:70b-instruct-q8_0"
-        fi
-    else
-        echo "✅ Required model is already available"
-    fi
-fi
+echo "📌 The system now uses direct RAG results without LLM synthesis"
+echo "✅ This reduces memory requirements from ~40GB to ~4GB"
 
 # Create other necessary files if they don't exist
 echo ""

@@ -10,11 +10,11 @@
   - `index_status` - Detailed indexing status
 - **Features**:
   - Automatic indexing of new PDFs on startup
-  - AI synthesis of search results using Ollama
+  - Direct RAG results without LLM synthesis
   - Lock handling to prevent conflicts
   - Integration with background monitor
   - Automatic PDF cleaning on failure
-- **Dependencies**: Requires sentence-transformers, HuggingFace, Ollama
+- **Dependencies**: Requires sentence-transformers, HuggingFace
 
 ## mcp_final_server.py (Fallback)
 - **Simplified** implementation with direct SQLite access
@@ -25,10 +25,10 @@
   - Read-only access to existing index
   - No dependencies on embeddings or LLM
   - Faster startup (no model loading)
-  - Works even if Ollama is down
+  - Minimal dependencies
 - **Limitations**:
   - No automatic indexing
-  - No AI synthesis
+  - No semantic search capabilities
   - No ability to add new books
 
 ## When to use which?
@@ -36,13 +36,12 @@
 **Use mcp_complete_server.py when:**
 - You want full functionality
 - You're adding new books regularly
-- You want AI-powered synthesis
-- You have Ollama running
+- You want semantic search with RAG
 
 **Use mcp_final_server.py when:**
 - You have dependency issues
 - You just need basic search
-- Ollama is not available
+- You need minimal setup
 - You want faster startup
 
 ## Configuration

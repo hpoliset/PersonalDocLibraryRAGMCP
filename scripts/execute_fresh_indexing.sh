@@ -2,9 +2,16 @@
 # Foolproof fresh indexing script
 # This script will backup data, install improved indexing, and start fresh
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 echo "🔄 Starting Foolproof Fresh Indexing Process"
 echo "============================================"
 date
+
+# Change to project root directory
+cd "$PROJECT_ROOT"
 
 # Step 1: Stop all services
 echo -e "\n📍 Step 1: Stopping all services..."
@@ -33,7 +40,7 @@ echo "Data cleared"
 
 # Step 5: Create indexing status file
 echo -e "\n📍 Step 5: Initializing status tracking..."
-cat > chroma_db/index_status.json << EOF
+cat > "$PROJECT_ROOT/chroma_db/index_status.json" << EOF
 {
   "status": "ready",
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
@@ -45,7 +52,7 @@ EOF
 
 # Step 6: Activate virtual environment
 echo -e "\n📍 Step 6: Activating virtual environment..."
-source venv_mcp/bin/activate
+source "$PROJECT_ROOT/venv_mcp/bin/activate"
 
 # Step 7: Start fresh indexing
 echo -e "\n📍 Step 7: Starting fresh indexing..."

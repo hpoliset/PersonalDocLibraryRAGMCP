@@ -4,24 +4,33 @@
 import json
 import time
 import os
+import sys
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from src.core.config import config
 
 def check_progress():
     """Check current indexing progress"""
     try:
         # Read book index
-        with open('chroma_db/book_index.json', 'r') as f:
+        book_index_path = config.db_directory / 'book_index.json'
+        with open(book_index_path, 'r') as f:
             indexed_books = json.load(f)
         
         # Count total PDFs
         total_pdfs = 0
-        for root, dirs, files in os.walk('books/'):
+        for root, dirs, files in os.walk(config.books_directory):
             for file in files:
                 if file.endswith('.pdf'):
                     total_pdfs += 1
         
         # Read current status
         try:
-            with open('chroma_db/index_status.json', 'r') as f:
+            status_path = config.db_directory / 'index_status.json'
+            with open(status_path, 'r') as f:
                 status = json.load(f)
                 current_file = status.get('details', {}).get('current_file', 'Unknown')
         except:

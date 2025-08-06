@@ -7,12 +7,12 @@
     
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/hpoliset/AITools/scripts/index_monitor_service.sh</string>
+        <string>{{PROJECT_ROOT}}/scripts/index_monitor_service.sh</string>
         <string>run</string>
     </array>
     
     <key>WorkingDirectory</key>
-    <string>/Users/hpoliset/AITools</string>
+    <string>{{PROJECT_ROOT}}</string>
     
     <!-- Run at startup -->
     <key>RunAtLoad</key>
@@ -31,10 +31,10 @@
     
     <!-- Log files -->
     <key>StandardOutPath</key>
-    <string>/Users/hpoliset/AITools/logs/index_monitor_stdout.log</string>
+    <string>{{PROJECT_ROOT}}/logs/index_monitor_stdout.log</string>
     
     <key>StandardErrorPath</key>
-    <string>/Users/hpoliset/AITools/logs/index_monitor_stderr.log</string>
+    <string>{{PROJECT_ROOT}}/logs/index_monitor_stderr.log</string>
     
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
@@ -42,9 +42,9 @@
         <key>PATH</key>
         <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
         <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
-        <string>/Users/hpoliset/SpiritualLibrary</string>
+        <string>{{BOOKS_PATH}}</string>
         <key>SPIRITUAL_LIBRARY_DB_PATH</key>
-        <string>/Users/hpoliset/AITools/chroma_db</string>
+        <string>{{DB_PATH}}</string>
     </dict>
     
     <!-- Nice value for lower priority -->

@@ -35,13 +35,17 @@ if ! python -c "import watchdog" 2>/dev/null; then
 fi
 
 # Set environment variables for proper path resolution
-export SPIRITUAL_LIBRARY_BOOKS_PATH="/Users/KDP/SpiritualLibrary"
-export SPIRITUAL_LIBRARY_DB_PATH="$(pwd)/chroma_db"
-export PYTHONPATH="$(pwd):$PYTHONPATH"
+# Use existing environment variable or default to local books directory
+export SPIRITUAL_LIBRARY_BOOKS_PATH="${SPIRITUAL_LIBRARY_BOOKS_PATH:-$PROJECT_ROOT/books}"
+export SPIRITUAL_LIBRARY_DB_PATH="${SPIRITUAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
+export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+
+# Change to project root directory
+cd "$PROJECT_ROOT"
 
 # Start monitor
 echo "📌 Starting index monitor..."
-echo "   Monitor will watch for changes in /Users/KDP/SpiritualLibrary"
+echo "   Monitor will watch for changes in $SPIRITUAL_LIBRARY_BOOKS_PATH"
 echo "   Press Ctrl+C to stop"
 echo ""
 python src/indexing/index_monitor.py

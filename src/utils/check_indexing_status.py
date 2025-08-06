@@ -4,9 +4,16 @@ Check and diagnose indexing status
 """
 
 import os
+import sys
 import json
 import time
 from datetime import datetime
+from pathlib import Path
+
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from src.core.config import config
 from index_lock import IndexLock
 
 def main():
@@ -32,7 +39,7 @@ def main():
         print("   Lock exists: No")
     
     # Check status file
-    status_file = "chroma_db/index_status.json"
+    status_file = config.db_directory / "index_status.json"
     if os.path.exists(status_file):
         with open(status_file, 'r') as f:
             status = json.load(f)
@@ -50,7 +57,7 @@ def main():
                 print(f"   Last file: {details['current_file']}")
     
     # Check book index
-    book_index_file = "chroma_db/book_index.json"
+    book_index_file = config.db_directory / "book_index.json"
     books = {}
     if os.path.exists(book_index_file):
         with open(book_index_file, 'r') as f:
@@ -58,7 +65,7 @@ def main():
     print(f"\n📚 Books indexed: {len(books)}")
     
     # Check failed PDFs
-    failed_file = "chroma_db/failed_pdfs.json"
+    failed_file = config.db_directory / "failed_pdfs.json"
     failed = {}
     if os.path.exists(failed_file):
         with open(failed_file, 'r') as f:
@@ -74,15 +81,16 @@ def main():
     
     # Count total PDFs
     total_pdfs = 0
-    if os.path.exists("books"):
-        for root, dirs, files in os.walk("books"):
+    books_dir = config.books_directory
+    if books_dir.exists():
+        for root, dirs, files in os.walk(books_dir):
             total_pdfs += sum(1 for f in files if f.lower().endswith('.pdf'))
     
     indexed_count = len(books)
     failed_count = len(failed)
     remaining_count = total_pdfs - indexed_count - failed_count
     
-    print(f"\n📁 Total PDFs in books folder: {total_pdfs}")
+    print(f"\n📁 Total PDFs in {books_dir.name} folder: {total_pdfs}")
     print(f"📊 Remaining to index: {remaining_count}")
     print(f"   ✅ Successfully indexed: {indexed_count}")
     print(f"   ❌ Failed: {failed_count}")
@@ -92,7 +100,7 @@ def main():
     whispers_path = "Babuji's Books/Whispers/Vol. 2 1944-45/For Print_Whispers_Vol. 2/Whispers_Inner_Vol2.pdf"
     if whispers_path not in books:
         print(f"\n⚠️  Whispers_Inner_Vol2.pdf is NOT indexed")
-        full_path = f"books/{whispers_path}"
+        full_path = config.books_directory / whispers_path
         if os.path.exists(full_path):
             size_mb = os.path.getsize(full_path) / (1024 * 1024)
             print(f"   File exists: {size_mb:.1f} MB")

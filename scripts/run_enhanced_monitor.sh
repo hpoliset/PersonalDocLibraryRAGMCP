@@ -22,9 +22,17 @@ else
 fi
 
 # Set environment variables for proper path resolution
-export SPIRITUAL_LIBRARY_BOOKS_PATH="/Users/KDP/Library/Mobile Documents/com~apple~CloudDocs/Documents/Books"
-export SPIRITUAL_LIBRARY_DB_PATH="$(pwd)/chroma_db"
-export PYTHONPATH="$(pwd):$PYTHONPATH"
+# Use existing environment variable or default to local books directory
+export SPIRITUAL_LIBRARY_BOOKS_PATH="${SPIRITUAL_LIBRARY_BOOKS_PATH:-$PROJECT_ROOT/books}"
+export SPIRITUAL_LIBRARY_DB_PATH="${SPIRITUAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
+export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+
+# Change to project root directory
+cd "$PROJECT_ROOT"
 
 # Run the enhanced monitor
+echo "📌 Starting Enhanced Web Monitor..."
+echo "   Open your browser to: http://localhost:8888"
+echo "   Press Ctrl+C to stop"
+echo ""
 python src/monitoring/monitor_web_enhanced.py

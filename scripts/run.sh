@@ -1,6 +1,10 @@
 #!/bin/bash
 # Unified script to run the MCP server or perform indexing with optional retry/monitoring
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 echo "🔮 Spiritual Library MCP Server"
 echo "==============================="
 echo ""
@@ -66,17 +70,17 @@ if [ ! -d "venv_mcp" ]; then
     exit 1
 fi
 
+# Change to project root directory
+cd "$PROJECT_ROOT"
+
 # Activate virtual environment
 echo "📌 Activating virtual environment..."
-source venv_mcp/bin/activate
+source "$PROJECT_ROOT/venv_mcp/bin/activate"
 
-# Check if Ollama is running
-if ! pgrep -x "ollama" > /dev/null; then
-    echo "📌 Starting Ollama service..."
-    ollama serve > /dev/null 2>&1 &
-    sleep 3
-    echo "✅ Ollama started"
-fi
+# Set Python command
+PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+
+# Note: Ollama is no longer required - using direct RAG results
 
 if [ "$INDEX_ONLY" = true ]; then
     if [ "$WITH_RETRY" = true ]; then
@@ -95,7 +99,7 @@ if [ "$INDEX_ONLY" = true ]; then
         run_indexing() {
             echo "📌 Starting indexing attempt #$((RETRY_COUNT + 1))..."
             
-            python -c "
+            "$PYTHON_CMD" -c "
 import os
 import sys
 import signal
@@ -200,7 +204,7 @@ except Exception as e:
         echo "📌 Running simple indexing..."
         echo "   This will index any new or modified documents (PDFs, Word docs, EPUBs)"
         echo ""
-        python -c "
+        "$PYTHON_CMD" -c "
 import os
 from src.core.shared_rag import SharedRAG
 

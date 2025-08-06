@@ -13,10 +13,17 @@ fi
 
 # Get the directory of this script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 PLIST_NAME="com.spiritual-library.index-monitor"
-PLIST_FILE="$SCRIPT_DIR/../config/$PLIST_NAME.plist"
+PLIST_FILE="$PROJECT_ROOT/config/$PLIST_NAME.plist"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 INSTALLED_PLIST="$LAUNCH_AGENTS_DIR/$PLIST_NAME.plist"
+
+# Generate configs if they don't exist
+if [ ! -f "$PLIST_FILE" ]; then
+    echo "📌 Generating configuration files..."
+    "${SCRIPT_DIR}/generate_configs.sh"
+fi
 
 # Check if already installed
 if launchctl list | grep -q "$PLIST_NAME"; then

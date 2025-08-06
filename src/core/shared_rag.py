@@ -23,6 +23,7 @@ import json
 import time
 import subprocess
 import shutil
+import shlex
 from datetime import datetime
 from pathlib import Path
 import fcntl
@@ -31,6 +32,7 @@ from .config import config
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 import psutil
 import threading
+from collections import OrderedDict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -151,7 +153,9 @@ class IndexLock:
         # Clean stale locks before attempting
         self.clean_stale_lock()
         
-        self.lock_fd = open(self.lock_file, 'w')
+        # Open lock file with restricted permissions (owner read/write only)
+        self.lock_fd = os.open(self.lock_file, os.O_CREAT | os.O_WRONLY, 0o600)
+        self.lock_fd = os.fdopen(self.lock_fd, 'w')
         lock_acquired = False
         try:
             if blocking:
@@ -189,8 +193,15 @@ class PDFCleaner:
     
     @staticmethod
     def clean_pdf(input_path, output_path, timeout_minutes=30):
-        """Clean a PDF using Ghostscript"""
+        """Clean a PDF using Ghostscript with security validation"""
         try:
+            # Validate paths to prevent command injection
+            input_path = os.path.abspath(input_path)
+            output_path = os.path.abspath(output_path)
+            
+            if not os.path.exists(input_path):
+                raise ValueError(f"Input file does not exist: {input_path}")
+            
             logger.info(f"Cleaning {os.path.basename(input_path)}...")
             
             cmd = [
@@ -258,7 +269,14 @@ class OCRPDFLoader:
             output_path = self.file_path + ".ocr.pdf"
         
         try:
-            logger.info(f"Performing OCR on {os.path.basename(self.file_path)}...")
+            # Validate paths to prevent command injection
+            input_file = os.path.abspath(self.file_path)
+            output_file = os.path.abspath(output_path)
+            
+            if not os.path.exists(input_file):
+                raise ValueError(f"Input file does not exist: {input_file}")
+                
+            logger.info(f"Performing OCR on {os.path.basename(input_file)}...")
             
             cmd = [
                 'ocrmypdf',
@@ -266,8 +284,8 @@ class OCRPDFLoader:
                 '--optimize', '1', # Optimize output size
                 '--output-type', 'pdf',  # Regular PDF output to avoid color space issues
                 '--tesseract-timeout', '300',  # 5 min timeout per page
-                self.file_path,
-                output_path
+                input_file,
+                output_file
             ]
             
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)  # 1 hour timeout
@@ -536,9 +554,10 @@ class SharedRAG:
         self._index_lock = threading.Lock()  # For book_index updates
         self._status_lock = threading.Lock()  # For status file updates
         
-        # Simple search cache for performance
-        self._search_cache = {}
+        # LRU cache for search results to prevent memory leaks
+        self._search_cache = OrderedDict()
         self._cache_ttl = 300  # 5 minutes TTL
+        self._max_cache_size = 50  # Maximum number of cached queries
         
         # Initialize embeddings
         logger.info("Initializing embeddings...")
@@ -1101,7 +1120,12 @@ class SharedRAG:
             cached_result, timestamp = self._search_cache[cache_key]
             if time.time() - timestamp < self._cache_ttl:
                 logger.debug(f"Cache hit for query: {query[:50]}...")
+                # Move to end (most recently used)
+                self._search_cache.move_to_end(cache_key)
                 return cached_result
+            else:
+                # Remove expired entry
+                del self._search_cache[cache_key]
         
         try:
             search_kwargs = {"k": min(k, self.vectorstore._collection.count() or 1)}
@@ -1125,13 +1149,20 @@ class SharedRAG:
             # Cache the results
             self._search_cache[cache_key] = (formatted_results, time.time())
             
-            # Clean old cache entries if cache is getting large
-            if len(self._search_cache) > 100:
+            # Enforce max cache size (LRU eviction)
+            while len(self._search_cache) > self._max_cache_size:
+                # Remove oldest item (first in OrderedDict)
+                self._search_cache.popitem(last=False)
+            
+            # Also clean expired entries periodically
+            if len(self._search_cache) > self._max_cache_size // 2:
                 current_time = time.time()
-                self._search_cache = {
-                    k: v for k, v in self._search_cache.items()
-                    if current_time - v[1] < self._cache_ttl
-                }
+                expired_keys = [
+                    k for k, (_, timestamp) in self._search_cache.items()
+                    if current_time - timestamp >= self._cache_ttl
+                ]
+                for k in expired_keys:
+                    del self._search_cache[k]
             
             # Always return direct results (synthesis removed)
             return formatted_results

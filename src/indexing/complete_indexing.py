@@ -22,9 +22,10 @@ logging.basicConfig(
 MAX_FILE_SIZE = 500 * 1024 * 1024
 
 # Add the project directory to Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-from shared_rag import SharedRAG
+from src.core.shared_rag import SharedRAG
+from src.core.config import config
 
 def calculate_file_hash(filepath):
     """Calculate MD5 hash of a file."""
@@ -70,7 +71,7 @@ def main():
         rag = SharedRAG()
         
         # Get all PDFs
-        books_dir = Path("books")
+        books_dir = config.books_directory
         all_pdfs = []
         
         for root, dirs, files in os.walk(books_dir):

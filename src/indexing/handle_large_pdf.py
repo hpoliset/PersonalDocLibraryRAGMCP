@@ -22,9 +22,9 @@ from PyPDF2 import PdfWriter, PdfReader
 import hashlib
 
 # Add project root to path
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from shared_rag import SharedRAG
-from config import config
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from src.core.shared_rag import SharedRAG
+from src.core.config import config
 
 class LargePDFHandler:
     def __init__(self):
@@ -203,8 +203,8 @@ def main():
     handler = LargePDFHandler()
     
     # Target the problematic file
-    large_pdf_path = "/Users/KDP/AITools/books/Whispers/Whispers Vol 6 - Lowres.pdf"
     rel_path = "Whispers/Whispers Vol 6 - Lowres.pdf"
+    large_pdf_path = str(config.books_directory / rel_path)
     
     if not os.path.exists(large_pdf_path):
         print(f"❌ File not found: {large_pdf_path}")

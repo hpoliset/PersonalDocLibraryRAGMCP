@@ -6,7 +6,6 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 ### Prerequisites
 - Python 3.9+ (ARM64 version for Apple Silicon)
-- Ollama with llama3.3:70b model
 - Ghostscript for PDF cleaning
 - Git
 
