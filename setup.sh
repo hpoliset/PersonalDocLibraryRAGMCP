@@ -82,8 +82,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Step 1: Check Python
-echo -e "${BLUE}📌 Checking Python installation...${NC}"
+# Step 1: Check Python and system dependencies
+echo -e "${BLUE}📌 Checking system requirements...${NC}"
+
+# Check Python
 python_cmd=""
 if command -v python3 &> /dev/null; then
     python_version=$(python3 --version 2>&1 | cut -d' ' -f2)
@@ -101,6 +103,49 @@ if [ -z "$python_cmd" ]; then
     echo -e "  ${RED}✗${NC} Python 3.8+ is required but not found"
     echo "  Please install Python 3 and try again"
     exit 1
+fi
+
+# Check for Homebrew (macOS)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    if ! command -v brew &> /dev/null; then
+        echo -e "  ${YELLOW}⚠️${NC} Homebrew not found. Some features may not work."
+        echo "    Install from: https://brew.sh"
+    else
+        echo -e "  ${GREEN}✓${NC} Homebrew found"
+    fi
+    
+    # Check for OCR tool
+    if ! command -v ocrmypdf &> /dev/null; then
+        echo -e "  ${YELLOW}⚠️${NC} ocrmypdf not found (needed for scanned PDFs)"
+        if command -v brew &> /dev/null; then
+            echo "    Installing ocrmypdf..."
+            brew install ocrmypdf >/dev/null 2>&1 && echo -e "    ${GREEN}✓${NC} ocrmypdf installed"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} ocrmypdf found"
+    fi
+    
+    # Check for LibreOffice
+    if ! command -v soffice &> /dev/null; then
+        echo -e "  ${YELLOW}⚠️${NC} LibreOffice not found (needed for Word docs)"
+        if command -v brew &> /dev/null; then
+            echo "    Installing LibreOffice..."
+            brew install --cask libreoffice >/dev/null 2>&1 && echo -e "    ${GREEN}✓${NC} LibreOffice installed"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} LibreOffice found"
+    fi
+    
+    # Check for pandoc
+    if ! command -v pandoc &> /dev/null; then
+        echo -e "  ${YELLOW}⚠️${NC} pandoc not found (needed for EPUB files)"
+        if command -v brew &> /dev/null; then
+            echo "    Installing pandoc..."
+            brew install pandoc >/dev/null 2>&1 && echo -e "    ${GREEN}✓${NC} pandoc installed"
+        fi
+    else
+        echo -e "  ${GREEN}✓${NC} pandoc found"
+    fi
 fi
 
 # Step 2: Create/verify virtual environment
@@ -162,6 +207,7 @@ echo "  Installing document processing libraries..."
     python-dotenv \
     psutil \
     flask \
+    watchdog \
     'numpy<2.0'
 
 echo -e "  ${GREEN}✓${NC} Dependencies installed"

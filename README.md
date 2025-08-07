@@ -12,7 +12,7 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 - **Web Dashboard** for real-time monitoring at http://localhost:8888
 - **Lazy Initialization** for fast MCP startup
 - **ARM64 Compatible** (Apple Silicon optimized)
-- **Multi-format Support** (PDF, DOCX, DOC, EPUB, TXT)
+- **Multi-format Support** (PDF, DOCX, DOC, PPTX, PPT, EPUB, TXT)
 
 ## Quick Start
 
@@ -23,6 +23,12 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 - **Claude Desktop** installed
 - **Homebrew** (for package management)
 - **~4GB RAM** for embeddings
+
+### Optional Dependencies (Auto-installed by setup)
+
+- **ocrmypdf** - For OCR processing of scanned PDFs
+- **LibreOffice** - For processing Word documents (.doc, .docx)
+- **pandoc** - For EPUB file processing
 
 ### Installation
 
@@ -140,6 +146,16 @@ tail -f logs/webmonitor_stdout.log
 # Check indexing status
 ./scripts/indexing_status.sh
 
+# Monitor indexing progress continuously
+watch -n 5 "./scripts/indexing_status.sh"
+
+# Manage failed documents
+./scripts/manage_failed_docs.sh list     # View failed documents
+./scripts/manage_failed_docs.sh add      # Add document to skip list
+./scripts/manage_failed_docs.sh remove   # Remove from skip list
+./scripts/manage_failed_docs.sh retry    # Clear list to retry all
+./scripts/cleanup_failed_list.sh         # Remove successfully indexed docs from failed list
+
 # Pause/resume indexing
 ./scripts/pause_indexing.sh
 ./scripts/resume_indexing.sh
@@ -197,6 +213,74 @@ Once configured, Claude will have access to these tools:
 
 ### Common Issues
 
+#### Indexer Gets Stuck on Large/Corrupted PDFs
+```bash
+# Check which file is stuck
+cat chroma_db/index_status.json
+
+# Use the failed docs manager script
+./scripts/manage_failed_docs.sh list                    # View all failed documents
+./scripts/manage_failed_docs.sh add "path/to/file.pdf"  # Add to skip list
+./scripts/manage_failed_docs.sh remove "file.pdf"       # Remove from skip list
+./scripts/manage_failed_docs.sh retry                   # Clear list to retry all
+
+# Or manually add to failed list
+echo '{"path/to/file.pdf": {"error": "Manual skip", "cleaned": false}}' >> chroma_db/failed_pdfs.json
+
+# Restart the service
+./scripts/uninstall_service.sh
+./scripts/install_service.sh
+```
+
+#### Missing Dependencies for Document Processing
+```bash
+# Check and install OCR support for scanned PDFs
+which ocrmypdf || brew install ocrmypdf
+
+# Check and install LibreOffice for Word documents
+which soffice || brew install --cask libreoffice
+
+# Check and install pandoc for EPUB files
+which pandoc || brew install pandoc
+
+# Verify installations
+ocrmypdf --version
+soffice --version
+pandoc --version
+```
+
+#### "Too Many Open Files" Errors
+```bash
+# Check current limit
+ulimit -n
+
+# Increase file descriptor limit (temporary)
+ulimit -n 4096
+
+# For permanent fix on macOS, add to ~/.zshrc or ~/.bash_profile:
+echo "ulimit -n 4096" >> ~/.zshrc
+
+# Restart the indexing service
+./scripts/uninstall_service.sh
+./scripts/install_service.sh
+```
+
+#### Service Keeps Restarting
+```bash
+# Check service logs for crashes
+tail -f logs/index_monitor_stderr.log
+
+# Check for lock files
+ls -la /tmp/spiritual_library_index.lock
+
+# Remove stale lock (if older than 30 minutes)
+rm /tmp/spiritual_library_index.lock
+
+# Monitor service health
+./scripts/service_status.sh
+watch -n 5 "./scripts/service_status.sh"
+```
+
 #### Web Monitor Not Accessible
 ```bash
 # Check if service is running
@@ -208,6 +292,9 @@ launchctl list | grep webmonitor
 
 # Check logs
 tail -f logs/webmonitor_stdout.log
+
+# Verify port is not in use
+lsof -i :8888
 ```
 
 #### Indexing Not Working
@@ -218,8 +305,14 @@ tail -f logs/webmonitor_stdout.log
 # View error logs
 tail -f logs/index_monitor_stderr.log
 
+# Check indexing progress
+./scripts/indexing_status.sh
+
 # Manually reindex
 ./scripts/run.sh --index-only
+
+# Reindex with retry for large collections
+./scripts/run.sh --index-only --retry
 ```
 
 #### Permission Issues
@@ -229,6 +322,22 @@ chmod +x scripts/*.sh
 
 # Fix Python symlinks
 ./setup.sh --non-interactive
+
+# Fix directory permissions
+chmod -R 755 logs/
+chmod -R 755 chroma_db/
+```
+
+#### Word Documents Not Processing
+```bash
+# Verify LibreOffice is installed
+which soffice || brew install --cask libreoffice
+
+# Test LibreOffice manually
+soffice --headless --convert-to pdf test.docx
+
+# Check for temporary lock files (start with ~$)
+find books/ -name "~\$*" -delete
 ```
 
 ### Reset and Clean
@@ -252,6 +361,7 @@ rm -rf chroma_db/*
 ### Supported Formats
 - **PDF** (.pdf) - Including scanned PDFs with OCR
 - **Word** (.docx, .doc) - Requires LibreOffice
+- **PowerPoint** (.pptx, .ppt) - Requires LibreOffice
 - **EPUB** (.epub) - Requires pandoc
 - **Text** (.txt) - Plain text files
 

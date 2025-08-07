@@ -1,12 +1,12 @@
 {
   "mcpServers": {
     "spiritual-library": {
-      "command": "/Users/hpoliset/AITools/venv_mcp/bin/python",
-      "args": ["/Users/hpoliset/AITools/src/servers/mcp_complete_server.py"],
+      "command": "/Users/hpoliset/DocumentIndexerMCP/venv_mcp/bin/python",
+      "args": ["/Users/hpoliset/DocumentIndexerMCP/src/servers/mcp_complete_server.py"],
       "env": {
         "PYTHONUNBUFFERED": "1",
         "SPIRITUAL_LIBRARY_BOOKS_PATH": "/Users/hpoliset/SpiritualLibrary",
-        "SPIRITUAL_LIBRARY_DB_PATH": "/Users/hpoliset/AITools/chroma_db",
+        "SPIRITUAL_LIBRARY_DB_PATH": "/Users/hpoliset/DocumentIndexerMCP/chroma_db",
         "OMP_NUM_THREADS": "4",
         "OLLAMA_NUM_PARALLEL": "2",
         "OLLAMA_MAX_LOADED_MODELS": "1",

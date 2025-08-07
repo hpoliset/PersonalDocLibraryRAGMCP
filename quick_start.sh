@@ -18,6 +18,75 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$SCRIPT_DIR"
 
+# Parse command line arguments
+AUTO_MODE=false
+AUTO_BOOKS_PATH=""
+AUTO_DB_PATH=""
+AUTO_INSTALL_SERVICE=false
+AUTO_START_WEB=false
+AUTO_RUN_INDEX=false
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --auto)
+            AUTO_MODE=true
+            AUTO_INSTALL_SERVICE=true
+            AUTO_START_WEB=true
+            AUTO_RUN_INDEX=true
+            shift
+            ;;
+        --books-path)
+            AUTO_BOOKS_PATH="$2"
+            shift 2
+            ;;
+        --db-path)
+            AUTO_DB_PATH="$2"
+            shift 2
+            ;;
+        --no-service)
+            AUTO_INSTALL_SERVICE=false
+            shift
+            ;;
+        --no-web)
+            AUTO_START_WEB=false
+            shift
+            ;;
+        --no-index)
+            AUTO_RUN_INDEX=false
+            shift
+            ;;
+        --help)
+            echo "Usage: $0 [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --auto                Run in automatic mode with defaults"
+            echo "  --books-path PATH     Set books directory path"
+            echo "  --db-path PATH        Set database directory path"
+            echo "  --no-service          Don't install background service (with --auto)"
+            echo "  --no-web              Don't start web monitor (with --auto)"
+            echo "  --no-index            Don't run initial indexing (with --auto)"
+            echo "  --help                Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  # Interactive setup (default)"
+            echo "  ./quick_start.sh"
+            echo ""
+            echo "  # Fully automated with defaults"
+            echo "  ./quick_start.sh --auto"
+            echo ""
+            echo "  # Automated with custom books path"
+            echo "  ./quick_start.sh --auto --books-path /Users/me/Books"
+            echo ""
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 clear
 echo -e "${MAGENTA}"
 echo "╔══════════════════════════════════════════════════════════╗"
@@ -33,6 +102,17 @@ prompt_yes_no() {
     local prompt="$1"
     local default="${2:-y}"
     local response
+    
+    # In auto mode, always return yes for default=y questions
+    if [ "$AUTO_MODE" = true ]; then
+        if [ "$default" = "y" ]; then
+            echo "  Auto: Yes"
+            return 0
+        else
+            echo "  Auto: No"
+            return 1
+        fi
+    fi
     
     if [ "$default" = "y" ]; then
         prompt="${prompt} [Y/n]: "
@@ -55,6 +135,13 @@ prompt_directory() {
     local prompt="$1"
     local default="$2"
     local response
+    
+    # In auto mode, use default or provided path
+    if [ "$AUTO_MODE" = true ]; then
+        echo -e "  Auto: Using $default"
+        echo "$default"
+        return
+    fi
     
     echo -e "${CYAN}$prompt${NC}"
     echo -e "Default: ${YELLOW}$default${NC}"
@@ -186,7 +273,9 @@ echo -e "${BLUE}📌 Configuring directories...${NC}"
 echo ""
 
 # Books directory - check for existing library first
-if [ -d "/Users/${USER}/SpiritualLibrary" ]; then
+if [ -n "$AUTO_BOOKS_PATH" ]; then
+    default_books="$AUTO_BOOKS_PATH"
+elif [ -d "/Users/${USER}/SpiritualLibrary" ]; then
     default_books="/Users/${USER}/SpiritualLibrary"
     echo -e "${GREEN}✓${NC} Found existing library at: $default_books"
 elif [ -d "${HOME}/Documents/SpiritualLibrary" ]; then
@@ -197,8 +286,10 @@ else
 fi
 
 echo ""
-echo -e "${CYAN}Where is your spiritual library located?${NC}"
-echo "This should be the folder containing your PDFs, Word docs, and EPUBs."
+if [ "$AUTO_MODE" = false ]; then
+    echo -e "${CYAN}Where is your spiritual library located?${NC}"
+    echo "This should be the folder containing your PDFs, Word docs, and EPUBs."
+fi
 BOOKS_PATH=$(prompt_directory "Books directory" "$default_books")
 
 # Database directory  

@@ -7,11 +7,11 @@
     
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/hpoliset/AITools/scripts/webmonitor_service.sh</string>
+        <string>/Users/hpoliset/DocumentIndexerMCP/scripts/webmonitor_service.sh</string>
     </array>
     
     <key>WorkingDirectory</key>
-    <string>/Users/hpoliset/AITools</string>
+    <string>/Users/hpoliset/DocumentIndexerMCP</string>
     
     <!-- Run at startup -->
     <key>RunAtLoad</key>
@@ -30,10 +30,10 @@
     
     <!-- Log files -->
     <key>StandardOutPath</key>
-    <string>/Users/hpoliset/AITools/logs/webmonitor_stdout.log</string>
+    <string>/Users/hpoliset/DocumentIndexerMCP/logs/webmonitor_stdout.log</string>
     
     <key>StandardErrorPath</key>
-    <string>/Users/hpoliset/AITools/logs/webmonitor_stderr.log</string>
+    <string>/Users/hpoliset/DocumentIndexerMCP/logs/webmonitor_stderr.log</string>
     
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
@@ -45,7 +45,7 @@
         <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
         <string>/Users/hpoliset/SpiritualLibrary</string>
         <key>SPIRITUAL_LIBRARY_DB_PATH</key>
-        <string>/Users/hpoliset/AITools/chroma_db</string>
+        <string>/Users/hpoliset/DocumentIndexerMCP/chroma_db</string>
     </dict>
     
     <!-- Nice value for lower priority -->

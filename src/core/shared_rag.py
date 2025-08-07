@@ -7,7 +7,8 @@ Common functionality used by both MCP server and background indexer
 from langchain_community.document_loaders import (
     PyPDFLoader,
     UnstructuredWordDocumentLoader,
-    UnstructuredEPubLoader
+    UnstructuredEPubLoader,
+    UnstructuredPowerPointLoader
 )
 from langchain.schema import Document
 import pypdf
@@ -352,6 +353,23 @@ class UltraLargePDFLoader:
         try:
             import pypdf
             import gc  # For garbage collection
+            import signal
+            from contextlib import contextmanager
+            
+            # Timeout context manager for chunk processing
+            @contextmanager
+            def timeout(seconds):
+                def timeout_handler(signum, frame):
+                    raise TimeoutError(f"Chunk processing timed out after {seconds} seconds")
+                
+                # Set the signal handler and alarm
+                old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(seconds)
+                try:
+                    yield
+                finally:
+                    signal.alarm(0)
+                    signal.signal(signal.SIGALRM, old_handler)
             
             # First pass - just get page count
             with open(self.file_path, 'rb') as file:
@@ -359,16 +377,20 @@ class UltraLargePDFLoader:
                 total_pages = len(pdf_reader.pages)
                 logger.info(f"PDF has {total_pages} pages")
             
-            # Process in chunks
+            # Process in chunks with timeout
             successful_chunks = 0
+            failed_chunks = 0
+            chunk_timeout_seconds = 120  # 2 minutes per chunk
+            
             for chunk_start in range(0, total_pages, self.chunk_size):
                 chunk_end = min(chunk_start + self.chunk_size, total_pages)
                 logger.info(f"Processing chunk: pages {chunk_start}-{chunk_end}")
                 
                 try:
-                    # Re-open file for each chunk to avoid memory buildup
-                    with open(self.file_path, 'rb') as file:
-                        pdf_reader = pypdf.PdfReader(file, strict=False)
+                    with timeout(chunk_timeout_seconds):
+                        # Re-open file for each chunk to avoid memory buildup
+                        with open(self.file_path, 'rb') as file:
+                            pdf_reader = pypdf.PdfReader(file, strict=False)
                         
                         for page_num in range(chunk_start, chunk_end):
                             try:
@@ -389,10 +411,17 @@ class UltraLargePDFLoader:
                                     logger.debug(f"Error on page {page_num}: {str(e)[:100]}")
                                 continue
                     
-                    successful_chunks += 1
-                    # Force garbage collection after each chunk
-                    gc.collect()
+                        successful_chunks += 1
+                        # Force garbage collection after each chunk
+                        gc.collect()
                     
+                except TimeoutError as e:
+                    logger.warning(f"Timeout processing chunk {chunk_start}-{chunk_end}: {e}")
+                    failed_chunks += 1
+                    if failed_chunks > 3:
+                        logger.error(f"Too many chunk timeouts ({failed_chunks}), abandoning file")
+                        break
+                    continue
                 except Exception as e:
                     logger.warning(f"Error processing chunk {chunk_start}-{chunk_end}: {e}")
                     continue
@@ -714,7 +743,7 @@ class SharedRAG:
             return []
         
         # Supported file extensions
-        supported_extensions = ('.pdf', '.docx', '.doc', '.epub')
+        supported_extensions = ('.pdf', '.docx', '.doc', '.epub', '.pptx', '.ppt')
         documents_to_index = []
         
         for root, dirs, files in os.walk(self.books_directory):
@@ -748,6 +777,8 @@ class SharedRAG:
             return UnstructuredWordDocumentLoader(filepath)
         elif file_ext == '.epub':
             return UnstructuredEPubLoader(filepath)
+        elif file_ext in ['.pptx', '.ppt']:
+            return UnstructuredPowerPointLoader(filepath)
         else:
             raise ValueError(f"Unsupported file type: {file_ext}")
     
@@ -759,16 +790,27 @@ class SharedRAG:
             '.pdf': 'PDF',
             '.docx': 'Word Document',
             '.doc': 'Word Document',
-            '.epub': 'EPUB Book'
+            '.epub': 'EPUB Book',
+            '.pptx': 'PowerPoint Presentation',
+            '.ppt': 'PowerPoint Presentation'
         }
         
         return type_mapping.get(file_ext, 'Document')
     
     def process_document_with_timeout(self, filepath, rel_path=None, timeout_minutes=30):
         """Process any supported document with timeout protection"""
-        # For very large files, don't record as permanently failed on timeout
+        # For very large files, use shorter timeout and mark as failed if they repeatedly timeout
         file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
         is_large_file = file_size_mb > 100
+        is_ultra_large = file_size_mb > 200
+        
+        # Adjust timeout based on file size
+        if is_ultra_large:
+            timeout_minutes = min(timeout_minutes, 15)  # Max 15 minutes for ultra-large files
+            logger.info(f"Ultra-large file ({file_size_mb:.1f}MB), limiting timeout to {timeout_minutes} minutes")
+        elif is_large_file:
+            timeout_minutes = min(timeout_minutes, 20)  # Max 20 minutes for large files
+            logger.info(f"Large file ({file_size_mb:.1f}MB), limiting timeout to {timeout_minutes} minutes")
         
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(self.process_document, filepath, rel_path)
@@ -776,11 +818,8 @@ class SharedRAG:
                 return future.result(timeout=timeout_minutes * 60)
             except FutureTimeoutError:
                 logger.error(f"Processing timeout after {timeout_minutes} minutes for {filepath}")
-                if not is_large_file:
-                    # Only record smaller files as failed
-                    self.handle_failed_document(filepath, f"Processing timeout after {timeout_minutes} minutes - file too large or complex")
-                else:
-                    logger.info(f"Large file {rel_path} timed out but not marking as permanently failed - will retry next time")
+                # Always record the failure so we can skip it next time
+                self.handle_failed_document(filepath, f"Processing timeout after {timeout_minutes} minutes - file size: {file_size_mb:.1f}MB")
                 return False
             except Exception as e:
                 logger.error(f"Error in thread: {e}")
@@ -941,6 +980,9 @@ class SharedRAG:
             
             logger.info(f"Successfully indexed {rel_path}: {len(chunks)} chunks from {total_sections} sections")
             
+            # Remove from failed list if it was previously failed
+            self.remove_from_failed_list(rel_path)
+            
             # Clean up temporary file if it was created
             self.cleanup_temp_file(working_filepath, filepath)
             
@@ -994,6 +1036,38 @@ class SharedRAG:
         
         # For PDFs, attempt cleaning
         return self.handle_failed_pdf(filepath, error_msg)
+    
+    def remove_from_failed_list(self, rel_path):
+        """Remove a document from the failed list if it exists"""
+        try:
+            if not os.path.exists(self.failed_pdfs_file):
+                return
+            
+            with open(self.failed_pdfs_file, 'r') as f:
+                failed_docs = json.load(f)
+            
+            # Try different variations of the path
+            doc_name = os.path.basename(rel_path)
+            variations = [
+                rel_path,
+                doc_name,
+                os.path.join(self.books_directory, rel_path)
+            ]
+            
+            removed = False
+            for variation in variations:
+                if variation in failed_docs:
+                    del failed_docs[variation]
+                    removed = True
+                    logger.info(f"Removed {variation} from failed list after successful indexing")
+            
+            if removed:
+                with open(self.failed_pdfs_file, 'w') as f:
+                    json.dump(failed_docs, f, indent=2)
+                    
+        except Exception as e:
+            # Don't let this error stop the indexing process
+            logger.debug(f"Could not remove from failed list: {e}")
     
     def handle_failed_pdf(self, filepath, error_msg):
         """Handle a PDF that failed to index by attempting to clean it"""

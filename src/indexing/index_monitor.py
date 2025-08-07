@@ -13,6 +13,8 @@ from datetime import datetime
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import threading
+import resource
+import psutil
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from src.core.shared_rag import SharedRAG, IndexLock
@@ -36,7 +38,7 @@ class BookLibraryHandler(FileSystemEventHandler):
             # New directory created - scan for all documents inside
             logger.info(f"New directory detected: {event.src_path}")
             self.scan_directory_for_documents(event.src_path)
-        elif event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
+        elif event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub', '.pptx', '.ppt')):
             logger.info(f"New document detected: {event.src_path}")
             with self.update_lock:
                 self.pending_updates.add(event.src_path)
@@ -47,7 +49,7 @@ class BookLibraryHandler(FileSystemEventHandler):
             # Directory modified - might contain new files, scan contents
             logger.info(f"Directory modified: {event.src_path}")
             self.scan_directory_for_documents(event.src_path)
-        elif event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
+        elif event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub', '.pptx', '.ppt')):
             logger.info(f"Document modified: {event.src_path}")
             with self.update_lock:
                 self.pending_updates.add(event.src_path)
@@ -56,7 +58,7 @@ class BookLibraryHandler(FileSystemEventHandler):
     def scan_directory_for_documents(self, directory_path):
         """Scan a directory for all supported documents and add them to pending updates"""
         try:
-            supported_extensions = ('.pdf', '.docx', '.doc', '.epub')
+            supported_extensions = ('.pdf', '.docx', '.doc', '.epub', '.pptx', '.ppt')
             found_files = []
             
             # Walk through the directory and find all supported files
@@ -77,7 +79,7 @@ class BookLibraryHandler(FileSystemEventHandler):
             logger.warning(f"Error scanning directory {directory_path}: {e}")
     
     def on_deleted(self, event):
-        if not event.is_directory and event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub')):
+        if not event.is_directory and event.src_path.lower().endswith(('.pdf', '.docx', '.doc', '.epub', '.pptx', '.ppt')):
             logger.info(f"Document removed: {event.src_path}")
             self.monitor.handle_deletion(event.src_path)
     
@@ -141,6 +143,11 @@ class IndexMonitor:
         self.total_documents_to_process = 0
         self.current_document_index = 0
         
+        # File descriptor management
+        self.max_file_descriptors = self._get_safe_fd_limit()
+        self.fd_reserve = 100  # Reserve 100 FDs for system operations
+        logger.info(f"File descriptor limit: {self.max_file_descriptors}, reserving {self.fd_reserve} for system")
+        
         # Adjust delays for service mode
         self.retry_delay = 5.0 if self.SERVICE_MODE else 2.0
         self.batch_delay = 5.0 if self.SERVICE_MODE else 2.0
@@ -154,6 +161,70 @@ class IndexMonitor:
         logger.info("Received shutdown signal, stopping monitor...")
         self.stop()
         sys.exit(0)
+    
+    def _get_safe_fd_limit(self):
+        """Get a safe file descriptor limit for the system"""
+        try:
+            # Get current soft and hard limits
+            soft_limit, hard_limit = resource.getrlimit(resource.RLIMIT_NOFILE)
+            
+            # Try to increase soft limit to a reasonable value
+            target_limit = min(4096, hard_limit)
+            try:
+                resource.setrlimit(resource.RLIMIT_NOFILE, (target_limit, hard_limit))
+                logger.info(f"Set file descriptor limit to {target_limit}")
+                return target_limit
+            except:
+                logger.info(f"Using current file descriptor limit: {soft_limit}")
+                return soft_limit
+        except Exception as e:
+            logger.warning(f"Could not determine file descriptor limit: {e}, using default 256")
+            return 256
+    
+    def _get_current_fd_usage(self):
+        """Get current file descriptor usage for this process"""
+        try:
+            process = psutil.Process()
+            return len(process.open_files())
+        except:
+            # Fallback: count open file descriptors in /proc/self/fd (Linux/Mac)
+            try:
+                if os.path.exists('/proc/self/fd'):
+                    return len(os.listdir('/proc/self/fd'))
+                else:
+                    # macOS fallback
+                    import subprocess
+                    result = subprocess.run(['lsof', '-p', str(os.getpid())], 
+                                         capture_output=True, text=True)
+                    return len(result.stdout.splitlines()) - 1  # Subtract header
+            except:
+                return 50  # Conservative estimate if we can't determine
+    
+    def _calculate_safe_workers(self, base_workers=5):
+        """Calculate safe number of workers based on available file descriptors"""
+        current_fds = self._get_current_fd_usage()
+        available_fds = self.max_file_descriptors - current_fds - self.fd_reserve
+        
+        # Each worker might use ~20-50 file descriptors (PDF processing, temp files, etc)
+        fds_per_worker = 50
+        max_workers_by_fds = max(1, available_fds // fds_per_worker)
+        
+        # Also consider memory
+        try:
+            available_memory_gb = psutil.virtual_memory().available / (1024**3)
+            max_workers_by_memory = max(1, int(available_memory_gb // 2))  # 2GB per worker
+        except:
+            max_workers_by_memory = base_workers
+        
+        # Take the minimum of all constraints
+        safe_workers = min(base_workers, max_workers_by_fds, max_workers_by_memory)
+        
+        logger.info(f"FD usage: {current_fds}/{self.max_file_descriptors}, "
+                   f"Available FDs: {available_fds}, "
+                   f"Safe workers: {safe_workers} (FD limit: {max_workers_by_fds}, "
+                   f"Memory limit: {max_workers_by_memory})")
+        
+        return safe_workers
     
     def is_paused(self):
         """Check if indexing is paused"""
@@ -372,13 +443,12 @@ class IndexMonitor:
                     # Get available memory in GB
                     available_memory_gb = psutil.virtual_memory().available / (1024**3)
                     
-                    # Conservative approach: 1 worker per 2 CPU cores, max 5 workers
-                    # Reduce if low memory (< 2GB per worker)
-                    max_workers = min(
+                    # Use dynamic worker calculation based on file descriptors and memory
+                    base_workers = min(
                         max(1, cpu_count // 2),  # Half the CPU cores
-                        int(available_memory_gb // 2),  # 2GB per worker
-                        5  # Hard limit of 5 workers
+                        5  # Max 5 workers as base
                     )
+                    max_workers = self._calculate_safe_workers(base_workers)
                     
                     logger.info(f"Processing regular files with {max_workers} parallel workers (CPUs: {cpu_count}, Available RAM: {available_memory_gb:.1f}GB)")
                 
@@ -443,30 +513,65 @@ class IndexMonitor:
                     
                     return result
                 
-                # Process regular documents in parallel
+                # Process regular documents in parallel with dynamic worker adjustment
                 with ThreadPoolExecutor(max_workers=max_workers) as executor:
                         # Prepare document info with indices, adjusting for already processed large files
                         doc_infos = [(filepath, rel_path, self.current_document_index + i) 
                                    for i, (filepath, rel_path) in enumerate(regular_files, 1)]
                         
-                        # Submit all tasks
-                        futures = {executor.submit(process_single_document, doc_info): doc_info 
-                                 for doc_info in doc_infos}
+                        # Submit tasks in batches to control file descriptor usage
+                        batch_size = max_workers * 2  # Process 2x workers at a time
+                        processed_docs = 0
                         
-                        # Process completed futures
-                        for future in as_completed(futures):
-                            if not self.running:
-                                # Cancel remaining futures if stopped
-                                for f in futures:
-                                    f.cancel()
-                                break
+                        for batch_start in range(0, len(doc_infos), batch_size):
+                            batch_end = min(batch_start + batch_size, len(doc_infos))
+                            batch = doc_infos[batch_start:batch_end]
                             
-                            try:
-                                result = future.result()
-                            except Exception as e:
-                                logger.error(f"Error processing document: {e}")
-                                with failed_lock:
-                                    failed_count += 1
+                            # Check file descriptors before each batch
+                            current_fds = self._get_current_fd_usage()
+                            if current_fds > self.max_file_descriptors - self.fd_reserve:
+                                logger.warning(f"High FD usage ({current_fds}/{self.max_file_descriptors}), waiting for cleanup...")
+                                time.sleep(5)  # Wait for cleanup
+                                
+                                # Recalculate workers if needed
+                                new_max_workers = self._calculate_safe_workers(base_workers)
+                                if new_max_workers < max_workers:
+                                    logger.info(f"Reducing workers from {max_workers} to {new_max_workers} due to FD pressure")
+                                    executor._max_workers = new_max_workers
+                                    max_workers = new_max_workers
+                            
+                            # Submit batch
+                            futures = {executor.submit(process_single_document, doc_info): doc_info 
+                                     for doc_info in batch}
+                            
+                            # Process completed futures for this batch
+                            for future in as_completed(futures):
+                                if not self.running:
+                                    # Cancel remaining futures if stopped
+                                    for f in futures:
+                                        f.cancel()
+                                    break
+                                
+                                try:
+                                    result = future.result()
+                                    processed_docs += 1
+                                    
+                                    # Periodic FD check every 10 documents
+                                    if processed_docs % 10 == 0:
+                                        current_fds = self._get_current_fd_usage()
+                                        if current_fds > self.max_file_descriptors * 0.8:
+                                            logger.warning(f"FD usage at {current_fds}/{self.max_file_descriptors} (80%), forcing garbage collection")
+                                            import gc
+                                            gc.collect()
+                                            time.sleep(1)  # Brief pause for cleanup
+                                            
+                                except Exception as e:
+                                    logger.error(f"Error processing document: {e}")
+                                    with failed_lock:
+                                        failed_count += 1
+                            
+                            if not self.running:
+                                break
                 
                 # Final status update
                 self.rag.update_status("idle", {
