@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Stop Web Monitor Script for Spiritual Library MCP Server
+# Stop Web Monitor Script for Personal Document Library MCP Server
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -8,7 +8,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo "🔮 Stopping Spiritual Library Web Monitor"
+echo "🔮 Stopping Personal Document Library Web Monitor"
 echo "========================================="
 echo ""
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Check the status of Spiritual Library indexing
+# Check the status of Personal Document Library indexing
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,7 +10,7 @@ LOCK_FILE="/tmp/spiritual_library_index.lock"
 STATUS_FILE="$PROJECT_ROOT/chroma_db/index_status.json"
 STATS_URL="http://localhost:8888/api/stats"
 
-echo "📊 Spiritual Library Indexing Status"
+echo "📊 Personal Document Library Indexing Status"
 echo "===================================="
 echo ""
 

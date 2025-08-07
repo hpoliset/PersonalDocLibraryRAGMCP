@@ -1,6 +1,6 @@
-# Spiritual Library MCP Server
+# Personal Document Library MCP Server
 
-A Model Context Protocol (MCP) server that enables Claude to access and analyze a personal collection of spiritual books through RAG (Retrieval-Augmented Generation). The system processes PDFs, Word documents, and EPUBs locally, creates semantic search capabilities, and provides synthesis across multiple sources.
+A Model Context Protocol (MCP) server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system processes PDFs, Word documents, and EPUBs locally, creates semantic search capabilities, and provides synthesis across multiple sources.
 
 ## Features
 
@@ -169,13 +169,13 @@ The system uses environment variables for configuration. These can be set in you
 
 ```bash
 # Books directory (where your PDFs/documents are stored)
-export SPIRITUAL_LIBRARY_BOOKS_PATH="/path/to/your/books"
+export PERSONAL_LIBRARY_DOC_PATH="/path/to/your/books"
 
 # Database directory (for vector storage)
-export SPIRITUAL_LIBRARY_DB_PATH="/path/to/database"
+export PERSONAL_LIBRARY_DB_PATH="/path/to/database"
 
 # Logs directory
-export SPIRITUAL_LIBRARY_LOGS_PATH="/path/to/logs"
+export PERSONAL_LIBRARY_LOGS_PATH="/path/to/logs"
 ```
 
 ### Directory Structure

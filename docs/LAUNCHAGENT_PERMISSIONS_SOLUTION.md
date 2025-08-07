@@ -7,7 +7,7 @@ The Spiritual Library MCP Server's LaunchAgent service was experiencing a critic
 ## Root Cause Analysis
 
 ### Initial Investigation
-- **Environment Variables**: ✅ Correctly set (`SPIRITUAL_LIBRARY_BOOKS_PATH` pointing to CloudDocs)
+- **Environment Variables**: ✅ Correctly set (`PERSONAL_LIBRARY_DOC_PATH` pointing to CloudDocs)
 - **Path Resolution**: ✅ Logs showed correct CloudDocs path being used
 - **Directory Existence**: ✅ Directory existed and was accessible manually
 
@@ -40,13 +40,13 @@ NEW: LaunchAgent → Shell Script → Python Script (SUCCESS - 8,200+ documents)
 # Provides environment setup, signal handling, and process management
 
 # Environment validation with document counting
-doc_count=$(gtimeout 10 find "$SPIRITUAL_LIBRARY_BOOKS_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | wc -l || echo "0")
+doc_count=$(gtimeout 10 find "$PERSONAL_LIBRARY_DOC_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | wc -l || echo "0")
 log "Found $doc_count documents in books directory"
 
 # Start Python indexer with proper environment
 "$venv_python" "$python_script" --service \
-    --books-dir "$SPIRITUAL_LIBRARY_BOOKS_PATH" \
-    --db-dir "$SPIRITUAL_LIBRARY_DB_PATH" &
+    --books-dir "$PERSONAL_LIBRARY_DOC_PATH" \
+    --db-dir "$PERSONAL_LIBRARY_DB_PATH" &
 ```
 
 #### 2. Updated LaunchAgent Plist
@@ -65,9 +65,9 @@ Removed complex Python-specific variables, kept only essential paths:
 <dict>
     <key>PATH</key>
     <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
-    <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
+    <key>PERSONAL_LIBRARY_DOC_PATH</key>
     <string>/Users/KDP/Library/Mobile Documents/com~apple~CloudDocs/Documents/Books</string>
-    <key>SPIRITUAL_LIBRARY_DB_PATH</key>
+    <key>PERSONAL_LIBRARY_DB_PATH</key>
     <string>/Users/KDP/AITools/chroma_db</string>
 </dict>
 ```

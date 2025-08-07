@@ -5,8 +5,8 @@
       "args": ["/Users/KDP/AITools/src/servers/mcp_complete_server.py"],
       "env": {
         "PYTHONUNBUFFERED": "1",
-        "SPIRITUAL_LIBRARY_BOOKS_PATH": "/Users/KDP/SpiritualLibrary",
-        "SPIRITUAL_LIBRARY_DB_PATH": "/Users/KDP/AITools/chroma_db",
+        "PERSONAL_LIBRARY_DOC_PATH": "/Users/KDP/SpiritualLibrary",
+        "PERSONAL_LIBRARY_DB_PATH": "/Users/KDP/AITools/chroma_db",
         "OMP_NUM_THREADS": "4",
         "OLLAMA_NUM_PARALLEL": "2",
         "OLLAMA_MAX_LOADED_MODELS": "1",

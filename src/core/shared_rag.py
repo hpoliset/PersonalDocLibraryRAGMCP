@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Shared RAG System for Spiritual Library
+Shared RAG System for Personal Document Library
 Common functionality used by both MCP server and background indexer
 """
 
@@ -747,6 +747,14 @@ class SharedRAG:
         documents_to_index = []
         
         for root, dirs, files in os.walk(self.books_directory):
+            # Skip .ocr_cache directories to prevent recursive processing
+            if '.ocr_cache' in dirs:
+                dirs.remove('.ocr_cache')
+            
+            # Also skip if current directory is within .ocr_cache
+            if '.ocr_cache' in root:
+                continue
+                
             for file in files:
                 if file.lower().endswith(supported_extensions):
                     filepath = os.path.join(root, file)

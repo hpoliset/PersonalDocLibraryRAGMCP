@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Start Web Monitor Script for Spiritual Library MCP Server
+# Start Web Monitor Script for Personal Document Library MCP Server
 
 # Get the directory of this script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-echo "🔮 Starting Spiritual Library Web Monitor"
+echo "🔮 Starting Personal Document Library Web Monitor"
 echo "========================================="
 echo ""
 
@@ -32,8 +32,8 @@ fi
 
 # Set environment variables
 export PYTHONPATH="$PROJECT_ROOT"
-export SPIRITUAL_LIBRARY_BOOKS_PATH="${SPIRITUAL_LIBRARY_BOOKS_PATH:-$PROJECT_ROOT/books}"
-export SPIRITUAL_LIBRARY_DB_PATH="${SPIRITUAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
+export PERSONAL_LIBRARY_DOC_PATH="${PERSONAL_LIBRARY_DOC_PATH:-$PROJECT_ROOT/books}"
+export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
 
 # Create logs directory if needed
 mkdir -p "$PROJECT_ROOT/logs"

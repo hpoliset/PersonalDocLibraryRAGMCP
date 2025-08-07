@@ -1,9 +1,9 @@
 #!/bin/bash
-# Pause the Spiritual Library indexing process
+# Pause the Personal Document Library indexing process
 
 PAUSE_FILE="/tmp/spiritual_library_index.pause"
 
-echo "⏸️  Pausing Spiritual Library Indexing..."
+echo "⏸️  Pausing Personal Document Library Indexing..."
 
 # Create pause file with timestamp
 echo "$(date +%Y-%m-%dT%H:%M:%S)" > "$PAUSE_FILE"

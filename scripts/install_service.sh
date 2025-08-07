@@ -1,7 +1,7 @@
 #!/bin/bash
-# Install the Spiritual Library Index Monitor as a LaunchAgent
+# Install the Personal Document Library Index Monitor as a LaunchAgent
 
-echo "🔮 Installing Spiritual Library Index Monitor Service"
+echo "🔮 Installing Personal Document Library Index Monitor Service"
 echo "==================================================="
 echo ""
 

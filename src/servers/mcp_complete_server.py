@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Complete MCP Server for Spiritual Library
+Complete MCP Server for Personal Document Library
 Full-featured server with search, synthesis, and optional indexing capabilities
 """
 

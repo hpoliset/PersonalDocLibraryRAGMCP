@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Background Index Monitor for Spiritual Library
+Background Index Monitor for Personal Document Library
 Watches for changes and automatically indexes new/modified PDFs
 """
 
@@ -101,8 +101,8 @@ class IndexMonitor:
     
     def __init__(self, books_directory=None, db_directory=None):
         # Debug: Log environment variables
-        logger.info(f"Environment - SPIRITUAL_LIBRARY_BOOKS_PATH: {os.getenv('SPIRITUAL_LIBRARY_BOOKS_PATH', 'NOT SET')}")
-        logger.info(f"Environment - SPIRITUAL_LIBRARY_DB_PATH: {os.getenv('SPIRITUAL_LIBRARY_DB_PATH', 'NOT SET')}")
+        logger.info(f"Environment - PERSONAL_LIBRARY_DOC_PATH: {os.getenv('PERSONAL_LIBRARY_DOC_PATH', 'NOT SET')}")
+        logger.info(f"Environment - PERSONAL_LIBRARY_DB_PATH: {os.getenv('PERSONAL_LIBRARY_DB_PATH', 'NOT SET')}")
         
         # Use config system if no explicit paths provided
         if books_directory is not None:
@@ -110,8 +110,8 @@ class IndexMonitor:
             self.books_directory = books_directory
         else:
             # Read environment variable directly if available
-            env_books_path = os.getenv('SPIRITUAL_LIBRARY_BOOKS_PATH')
-            logger.info(f"Environment variable SPIRITUAL_LIBRARY_BOOKS_PATH: {env_books_path}")
+            env_books_path = os.getenv('PERSONAL_LIBRARY_DOC_PATH')
+            logger.info(f"Environment variable PERSONAL_LIBRARY_DOC_PATH: {env_books_path}")
             if env_books_path:
                 logger.info(f"Using environment variable for books_directory: {env_books_path}")
                 self.books_directory = env_books_path
@@ -123,7 +123,7 @@ class IndexMonitor:
             self.db_directory = db_directory
         else:
             # Read environment variable directly if available
-            env_db_path = os.getenv('SPIRITUAL_LIBRARY_DB_PATH')
+            env_db_path = os.getenv('PERSONAL_LIBRARY_DB_PATH')
             if env_db_path:
                 self.db_directory = env_db_path
             else:
@@ -250,7 +250,7 @@ class IndexMonitor:
     
     def start(self):
         """Start the monitoring service"""
-        logger.info("Starting Spiritual Library Index Monitor")
+        logger.info("Starting Personal Document Library Index Monitor")
         logger.info(f"Watching directory: {self.books_directory}")
         
         # Set running flag before initial sync
@@ -611,7 +611,7 @@ def main():
     """Main entry point"""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Spiritual Library Index Monitor')
+    parser = argparse.ArgumentParser(description='Personal Document Library Index Monitor')
     parser.add_argument('--books-dir', default=None, 
                       help='Directory containing document library (PDFs, Word docs, EPUBs)')
     parser.add_argument('--db-dir', default=None,

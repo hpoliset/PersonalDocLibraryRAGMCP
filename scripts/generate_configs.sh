@@ -25,9 +25,9 @@ USER_NAME="$(whoami)"
 PYTHON_PATH="${PROJECT_ROOT}/venv_mcp/bin/python"
 
 # Default paths (can be overridden by environment variables)
-BOOKS_PATH="${SPIRITUAL_LIBRARY_BOOKS_PATH:-${PROJECT_ROOT}/books}"
-DB_PATH="${SPIRITUAL_LIBRARY_DB_PATH:-${PROJECT_ROOT}/chroma_db}"
-LOGS_PATH="${SPIRITUAL_LIBRARY_LOGS_PATH:-${PROJECT_ROOT}/logs}"
+BOOKS_PATH="${PERSONAL_LIBRARY_DOC_PATH:-${PROJECT_ROOT}/books}"
+DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-${PROJECT_ROOT}/chroma_db}"
+LOGS_PATH="${PERSONAL_LIBRARY_LOGS_PATH:-${PROJECT_ROOT}/logs}"
 
 echo "📍 Environment Detection:"
 echo "   User: $USER_NAME"
@@ -119,6 +119,6 @@ echo "   3. Copy Claude config to: ~/Library/Application Support/Claude/claude_d
 echo ""
 
 # Export paths for use by other scripts
-export SPIRITUAL_LIBRARY_BOOKS_PATH="$BOOKS_PATH"
-export SPIRITUAL_LIBRARY_DB_PATH="$DB_PATH"
-export SPIRITUAL_LIBRARY_LOGS_PATH="$LOGS_PATH"
+export PERSONAL_LIBRARY_DOC_PATH="$BOOKS_PATH"
+export PERSONAL_LIBRARY_DB_PATH="$DB_PATH"
+export PERSONAL_LIBRARY_LOGS_PATH="$LOGS_PATH"

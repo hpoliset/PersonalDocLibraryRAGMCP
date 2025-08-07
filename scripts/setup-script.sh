@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Spiritual Library MCP Server Setup Script
+# Personal Document Library MCP Server Setup Script
 
-echo "🔮 Spiritual Library MCP Server Setup"
+echo "🔮 Personal Document Library MCP Server Setup"
 echo "===================================="
 echo ""
 
@@ -94,9 +94,9 @@ echo "📌 Checking project files..."
 if [ ! -f "start_server.sh" ]; then
     cat > start_server.sh << 'EOF'
 #!/bin/bash
-# Start the Spiritual Library MCP Server
+# Start the Personal Document Library MCP Server
 
-echo "🔮 Starting Spiritual Library MCP Server..."
+echo "🔮 Starting Personal Document Library MCP Server..."
 echo ""
 
 # Activate virtual environment

@@ -1,7 +1,7 @@
 #!/bin/bash
-# Install the Spiritual Library Web Monitor as a LaunchAgent
+# Install the Personal Document Library Web Monitor as a LaunchAgent
 
-echo "🔮 Installing Spiritual Library Web Monitor Service"
+echo "🔮 Installing Personal Document Library Web Monitor Service"
 echo "================================================="
 echo ""
 

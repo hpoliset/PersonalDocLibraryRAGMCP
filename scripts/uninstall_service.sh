@@ -1,7 +1,7 @@
 #!/bin/bash
-# Uninstall the Spiritual Library Index Monitor LaunchAgent
+# Uninstall the Personal Document Library Index Monitor LaunchAgent
 
-echo "🔮 Uninstalling Spiritual Library Index Monitor Service"
+echo "🔮 Uninstalling Personal Document Library Index Monitor Service"
 echo "======================================================="
 echo ""
 

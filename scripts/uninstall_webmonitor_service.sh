@@ -1,7 +1,7 @@
 #!/bin/bash
-# Uninstall the Spiritual Library Web Monitor LaunchAgent
+# Uninstall the Personal Document Library Web Monitor LaunchAgent
 
-echo "🔮 Uninstalling Spiritual Library Web Monitor Service"
+echo "🔮 Uninstalling Personal Document Library Web Monitor Service"
 echo "====================================================="
 echo ""
 

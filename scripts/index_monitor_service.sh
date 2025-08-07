@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Service wrapper for Spiritual Library Index Monitor
+# Service wrapper for Personal Document Library Index Monitor
 # This script is designed to be run by LaunchAgent and provides proper
 # environment setup and signal handling for the Python indexer.
 #
@@ -12,8 +12,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Set up environment variables if not already set
-export SPIRITUAL_LIBRARY_BOOKS_PATH="${SPIRITUAL_LIBRARY_BOOKS_PATH:-$PROJECT_ROOT/books}"
-export SPIRITUAL_LIBRARY_DB_PATH="${SPIRITUAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
+export PERSONAL_LIBRARY_DOC_PATH="${PERSONAL_LIBRARY_DOC_PATH:-$PROJECT_ROOT/books}"
+export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
 
 # Set up logging
 LOG_DIR="$PROJECT_ROOT/logs"
@@ -57,21 +57,21 @@ check_venv() {
 validate_environment() {
     log "Validating environment..."
     log "Project root: $PROJECT_ROOT"
-    log "Books directory: $SPIRITUAL_LIBRARY_BOOKS_PATH"
-    log "Database directory: $SPIRITUAL_LIBRARY_DB_PATH"
+    log "Books directory: $PERSONAL_LIBRARY_DOC_PATH"
+    log "Database directory: $PERSONAL_LIBRARY_DB_PATH"
     
     # Check if books directory exists
-    if [[ ! -d "$SPIRITUAL_LIBRARY_BOOKS_PATH" ]]; then
-        log "WARNING: Books directory does not exist: $SPIRITUAL_LIBRARY_BOOKS_PATH"
+    if [[ ! -d "$PERSONAL_LIBRARY_DOC_PATH" ]]; then
+        log "WARNING: Books directory does not exist: $PERSONAL_LIBRARY_DOC_PATH"
     else
         # Count documents in books directory (with timeout for LaunchAgent)
         local doc_count
-        doc_count=$(gtimeout 10 find "$SPIRITUAL_LIBRARY_BOOKS_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | wc -l || echo "0")
+        doc_count=$(gtimeout 10 find "$PERSONAL_LIBRARY_DOC_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | wc -l || echo "0")
         log "Found $doc_count documents in books directory"
     fi
     
     # Ensure database directory exists
-    mkdir -p "$SPIRITUAL_LIBRARY_DB_PATH"
+    mkdir -p "$PERSONAL_LIBRARY_DB_PATH"
     log "Environment validation complete"
 }
 
@@ -82,7 +82,7 @@ run_service() {
     
     validate_environment
     
-    log "Starting Spiritual Library Index Monitor Service"
+    log "Starting Personal Document Library Index Monitor Service"
     log "Using Python: $venv_python"
     
     # Change to project root directory
@@ -100,8 +100,8 @@ run_service() {
     
     # Use exec to replace the shell with Python, inheriting all permissions
     exec "$venv_python" "$python_script" --service \
-        --books-dir "$SPIRITUAL_LIBRARY_BOOKS_PATH" \
-        --db-dir "$SPIRITUAL_LIBRARY_DB_PATH"
+        --books-dir "$PERSONAL_LIBRARY_DOC_PATH" \
+        --db-dir "$PERSONAL_LIBRARY_DB_PATH"
 }
 
 # Health check function

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Logging configuration for Spiritual Library system
+Logging configuration for Personal Document Library system
 Provides centralized logging setup with rotation and formatting
 """
 

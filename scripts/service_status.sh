@@ -1,7 +1,7 @@
 #!/bin/bash
-# Check status of the Spiritual Library Index Monitor service
+# Check status of the Personal Document Library Index Monitor service
 
-echo "🔮 Spiritual Library Index Monitor - Service Status"
+echo "🔮 Personal Document Library Index Monitor - Service Status"
 echo "==================================================="
 echo ""
 

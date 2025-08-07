@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Show current configuration for Spiritual Library MCP Server
+Show current configuration for Personal Document Library MCP Server
 Demonstrates how to use the config system
 """
 
@@ -9,7 +9,7 @@ import sys
 from src.core.config import config
 
 def main():
-    print("=== Spiritual Library MCP Server Configuration ===\n")
+    print("=== Personal Document Library MCP Server Configuration ===\n")
     
     # Show current configuration
     config_info = config.get_config_info()
@@ -37,9 +37,9 @@ def main():
     print()
     
     print("🔄 Configuration Options:")
-    print(f"  To change books directory: export SPIRITUAL_LIBRARY_BOOKS_PATH='/path/to/books'")
-    print(f"  To change database directory: export SPIRITUAL_LIBRARY_DB_PATH='/path/to/db'")
-    print(f"  To change logs directory: export SPIRITUAL_LIBRARY_LOGS_PATH='/path/to/logs'")
+    print(f"  To change books directory: export PERSONAL_LIBRARY_DOC_PATH='/path/to/books'")
+    print(f"  To change database directory: export PERSONAL_LIBRARY_DB_PATH='/path/to/db'")
+    print(f"  To change logs directory: export PERSONAL_LIBRARY_LOGS_PATH='/path/to/logs'")
     print()
     
     # Check if directories exist, create if needed

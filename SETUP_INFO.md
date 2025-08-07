@@ -1,4 +1,4 @@
-# Spiritual Library MCP Server - Setup Information
+# Personal Document Library MCP Server - Setup Information
 
 ## System Requirements
 - **Apple Silicon Mac (M1/M2/M3) ONLY**
@@ -60,9 +60,9 @@ Follow the instructions from quick_start.sh to:
 
 ## Environment Variables
 The system uses these environment variables for flexibility:
-- SPIRITUAL_LIBRARY_BOOKS_PATH - Location of your books
-- SPIRITUAL_LIBRARY_DB_PATH - Vector database location
-- SPIRITUAL_LIBRARY_LOGS_PATH - Log files location
+- PERSONAL_LIBRARY_DOC_PATH - Location of your books
+- PERSONAL_LIBRARY_DB_PATH - Vector database location
+- PERSONAL_LIBRARY_LOGS_PATH - Log files location
 
 ## Support
 This export is specifically for Apple Silicon Macs (ARM64).

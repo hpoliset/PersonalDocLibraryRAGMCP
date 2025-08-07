@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Spiritual Library MCP Server** - a production-ready Model Context Protocol server that enables Claude to access and analyze a personal collection of spiritual documents through RAG (Retrieval-Augmented Generation). The system supports multiple document formats (PDFs, Word documents, EPUBs) and features automatic indexing, real-time monitoring, and robust error handling.
+This is a **Personal Document Library MCP Server** - a production-ready Model Context Protocol server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system supports multiple document formats (PDFs, Word documents, EPUBs) and features automatic indexing, real-time monitoring, and robust error handling.
 
 **Current Status**: ✅ **FULLY OPERATIONAL** with ARM64 compatibility, 768-dim embeddings, all 9 tools working, and multi-document support.
 
@@ -130,9 +130,9 @@ python src/monitoring/monitor_web_enhanced.py  # Start web dashboard (http://loc
 
 ## Environment Variables
 
-- `SPIRITUAL_LIBRARY_BOOKS_PATH` - Override books directory
-- `SPIRITUAL_LIBRARY_DB_PATH` - Override database directory  
-- `SPIRITUAL_LIBRARY_LOGS_PATH` - Override logs directory
+- `PERSONAL_LIBRARY_DOC_PATH` - Override books directory
+- `PERSONAL_LIBRARY_DB_PATH` - Override database directory  
+- `PERSONAL_LIBRARY_LOGS_PATH` - Override logs directory
 
 ## Best Practices
 

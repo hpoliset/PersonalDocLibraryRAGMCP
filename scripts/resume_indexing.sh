@@ -1,9 +1,9 @@
 #!/bin/bash
-# Resume the Spiritual Library indexing process
+# Resume the Personal Document Library indexing process
 
 PAUSE_FILE="/tmp/spiritual_library_index.pause"
 
-echo "▶️  Resuming Spiritual Library Indexing..."
+echo "▶️  Resuming Personal Document Library Indexing..."
 
 if [ -f "$PAUSE_FILE" ]; then
     # Get pause timestamp

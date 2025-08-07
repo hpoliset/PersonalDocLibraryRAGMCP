@@ -1,7 +1,7 @@
 #!/bin/bash
-# Check status of the Spiritual Library Web Monitor service
+# Check status of the Personal Document Library Web Monitor service
 
-echo "🔮 Spiritual Library Web Monitor - Service Status"
+echo "🔮 Personal Document Library Web Monitor - Service Status"
 echo "================================================="
 echo ""
 

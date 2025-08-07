@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Utility script for managing failed PDFs in the Spiritual Library
+Utility script for managing failed PDFs in the Personal Document Library
 """
 
 import json

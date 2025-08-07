@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Enhanced web monitoring interface for Spiritual Library indexing
+Enhanced web monitoring interface for Personal Document Library indexing
 Shows detailed status, progress, and book listings
 """
 
@@ -27,7 +27,7 @@ HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Spiritual Library Monitor</title>
+    <title>Personal Document Library Monitor</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
@@ -392,7 +392,7 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <header>
-            <h1>🔮 Spiritual Library Monitor</h1>
+            <h1>📚 Personal Document Library Monitor</h1>
             <p>Enhanced monitoring with detailed book listings</p>
         </header>
         
@@ -467,7 +467,7 @@ HTML_TEMPLATE = """
         
         <!-- Book Table Section -->
         <div class="book-table-container">
-            <h2>📚 Indexed Books Library</h2>
+            <h2>📚 Indexed Documents Library</h2>
             
             <div class="tab-buttons">
                 <button class="tab-button active" onclick="showTab('indexed')">Indexed Books</button>
@@ -1179,7 +1179,7 @@ def pause_status():
         })
 
 if __name__ == '__main__':
-    print("🔮 Starting Enhanced Spiritual Library Web Monitor")
+    print("📚 Starting Enhanced Personal Document Library Web Monitor")
     print("📌 Open http://localhost:8888 in your browser")
     print("   Press Ctrl+C to stop")
     

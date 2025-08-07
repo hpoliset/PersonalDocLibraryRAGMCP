@@ -5,7 +5,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-echo "🔮 Spiritual Library MCP Server"
+echo "🔮 Personal Document Library MCP Server"
 echo "==============================="
 echo ""
 
@@ -209,8 +209,8 @@ import os
 from src.core.shared_rag import SharedRAG
 
 # Use environment variables or defaults
-books_path = os.getenv('SPIRITUAL_LIBRARY_BOOKS_PATH')
-db_path = os.getenv('SPIRITUAL_LIBRARY_DB_PATH')
+books_path = os.getenv('PERSONAL_LIBRARY_DOC_PATH')
+db_path = os.getenv('PERSONAL_LIBRARY_DB_PATH')
 
 if books_path:
     print(f'Using books directory: {books_path}')

@@ -1,7 +1,7 @@
 #!/bin/bash
-# Run the enhanced web monitor for Spiritual Library
+# Run the enhanced web monitor for Personal Document Library
 
-echo "🔮 Starting Enhanced Spiritual Library Web Monitor..."
+echo "🔮 Starting Enhanced Personal Document Library Web Monitor..."
 echo "📌 Open http://localhost:8888 in your browser"
 echo ""
 
@@ -23,8 +23,8 @@ fi
 
 # Set environment variables for proper path resolution
 # Use existing environment variable or default to local books directory
-export SPIRITUAL_LIBRARY_BOOKS_PATH="${SPIRITUAL_LIBRARY_BOOKS_PATH:-$PROJECT_ROOT/books}"
-export SPIRITUAL_LIBRARY_DB_PATH="${SPIRITUAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
+export PERSONAL_LIBRARY_DOC_PATH="${PERSONAL_LIBRARY_DOC_PATH:-$PROJECT_ROOT/books}"
+export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
 export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
 
 # Change to project root directory

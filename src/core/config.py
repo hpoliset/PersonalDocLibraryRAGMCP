@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Configuration module for Spiritual Library MCP Server
+Configuration module for Personal Document Library MCP Server
 Centralizes all configurable paths and settings
 """
 
@@ -11,9 +11,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent.parent.absolute()
 
 # Environment variable names
-ENV_BOOKS_PATH = "SPIRITUAL_LIBRARY_BOOKS_PATH"
-ENV_DB_PATH = "SPIRITUAL_LIBRARY_DB_PATH"
-ENV_LOGS_PATH = "SPIRITUAL_LIBRARY_LOGS_PATH"
+ENV_BOOKS_PATH = "PERSONAL_LIBRARY_DOC_PATH"
+ENV_DB_PATH = "PERSONAL_LIBRARY_DB_PATH"
+ENV_LOGS_PATH = "PERSONAL_LIBRARY_LOGS_PATH"
 
 # Default paths (relative to BASE_DIR)
 DEFAULT_BOOKS_PATH = BASE_DIR / "books"

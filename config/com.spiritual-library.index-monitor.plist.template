@@ -41,9 +41,9 @@
     <dict>
         <key>PATH</key>
         <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
-        <key>SPIRITUAL_LIBRARY_BOOKS_PATH</key>
+        <key>PERSONAL_LIBRARY_DOC_PATH</key>
         <string>{{BOOKS_PATH}}</string>
-        <key>SPIRITUAL_LIBRARY_DB_PATH</key>
+        <key>PERSONAL_LIBRARY_DB_PATH</key>
         <string>{{DB_PATH}}</string>
     </dict>
     
