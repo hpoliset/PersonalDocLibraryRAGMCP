@@ -12,7 +12,7 @@ spiritual-library-mcp/
 ├── 📁 Scripts Directory
 │   ├── Core Operations
 │   │   ├── run.sh                   # Swiss army knife - MCP server & indexing
-│   │   ├── setup-script.sh          # Initial setup (venv, deps, models)
+│   │   ├── setup.sh                 # Comprehensive setup script
 │   │   └── quick_start.sh           # Interactive setup for new users
 │   │
 │   ├── Background Monitoring
@@ -29,7 +29,7 @@ spiritual-library-mcp/
 │   │   ├── install_webmonitor_service.sh    # Install web monitor service
 │   │   ├── uninstall_webmonitor_service.sh  # Remove web monitor service
 │   │   ├── webmonitor_service_status.sh     # Check web monitor status
-│   │   └── run_enhanced_monitor.sh          # Manual web dashboard start
+│   │   └── start_web_monitor.sh             # Manual web dashboard start
 │   │
 │   ├── Indexing Control
 │   │   ├── pause_indexing.sh        # Pause indexing (creates pause file)
@@ -168,7 +168,7 @@ python src/indexing/index_monitor.py
 ### 2. Casual User Mode
 ```bash
 ./scripts/index_monitor.sh          # Start monitoring (Ctrl+C to stop)
-./scripts/run_enhanced_monitor.sh   # View web dashboard
+./scripts/start_web_monitor.sh      # View web dashboard
 ```
 
 ### 3. Power User Mode (Service)
@@ -213,7 +213,7 @@ graph TD
 
 ### Environment Files
 - **requirements.txt**: Python package dependencies
-- **setup-script.sh**: One-time environment setup
+- **setup.sh**: Comprehensive environment setup
 - **.gitignore**: Excludes runtime data and logs
 
 ## Data Flow
@@ -227,7 +227,7 @@ graph TD
 
 ## Development Workflow
 
-1. **Setup**: Run `./setup-script.sh` for initial environment
+1. **Setup**: Run `./setup.sh` for initial environment
 2. **Development**: Edit source files, test with `./run.sh`
 3. **Testing**: Use web monitor for debugging
 4. **Integration**: Test with Claude Desktop

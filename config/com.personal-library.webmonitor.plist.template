@@ -3,16 +3,15 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.spiritual-library.index-monitor</string>
+    <string>com.personal-library.webmonitor</string>
     
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/hpoliset/DocumentIndexerMCP/scripts/index_monitor_service.sh</string>
-        <string>run</string>
+        <string>{{PROJECT_ROOT}}/scripts/webmonitor_service.sh</string>
     </array>
     
     <key>WorkingDirectory</key>
-    <string>/Users/hpoliset/DocumentIndexerMCP</string>
+    <string>{{PROJECT_ROOT}}</string>
     
     <!-- Run at startup -->
     <key>RunAtLoad</key>
@@ -31,20 +30,22 @@
     
     <!-- Log files -->
     <key>StandardOutPath</key>
-    <string>/Users/hpoliset/DocumentIndexerMCP/logs/index_monitor_stdout.log</string>
+    <string>{{PROJECT_ROOT}}/logs/webmonitor_stdout.log</string>
     
     <key>StandardErrorPath</key>
-    <string>/Users/hpoliset/DocumentIndexerMCP/logs/index_monitor_stderr.log</string>
+    <string>{{PROJECT_ROOT}}/logs/webmonitor_stderr.log</string>
     
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
     <dict>
         <key>PATH</key>
         <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
         <key>PERSONAL_LIBRARY_DOC_PATH</key>
-        <string>/Users/hpoliset/SpiritualLibrary</string>
+        <string>{{BOOKS_PATH}}</string>
         <key>PERSONAL_LIBRARY_DB_PATH</key>
-        <string>/Users/hpoliset/DocumentIndexerMCP/chroma_db</string>
+        <string>{{DB_PATH}}</string>
     </dict>
     
     <!-- Nice value for lower priority -->
@@ -54,18 +55,5 @@
     <!-- Process type -->
     <key>ProcessType</key>
     <string>Background</string>
-    
-    <!-- Resource limits -->
-    <key>SoftResourceLimits</key>
-    <dict>
-        <key>NumberOfFiles</key>
-        <integer>4096</integer>
-    </dict>
-    
-    <key>HardResourceLimits</key>
-    <dict>
-        <key>NumberOfFiles</key>
-        <integer>8192</integer>
-    </dict>
 </dict>
 </plist>

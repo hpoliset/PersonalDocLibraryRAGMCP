@@ -36,7 +36,6 @@ spiritual-library-mcp/
 ├── monitor_web_simple.py    # Web monitoring dashboard
 ├── clean_pdfs.py           # PDF cleaning utilities
 ├── scripts/
-│   ├── setup-script.sh     # Initial setup
 │   ├── run.sh             # Manual server runner
 │   ├── index_monitor.sh   # Start background monitor
 │   └── service_*.sh       # Service management

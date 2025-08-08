@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.spiritual-library.index-monitor</string>
+    <string>com.personal-library.index-monitor</string>
     
     <key>ProgramArguments</key>
     <array>

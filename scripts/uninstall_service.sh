@@ -5,7 +5,7 @@ echo "🔮 Uninstalling Personal Document Library Index Monitor Service"
 echo "======================================================="
 echo ""
 
-PLIST_NAME="com.spiritual-library.index-monitor"
+PLIST_NAME="com.personal-library.index-monitor"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 INSTALLED_PLIST="$LAUNCH_AGENTS_DIR/$PLIST_NAME.plist"
 

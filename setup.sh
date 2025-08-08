@@ -258,7 +258,7 @@ if [[ "$OSTYPE" == "darwin"* ]] && [ "$INSTALL_SERVICE" = true ]; then
     echo -e "${BLUE}📌 Installing background service...${NC}"
     
     # Uninstall if exists
-    if launchctl list | grep -q "com.spiritual-library.index-monitor" 2>/dev/null; then
+    if launchctl list | grep -q "com.personal-library.index-monitor" 2>/dev/null; then
         "${PROJECT_ROOT}/scripts/uninstall_service.sh" >/dev/null 2>&1
     fi
     

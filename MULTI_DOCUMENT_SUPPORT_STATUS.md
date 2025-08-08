@@ -65,7 +65,7 @@ With the new dependencies installed, the following previously failed documents c
 
 ## Updated Files
 - `README.md`: Added installation instructions for Word and EPUB support
-- `scripts/setup-script.sh`: Added automatic dependency installation
+- `setup.sh`: Added automatic dependency installation
 - `CLAUDE.md`: Updated status to reflect multi-document support
 - `src/core/shared_rag.py`: Already supports multiple document types
 

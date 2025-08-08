@@ -5,7 +5,7 @@ echo "🔮 Uninstalling Personal Document Library Web Monitor Service"
 echo "====================================================="
 echo ""
 
-PLIST_NAME="com.spiritual-library.webmonitor"
+PLIST_NAME="com.personal-library.webmonitor"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 INSTALLED_PLIST="$LAUNCH_AGENTS_DIR/$PLIST_NAME.plist"
 
