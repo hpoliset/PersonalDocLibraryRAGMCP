@@ -558,6 +558,167 @@ class FastPDFLoader:
             logger.info("Falling back to PyPDFLoader...")
             return PyPDFLoader(self.file_path).load()
 
+class MOBILoader:
+    """MOBI/AZW/AZW3 ebook loader using Calibre's ebook-convert"""
+    
+    def __init__(self, file_path):
+        self.file_path = file_path
+    
+    def load(self):
+        """Load and extract text from MOBI file using Calibre"""
+        try:
+            from langchain.schema import Document
+            import subprocess
+            import tempfile
+            
+            logger.info(f"Loading MOBI file: {os.path.basename(self.file_path)}")
+            
+            # Check if Calibre's ebook-convert is available
+            calibre_convert = "/Applications/calibre.app/Contents/MacOS/ebook-convert"
+            if not os.path.exists(calibre_convert):
+                # Try to find ebook-convert in PATH
+                result = subprocess.run(['which', 'ebook-convert'], capture_output=True, text=True)
+                if result.returncode == 0:
+                    calibre_convert = result.stdout.strip()
+                else:
+                    logger.warning("Calibre's ebook-convert not found, falling back to basic extraction")
+                    calibre_convert = None
+            
+            documents = []
+            
+            # Try using Calibre's ebook-convert if available
+            if calibre_convert:
+                try:
+                    # Create a temporary text file for output
+                    with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as tmp_file:
+                        tmp_path = tmp_file.name
+                    
+                    # Convert MOBI to text using Calibre
+                    cmd = [calibre_convert, self.file_path, tmp_path]
+                    result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+                    
+                    if result.returncode == 0:
+                        # Read the converted text
+                        with open(tmp_path, 'r', encoding='utf-8', errors='ignore') as f:
+                            text = f.read()
+                        
+                        if text.strip():
+                            doc = Document(
+                                page_content=text,
+                                metadata={
+                                    'source': self.file_path,
+                                    'file_type': os.path.splitext(self.file_path)[1].lower()[1:]  # Remove the dot
+                                }
+                            )
+                            documents.append(doc)
+                            logger.info(f"Successfully converted MOBI using Calibre")
+                    else:
+                        logger.warning(f"Calibre conversion failed: {result.stderr}")
+                    
+                    # Clean up temp file
+                    try:
+                        os.unlink(tmp_path)
+                    except:
+                        pass
+                        
+                except Exception as e:
+                    logger.warning(f"Error using Calibre: {e}")
+            
+            # If Calibre failed or wasn't available, try the mobi library
+            if not documents:
+                try:
+                    import mobi
+                    tempdir = mobi.extract(self.file_path)
+                except (ImportError, Exception) as e:
+                    # If mobi library fails, try a simpler approach
+                    logger.warning(f"MOBI extraction failed: {e}")
+                    tempdir = None
+                
+                # Find the main HTML content
+                html_files = []
+                if tempdir:
+                    for root, dirs, files in os.walk(tempdir):
+                        for file in files:
+                            if file.endswith('.html') or file.endswith('.htm'):
+                                html_files.append(os.path.join(root, file))
+                
+                for html_file in html_files:
+                    try:
+                        # Read HTML content
+                        with open(html_file, 'r', encoding='utf-8', errors='ignore') as f:
+                            html_content = f.read()
+                        
+                        # Convert HTML to plain text
+                        from bs4 import BeautifulSoup
+                        soup = BeautifulSoup(html_content, 'html.parser')
+                        
+                        # Remove script and style elements
+                        for script in soup(["script", "style"]):
+                            script.decompose()
+                        
+                        # Get text
+                        text = soup.get_text()
+                        
+                        # Clean up whitespace
+                        lines = (line.strip() for line in text.splitlines())
+                        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+                        text = ' '.join(chunk for chunk in chunks if chunk)
+                        
+                        if text.strip():
+                            doc = Document(
+                                page_content=text,
+                                metadata={
+                                    'source': self.file_path,
+                                    'file_type': 'mobi'
+                                }
+                            )
+                            documents.append(doc)
+                            
+                    except Exception as e:
+                        logger.warning(f"Error processing HTML file {html_file}: {e}")
+                        continue
+            
+                # Clean up temp directory
+                if tempdir:
+                    import shutil
+                    try:
+                        shutil.rmtree(tempdir)
+                    except:
+                        pass
+            
+            if not documents:
+                # If mobi extraction failed, try as a simple text file
+                logger.warning("MOBI extraction produced no content, trying simple text extraction")
+                with open(self.file_path, 'rb') as f:
+                    content = f.read()
+                    # Try to decode as UTF-8, ignoring errors
+                    text = content.decode('utf-8', errors='ignore')
+                    # Remove null bytes and other control characters
+                    text = ''.join(char for char in text if char.isprintable() or char.isspace())
+                    if text.strip():
+                        doc = Document(
+                            page_content=text,
+                            metadata={
+                                'source': self.file_path,
+                                'file_type': 'mobi'
+                            }
+                        )
+                        documents.append(doc)
+            
+            logger.info(f"Successfully loaded MOBI file with {len(documents)} document(s)")
+            return documents
+            
+        except Exception as e:
+            logger.error(f"Error loading MOBI file {self.file_path}: {e}")
+            # As a last resort, try UnstructuredFileLoader
+            try:
+                from langchain_community.document_loaders import UnstructuredFileLoader
+                logger.info("Falling back to UnstructuredFileLoader for MOBI")
+                return UnstructuredFileLoader(self.file_path).load()
+            except Exception as e2:
+                logger.error(f"UnstructuredFileLoader also failed: {e2}")
+                return []
+
 class SharedRAG:
     """Core RAG functionality shared between server and monitor"""
     
@@ -743,7 +904,7 @@ class SharedRAG:
             return []
         
         # Supported file extensions
-        supported_extensions = ('.pdf', '.docx', '.doc', '.epub', '.pptx', '.ppt')
+        supported_extensions = ('.pdf', '.docx', '.doc', '.epub', '.mobi', '.azw', '.azw3', '.pptx', '.ppt')
         documents_to_index = []
         
         for root, dirs, files in os.walk(self.books_directory):
@@ -785,6 +946,9 @@ class SharedRAG:
             return UnstructuredWordDocumentLoader(filepath)
         elif file_ext == '.epub':
             return UnstructuredEPubLoader(filepath)
+        elif file_ext in ['.mobi', '.azw', '.azw3']:
+            # Use custom MOBI loader for MOBI/Kindle formats
+            return MOBILoader(filepath)
         elif file_ext in ['.pptx', '.ppt']:
             return UnstructuredPowerPointLoader(filepath)
         else:
@@ -799,6 +963,9 @@ class SharedRAG:
             '.docx': 'Word Document',
             '.doc': 'Word Document',
             '.epub': 'EPUB Book',
+            '.mobi': 'MOBI Book',
+            '.azw': 'Kindle Book',
+            '.azw3': 'Kindle Book (AZW3)',
             '.pptx': 'PowerPoint Presentation',
             '.ppt': 'PowerPoint Presentation'
         }
