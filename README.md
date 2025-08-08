@@ -35,44 +35,56 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 
 ### Installation
 
-#### Option 1: Interactive Setup (Recommended)
+#### Option 1: Comprehensive Setup (Recommended)
 
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd AITools
+cd DocumentIndexerMCP
 
-# Run interactive setup - will prompt for your books directory
-./quick_start.sh
+# Run comprehensive setup
+./setup.sh
 ```
 
-The interactive setup will:
-- ✅ Check Python installation
-- ✅ Create virtual environment
-- ✅ Install all dependencies
-- ✅ Ask for your books directory location
-- ✅ Generate configuration files
-- ✅ Install background services (optional)
-- ✅ Start web monitoring dashboard (optional)
-- ✅ Run initial indexing (optional)
+The `setup.sh` script provides a complete installation experience:
+- ✅ Check Python 3.9+ installation
+- ✅ Create/verify virtual environment
+- ✅ Install all Python dependencies
+- ✅ Auto-install system dependencies (ocrmypdf, LibreOffice, pandoc)
+- ✅ Configure paths interactively or via command line
+- ✅ Generate all configuration files
+- ✅ Install background indexing service (optional)
+- ✅ Install web monitor as service (optional)
+- ✅ Run initial document indexing (optional)
+- ✅ Save environment configuration
 
 #### Option 2: Automated Setup
 
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd AITools
+cd DocumentIndexerMCP
 
-# Run automated setup with your books path
-./setup.sh --books-path /path/to/your/books --install-service --start-web-monitor
+# Run automated setup with all options
+./setup.sh --books-path /path/to/your/books --install-service --start-web-monitor --non-interactive
 ```
 
-Available options:
+Available `setup.sh` options:
 - `--books-path PATH` - Path to your document library
 - `--db-path PATH` - Path for vector database (default: ./chroma_db)
 - `--non-interactive` - Run without prompts
 - `--install-service` - Install background indexing service
-- `--start-web-monitor` - Start web dashboard
+- `--start-web-monitor` - Install web monitor as service
+- `--help` - Show all available options
+
+#### Option 3: Quick Start (Legacy)
+
+```bash
+# For users familiar with the older installation
+./quick_start.sh
+```
+
+Note: `quick_start.sh` is the older installation script. We recommend using `setup.sh` for a more comprehensive setup experience.
 
 ### Post-Installation
 
@@ -191,7 +203,7 @@ export PERSONAL_LIBRARY_LOGS_PATH="/path/to/logs"
 ### Directory Structure
 
 ```
-AITools/
+DocumentIndexerMCP/
 ├── books/              # Your document library (configurable)
 ├── chroma_db/          # Vector database storage
 ├── logs/               # Application logs
@@ -202,6 +214,8 @@ AITools/
 │   ├── servers/       # MCP server implementation
 │   ├── indexing/      # Document indexing
 │   └── monitoring/    # Web dashboard
+├── docs/               # Documentation and images
+│   └── images/        # Screenshots for documentation
 └── venv_mcp/          # Python virtual environment
 ```
 
@@ -385,6 +399,7 @@ rm -rf chroma_db/*
 - **Word** (.docx, .doc) - Requires LibreOffice
 - **PowerPoint** (.pptx, .ppt) - Requires LibreOffice
 - **EPUB** (.epub) - Requires pandoc
+- **MOBI/Kindle** (.mobi, .azw, .azw3) - Uses Calibre if available
 - **Text** (.txt) - Plain text files
 
 ### Installing Optional Dependencies
@@ -397,6 +412,9 @@ brew install --cask libreoffice
 
 # For EPUB files
 brew install pandoc
+
+# For MOBI/Kindle ebooks
+brew install --cask calibre
 
 # For better PDF handling
 brew install ghostscript
