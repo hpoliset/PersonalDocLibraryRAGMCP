@@ -1259,6 +1259,130 @@ class SharedRAG:
         # Claude will synthesize the raw results directly
         return "Direct results provided - synthesis to be done by Claude for article writing."
     
+    def extract_pages(self, book_pattern, pages):
+        """Extract specific pages from a book
+        
+        Args:
+            book_pattern: Partial book name to match (case-insensitive)
+            pages: Can be:
+                - int: Single page number
+                - list[int]: List of page numbers
+                - str: Page range like "10-15"
+        
+        Returns:
+            dict with book info and extracted pages
+        """
+        # Find matching book
+        book_pattern_lower = book_pattern.lower()
+        matching_books = []
+        
+        for book_path in self.book_index.keys():
+            book_path_lower = book_path.lower()
+            # Try exact match first
+            if book_path_lower.endswith(book_pattern_lower) or book_path_lower.endswith(book_pattern_lower + '.pdf'):
+                matching_books = [book_path]
+                break
+            # Otherwise do partial match
+            elif book_pattern_lower in book_path_lower:
+                matching_books.append(book_path)
+        
+        if not matching_books:
+            return {
+                "error": f"No books found matching '{book_pattern}'",
+                "available_books": list(self.book_index.keys())[:10]  # Show first 10 as suggestions
+            }
+        
+        if len(matching_books) > 1:
+            return {
+                "error": f"Multiple books match '{book_pattern}'. Please be more specific.",
+                "matching_books": matching_books
+            }
+        
+        book_path = matching_books[0]
+        book_name = os.path.basename(book_path)
+        
+        # Parse page numbers
+        if isinstance(pages, int):
+            page_list = [pages]
+        elif isinstance(pages, list):
+            page_list = pages
+        elif isinstance(pages, str) and '-' in pages:
+            try:
+                start, end = map(int, pages.split('-'))
+                page_list = list(range(start, end + 1))
+            except:
+                return {"error": f"Invalid page range format: '{pages}'. Use format like '10-15'"}
+        else:
+            return {"error": f"Invalid pages format: {pages}"}
+        
+        # Query vector store for pages from this specific book
+        extracted_pages = {}
+        
+        if self.vectorstore:
+            # Search for content from specific pages
+            for page_num in page_list:
+                # Query for this specific page
+                filter_criteria = {
+                    "book": book_name,
+                    "page": page_num
+                }
+                
+                try:
+                    # Get all chunks from this page using ChromaDB's filter syntax
+                    results = self.vectorstore._collection.get(
+                        where={"$and": [
+                            {"book": {"$eq": book_name}},
+                            {"page": {"$eq": page_num}}
+                        ]},
+                        include=["documents", "metadatas"]
+                    )
+                    
+                    if results and results['documents']:
+                        # Combine chunks from the same page
+                        page_content = "\n".join(results['documents'])
+                        extracted_pages[page_num] = {
+                            "content": page_content,
+                            "chunks": len(results['documents'])
+                        }
+                    else:
+                        # Try alternative query method
+                        search_results = self.vectorstore.similarity_search(
+                            f"page {page_num}",
+                            k=10,
+                            filter={"book": book_name}
+                        )
+                        
+                        page_chunks = []
+                        for doc in search_results:
+                            if doc.metadata.get('page') == page_num:
+                                page_chunks.append(doc.page_content)
+                        
+                        if page_chunks:
+                            extracted_pages[page_num] = {
+                                "content": "\n".join(page_chunks),
+                                "chunks": len(page_chunks)
+                            }
+                        else:
+                            extracted_pages[page_num] = {
+                                "content": f"Page {page_num} not found in index",
+                                "chunks": 0
+                            }
+                            
+                except Exception as e:
+                    logger.error(f"Error extracting page {page_num}: {str(e)}")
+                    extracted_pages[page_num] = {
+                        "content": f"Error extracting page: {str(e)}",
+                        "chunks": 0
+                    }
+        
+        return {
+            "book": book_name,
+            "book_path": book_path,
+            "requested_pages": page_list,
+            "extracted_pages": extracted_pages,
+            "total_pages_found": len([p for p in extracted_pages.values() if p['chunks'] > 0])
+        }
+    
     def get_stats(self):
         """Get library statistics"""
         stats = {

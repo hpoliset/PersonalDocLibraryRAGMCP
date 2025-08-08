@@ -116,6 +116,10 @@ class CompleteMCPServer:
                                     "type": "boolean",
                                     "description": "Generate synthesis of results",
                                     "default": False
+                                },
+                                "book": {
+                                    "type": "string",
+                                    "description": "Optional: Search within a specific book (partial title match, case-insensitive)"
                                 }
                             },
                             "required": ["query"]
@@ -242,6 +246,96 @@ class CompleteMCPServer:
                             },
                             "required": ["question"]
                         }
+                    },
+                    {
+                        "name": "refresh_cache",
+                        "description": "Refresh the search cache and reload the book index",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {}
+                        }
+                    },
+                    {
+                        "name": "warmup",
+                        "description": "Initialize the RAG system to prevent timeouts on first use",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {}
+                        }
+                    },
+                    {
+                        "name": "list_books", 
+                        "description": "List books in the library by author, title pattern, or directory",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "pattern": {
+                                    "type": "string",
+                                    "description": "Search pattern to match book titles/paths (case-insensitive, supports partial matches)"
+                                },
+                                "author": {
+                                    "type": "string", 
+                                    "description": "Author name or directory to filter by"
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "description": "Maximum number of books to return (default: 50)",
+                                    "default": 50
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "recent_books",
+                        "description": "Find books added or modified within a specified time period",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "days": {
+                                    "type": "integer",
+                                    "description": "Number of days to look back (e.g., 1 for last 24 hours, 7 for last week)",
+                                    "default": 1
+                                },
+                                "include_content": {
+                                    "type": "boolean",
+                                    "description": "Include sample content from each book",
+                                    "default": false
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "extract_pages",
+                        "description": "Extract specific pages from a book in the library",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "book": {
+                                    "type": "string",
+                                    "description": "Book name or partial title to match (case-insensitive)"
+                                },
+                                "pages": {
+                                    "oneOf": [
+                                        {
+                                            "type": "integer",
+                                            "description": "Single page number"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {"type": "integer"},
+                                            "description": "List of page numbers"
+                                        },
+                                        {
+                                            "type": "string",
+                                            "pattern": "^\\d+-\\d+$",
+                                            "description": "Page range (e.g., '10-15')"
+                                        }
+                                    ],
+                                    "description": "Page(s) to extract: single page (5), list ([1,3,5]), or range ('10-15')"
+                                }
+                            },
+                            "required": ["book", "pages"]
+                        }
                     }
                 ]
                 }
@@ -264,8 +358,33 @@ class CompleteMCPServer:
                 limit = arguments.get("limit", 10)
                 filter_type = arguments.get("filter_type")
                 synthesize = arguments.get("synthesize", False)
+                book = arguments.get("book")
                 
-                results = self.rag.search(query, limit, filter_type, synthesize)
+                # If a book is specified, filter results to that book
+                if book:
+                    # Find matching book
+                    book_lower = book.lower()
+                    matching_books = []
+                    
+                    for book_path in self.rag.book_index.keys():
+                        if book_lower in book_path.lower():
+                            matching_books.append(os.path.basename(book_path))
+                    
+                    if not matching_books:
+                        return {
+                            "result": {
+                                "content": [{"type": "text", "text": f"No books found matching '{book}'"}]
+                            }
+                        }
+                    
+                    # If multiple matches, use the first one
+                    book_name = matching_books[0]
+                    
+                    # Search with book filter
+                    all_results = self.rag.search(query, limit * 3, filter_type, synthesize)
+                    results = [r for r in all_results if r.get('source', '').startswith(book_name)][:limit]
+                else:
+                    results = self.rag.search(query, limit, filter_type, synthesize)
                 
                 # Enhanced formatting for article writing
                 text = f"Found {len(results)} relevant passages for query: '{query}'\n\n"
@@ -578,6 +697,206 @@ Failed: {details.get('failed', 0)}"""
                             text += f"{result['content']}\n\n"
                 else:
                     text = f"I couldn't find a clear answer to: {question}"
+                
+                return {
+                    "result": {
+                        "content": [{"type": "text", "text": text}]
+                    }
+                }
+            
+            elif tool_name == "refresh_cache":
+                self.ensure_rag_initialized()
+                # Reload the book index
+                self.rag.load_book_index()
+                
+                text = "✅ Cache refreshed successfully!\n\n"
+                text += f"📚 Total books: {len(self.rag.book_index)}\n"
+                text += f"📊 Total chunks: {sum(info.get('chunks', 0) for info in self.rag.book_index.values())}"
+                
+                return {
+                    "result": {
+                        "content": [{"type": "text", "text": text}]
+                    }
+                }
+            
+            elif tool_name == "warmup":
+                self.ensure_rag_initialized()
+                text = "✅ RAG system initialized and warmed up!\n\n"
+                text += f"📚 Books indexed: {len(self.rag.book_index)}\n"
+                text += f"🔍 Search ready: Yes\n"
+                text += f"💾 Vector store: Loaded"
+                
+                return {
+                    "result": {
+                        "content": [{"type": "text", "text": text}]
+                    }
+                }
+            
+            elif tool_name == "list_books":
+                self.ensure_rag_initialized()
+                
+                pattern = arguments.get("pattern", "")
+                author = arguments.get("author", "")  
+                limit = arguments.get("limit", 50)
+                
+                # Get all books
+                all_books = list(self.rag.book_index.keys())
+                matching_books = []
+                
+                for book_path in all_books:
+                    book_name = os.path.basename(book_path)
+                    book_dir = os.path.dirname(book_path)
+                    
+                    # Apply filters
+                    if pattern and pattern.lower() not in book_path.lower():
+                        continue
+                    if author and author.lower() not in book_dir.lower():
+                        continue
+                        
+                    matching_books.append((book_path, book_name, self.rag.book_index[book_path]))
+                
+                # Sort by name
+                matching_books.sort(key=lambda x: x[1])
+                
+                # Apply limit
+                truncated = len(matching_books) > limit
+                matching_books = matching_books[:limit]
+                
+                if not matching_books:
+                    text = "No books found matching the criteria."
+                else:
+                    text = "📚 Matching Books:\n\n"
+                    for i, (book_path, book_name, book_info) in enumerate(matching_books, 1):
+                        text += f"{i}. **{book_name}**\n"
+                        text += f"   📁 Path: {book_path}\n"
+                        text += f"   📄 Chunks: {book_info.get('chunks', 'Unknown')}\n"
+                        if 'indexed_at' in book_info:
+                            text += f"   🕐 Indexed: {book_info['indexed_at']}\n"
+                        text += "\n"
+                    
+                    text += f"Total: {len(matching_books)} book(s)"
+                    if truncated:
+                        text += f" (showing first {limit})"
+                    text += f" from library of {len(all_books)} books"
+                
+                return {
+                    "result": {
+                        "content": [{"type": "text", "text": text}]
+                    }
+                }
+            
+            elif tool_name == "recent_books":
+                self.ensure_rag_initialized()
+                
+                days = arguments.get("days", 1)
+                include_content = arguments.get("include_content", False)
+                
+                # Calculate cutoff time
+                from datetime import datetime, timedelta
+                cutoff_time = datetime.now() - timedelta(days=days)
+                
+                # Find recent books from the index
+                recent_books = []
+                for book_path, book_info in self.rag.book_index.items():
+                    # Check if book has indexed_at timestamp
+                    if 'indexed_at' in book_info:
+                        indexed_time = datetime.fromisoformat(book_info['indexed_at'])
+                        if indexed_time > cutoff_time:
+                            recent_books.append((book_path, book_info, indexed_time))
+                
+                # Sort by indexed time (most recent first)
+                recent_books.sort(key=lambda x: x[2], reverse=True)
+                
+                if not recent_books:
+                    text = f"No books found that were indexed in the last {days} day(s)."
+                else:
+                    time_period = "24 hours" if days == 1 else f"{days} days"
+                    text = f"📚 Books indexed in the last {time_period}:\n\n"
+                    
+                    for i, (book_path, book_info, indexed_time) in enumerate(recent_books, 1):
+                        book_name = os.path.basename(book_path)
+                        time_ago = datetime.now() - indexed_time
+                        
+                        # Format time ago
+                        if time_ago.days > 0:
+                            time_str = f"{time_ago.days} day(s) ago"
+                        elif time_ago.seconds > 3600:
+                            hours = time_ago.seconds // 3600
+                            time_str = f"{hours} hour(s) ago"
+                        else:
+                            minutes = time_ago.seconds // 60
+                            time_str = f"{minutes} minute(s) ago"
+                        
+                        text += f"{i}. **{book_name}**\n"
+                        text += f"   📁 Path: {book_path}\n"
+                        text += f"   🕐 Indexed: {time_str} ({indexed_time.strftime('%Y-%m-%d %H:%M')})\n"
+                        text += f"   📄 Chunks: {book_info.get('chunks', 'Unknown')}\n"
+                        
+                        if include_content:
+                            # Search for a sample from this book
+                            results = self.rag.search(f"book:{book_name}", k=1)
+                            if results:
+                                sample = results[0]['content'][:200] + "..." if len(results[0]['content']) > 200 else results[0]['content']
+                                text += f"   📖 Sample: {sample}\n"
+                        
+                        text += "\n"
+                    
+                    text += f"\nTotal: {len(recent_books)} book(s) indexed in the last {time_period}"
+                
+                return {
+                    "result": {
+                        "content": [{"type": "text", "text": text}]
+                    }
+                }
+            
+            elif tool_name == "extract_pages":
+                self.ensure_rag_initialized()
+                book = arguments.get("book", "")
+                pages = arguments.get("pages")
+                
+                if not book:
+                    return {
+                        "result": {
+                            "content": [{"type": "text", "text": "Error: Book name is required"}]
+                        }
+                    }
+                
+                if pages is None:
+                    return {
+                        "result": {
+                            "content": [{"type": "text", "text": "Error: Pages parameter is required"}]
+                        }
+                    }
+                
+                # Extract pages
+                result = self.rag.extract_pages(book, pages)
+                
+                # Format response
+                if "error" in result:
+                    text = f"❌ {result['error']}\n\n"
+                    if "matching_books" in result:
+                        text += "Matching books:\n"
+                        for i, book in enumerate(result["matching_books"][:10], 1):
+                            text += f"{i}. {book}\n"
+                    elif "available_books" in result:
+                        text += "Available books (first 10):\n"
+                        for i, book in enumerate(result["available_books"], 1):
+                            text += f"{i}. {book}\n"
+                else:
+                    text = f"📚 Extracted pages from: {result['book']}\n"
+                    text += f"📁 Path: {result['book_path']}\n"
+                    text += f"📄 Requested pages: {result['requested_pages']}\n"
+                    text += f"✅ Found: {result['total_pages_found']} pages\n\n"
+                    
+                    for page_num in sorted(result['extracted_pages'].keys()):
+                        page_data = result['extracted_pages'][page_num]
+                        text += f"\n━━━ Page {page_num} ━━━\n"
+                        if page_data['chunks'] > 0:
+                            text += f"({page_data['chunks']} chunks)\n\n"
+                            text += page_data['content']
+                        else:
+                            text += page_data['content']
+                        text += "\n"
                 
                 return {
                     "result": {
