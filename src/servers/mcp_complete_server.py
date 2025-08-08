@@ -79,7 +79,7 @@ class CompleteMCPServer:
                 "result": {
                     "protocolVersion": "2024-11-05",
                     "serverInfo": {
-                        "name": "spiritual-library",
+                        "name": "personal-library",
                         "version": "1.0.0"
                     },
                     "capabilities": {
@@ -94,7 +94,7 @@ class CompleteMCPServer:
                     "tools": [
                     {
                         "name": "search",
-                        "description": "Search the spiritual library with optional synthesis",
+                        "description": "Search the personal library with optional synthesis",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -127,7 +127,7 @@ class CompleteMCPServer:
                     },
                     {
                         "name": "find_practices",
-                        "description": "Find specific spiritual practices",
+                        "description": "Find specific practices or techniques",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -210,7 +210,7 @@ class CompleteMCPServer:
                     },
                     {
                         "name": "daily_reading",
-                        "description": "Get suggested passages for daily spiritual practice",
+                        "description": "Get suggested passages for daily reading",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -299,7 +299,7 @@ class CompleteMCPServer:
                                 "include_content": {
                                     "type": "boolean",
                                     "description": "Include sample content from each book",
-                                    "default": false
+                                    "default": False
                                 }
                             }
                         }
@@ -412,7 +412,7 @@ class CompleteMCPServer:
             elif tool_name == "find_practices":
                 self.ensure_rag_initialized()
                 practice_type = arguments.get("practice_type", "")
-                query = f"spiritual practice {practice_type} technique method"
+                query = f"practice {practice_type} technique method"
                 
                 results = self.rag.search(query, k=15, filter_type="practice", synthesize=False)
                 
@@ -626,7 +626,7 @@ Failed: {details.get('failed', 0)}"""
             
             elif tool_name == "daily_reading":
                 self.ensure_rag_initialized()
-                theme = arguments.get("theme", "general spirituality")
+                theme = arguments.get("theme", "general wisdom")
                 length = arguments.get("length", "medium")
                 
                 # Determine number of passages based on length
@@ -634,7 +634,7 @@ Failed: {details.get('failed', 0)}"""
                 
                 # Search for themed content
                 results = self.rag.search(
-                    query=f"{theme} spiritual practice daily reflection",
+                    query=f"{theme} practice daily reflection",
                     k=num_passages * 2,
                     synthesize=False
                 )
