@@ -887,6 +887,14 @@ HTML_TEMPLATE = """
         updateLockStatus();
         loadBooks(1);
         
+        // Add Enter key support for search
+        document.getElementById('search-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchBooks();
+            }
+        });
+        
         // Auto-refresh
         setInterval(updateStatus, 2000);
         setInterval(updateStats, 5000);

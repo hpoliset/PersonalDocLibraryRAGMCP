@@ -1,18 +1,21 @@
 # Personal Document Library MCP Server
 
-A Model Context Protocol (MCP) server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system processes PDFs, Word documents, and EPUBs locally, creates semantic search capabilities, and provides synthesis across multiple sources.
+A Model Context Protocol (MCP) server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system processes PDFs, Word documents, EPUBs, and MOBI/Kindle ebooks locally, creates semantic search capabilities, and provides synthesis across multiple sources.
 
 ## Features
 
-- **9 Powerful Tools** for Claude integration
+- **14 Powerful MCP Tools** for Claude integration
 - **Local RAG System** with ChromaDB vector storage
-- **Semantic Search** with synthesis capabilities  
-- **Background Monitoring** with automatic indexing
+- **Semantic Search** with book filtering and synthesis capabilities  
+- **Background Monitoring** with automatic indexing service
 - **Automatic PDF Cleaning** for problematic files
-- **Web Dashboard** for real-time monitoring at http://localhost:8888
+- **Web Dashboard** with real-time monitoring at http://localhost:8888
+- **Enter Key Search** support in web interface
 - **Lazy Initialization** for fast MCP startup
 - **ARM64 Compatible** (Apple Silicon optimized)
-- **Multi-format Support** (PDF, DOCX, DOC, PPTX, PPT, EPUB, TXT)
+- **Multi-format Support** (PDF, DOCX, DOC, PPTX, PPT, EPUB, MOBI, AZW, AZW3, TXT)
+- **Calibre Integration** for MOBI/Kindle ebook conversion
+- **Progress Tracking** with consistent status updates
 
 ## Quick Start
 
@@ -195,19 +198,31 @@ AITools/
 └── venv_mcp/          # Python virtual environment
 ```
 
-## Tools Available in Claude
+## MCP Tools Available in Claude
 
-Once configured, Claude will have access to these tools:
+Once configured, Claude will have access to these 14 tools:
 
-1. **search_books** - Semantic search across your library
-2. **get_book_content** - Retrieve specific document content
-3. **list_books** - Browse available documents
-4. **synthesize_sources** - Compare multiple sources on a topic
-5. **find_related_content** - Discover related passages
-6. **analyze_themes** - Extract themes from documents
-7. **get_book_metadata** - Get document information
-8. **search_by_category** - Search within categories
-9. **create_summary** - Generate document summaries
+### Search & Discovery
+1. **search** - Semantic search with optional book filtering and synthesis
+2. **list_books** - List books by pattern, author, or directory
+3. **recent_books** - Find recently indexed books by time period
+4. **find_practices** - Find specific practices or techniques
+
+### Content Extraction
+5. **extract_pages** - Extract specific pages from any book
+6. **extract_quotes** - Find notable quotes on specific topics
+7. **summarize_book** - Generate AI summary of entire books
+
+### Analysis & Synthesis
+8. **compare_perspectives** - Compare perspectives across multiple sources
+9. **question_answer** - Direct Q&A from your library
+10. **daily_reading** - Get suggested passages for daily reading
+
+### System Management
+11. **library_stats** - Get library statistics and indexing status
+12. **index_status** - Get detailed indexing progress
+13. **refresh_cache** - Refresh search cache and reload book index
+14. **warmup** - Initialize RAG system to prevent timeouts
 
 ## Troubleshooting
 

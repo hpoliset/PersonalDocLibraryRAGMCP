@@ -267,19 +267,33 @@ if [[ "$OSTYPE" == "darwin"* ]] && [ "$INSTALL_SERVICE" = true ]; then
     echo -e "  ${GREEN}✓${NC} Index monitor service installed"
 fi
 
-# Step 7: Start web monitor (if requested)
+# Step 7: Install web monitor service (if requested)
 if [ "$START_WEB_MONITOR" = true ]; then
     echo ""
-    echo -e "${BLUE}📌 Starting web monitor...${NC}"
+    echo -e "${BLUE}📌 Installing web monitor service...${NC}"
     
-    # Kill existing monitor if running
-    pkill -f monitor_web_enhanced 2>/dev/null || true
-    
-    # Start new monitor
-    nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" \
-        > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
-    
-    echo -e "  ${GREEN}✓${NC} Web monitor started at http://localhost:8888"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # Kill existing monitor if running
+        pkill -f monitor_web_enhanced 2>/dev/null || true
+        
+        # Check if service script exists
+        if [ -f "${PROJECT_ROOT}/scripts/install_webmonitor_service.sh" ]; then
+            # Install as service
+            "${PROJECT_ROOT}/scripts/install_webmonitor_service.sh" >/dev/null 2>&1
+            echo -e "  ${GREEN}✓${NC} Web monitor service installed"
+            echo -e "  ${GREEN}✓${NC} Dashboard available at http://localhost:8888"
+        else
+            # Fallback to background process
+            nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" \
+                > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
+            echo -e "  ${GREEN}✓${NC} Web monitor started at http://localhost:8888"
+        fi
+    else
+        # Non-macOS: run as background process
+        nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" \
+            > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
+        echo -e "  ${GREEN}✓${NC} Web monitor started at http://localhost:8888"
+    fi
 fi
 
 # Step 8: Initial indexing (if documents exist)

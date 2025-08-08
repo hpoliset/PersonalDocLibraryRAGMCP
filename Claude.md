@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Personal Document Library MCP Server** - a production-ready Model Context Protocol server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system supports multiple document formats (PDFs, Word documents, EPUBs) and features automatic indexing, real-time monitoring, and robust error handling.
+This is a **Personal Document Library MCP Server** - a production-ready Model Context Protocol server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system supports multiple document formats (PDFs, Word documents, EPUBs, MOBI/AZW/AZW3 ebooks) and features automatic indexing, real-time monitoring, and robust error handling.
 
-**Current Status**: ✅ **FULLY OPERATIONAL** with ARM64 compatibility, 768-dim embeddings, all 9 tools working, and multi-document support.
+**Current Status**: ✅ **FULLY OPERATIONAL** with ARM64 compatibility, 768-dim embeddings, all 14 MCP tools working, MOBI support, and multi-document support.
 
 ## Repository Structure
 
@@ -31,11 +31,27 @@ AITools/
 
 The system follows a **modular, service-oriented architecture**:
 
-1. **MCP Complete Server** (`src/servers/mcp_complete_server.py`): Main MCP server with 9 tools
+1. **MCP Complete Server** (`src/servers/mcp_complete_server.py`): Main MCP server with 14 tools
 2. **Shared RAG System** (`src/core/shared_rag.py`): Core RAG functionality with vector storage
 3. **Index Monitor** (`src/indexing/index_monitor.py`): Background service for automatic indexing
-4. **Web Monitor** (`src/monitoring/monitor_web_enhanced.py`): Real-time dashboard (localhost:8888)
+4. **Web Monitor** (`src/monitoring/monitor_web_enhanced.py`): Real-time dashboard (localhost:8888) with Enter key search support
 5. **Configuration System** (`src/core/config.py`): Centralized path and settings management
+
+### MCP Tools Available
+- **search**: Search library with optional book filtering and synthesis
+- **find_practices**: Find specific practices or techniques
+- **compare_perspectives**: Compare perspectives across sources
+- **library_stats**: Get library statistics and indexing status
+- **index_status**: Get detailed indexing status
+- **summarize_book**: Generate AI summary of a book
+- **extract_quotes**: Find notable quotes on topics
+- **daily_reading**: Get suggested daily passages
+- **question_answer**: Direct Q&A from library
+- **refresh_cache**: Refresh search cache and reload index
+- **warmup**: Initialize RAG system to prevent timeouts
+- **list_books**: List books by pattern/author/directory
+- **recent_books**: Find recently indexed books
+- **extract_pages**: Extract specific pages from books
 
 ### Key Architectural Patterns
 - **Lazy Loading**: RAG system initialized only when needed to avoid MCP timeouts
@@ -81,9 +97,9 @@ python src/monitoring/monitor_web_enhanced.py  # Start web dashboard (http://loc
 ```json
 {
   "mcpServers": {
-    "spiritual-library": {
-      "command": "/path/to/your/AITools/venv_mcp/bin/python",
-      "args": ["/path/to/your/AITools/src/servers/mcp_complete_server.py"],
+    "personal-library": {
+      "command": "/path/to/your/DocumentIndexerMCP/venv_mcp/bin/python",
+      "args": ["/path/to/your/DocumentIndexerMCP/src/servers/mcp_complete_server.py"],
       "env": {
         "PYTHONUNBUFFERED": "1"
       }
@@ -100,10 +116,10 @@ python src/monitoring/monitor_web_enhanced.py  # Start web dashboard (http://loc
 - Python 3.9+ required (3.11 recommended)
 
 ### Document Processing Pipeline
-1. **Discovery**: Scan directory for supported formats (PDF, Word, EPUB)
+1. **Discovery**: Scan directory for supported formats (PDF, Word, EPUB, MOBI/AZW/AZW3)
 2. **Hash Checking**: MD5 comparison for change detection
 3. **Processing**: Document → Loader → Text Extraction → Chunking → Categorization → Embedding → Vector Storage
-4. **Error Handling**: Timeout protection, automatic PDF cleaning, failed document tracking
+4. **Error Handling**: Timeout protection, automatic PDF cleaning, failed document tracking, MOBI conversion via Calibre
 
 ### Vector Storage Details
 - **Model**: sentence-transformers/all-mpnet-base-v2 (768-dimensional)

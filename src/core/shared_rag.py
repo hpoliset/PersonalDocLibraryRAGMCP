@@ -1059,9 +1059,16 @@ class SharedRAG:
             except:
                 existing_details = {}
             
-            # Merge with existing details to preserve progress info
-            existing_details['current_file'] = rel_path
-            self.update_status("indexing", existing_details)
+            # Preserve critical progress fields if they exist
+            preserved_fields = ['progress', 'success', 'failed', 'percentage', 'parallel_workers']
+            preserved_data = {}
+            for field in preserved_fields:
+                if field in existing_details:
+                    preserved_data[field] = existing_details[field]
+            
+            # Update current file while preserving progress tracking
+            preserved_data['current_file'] = rel_path
+            self.update_status("indexing", preserved_data)
             self.update_progress("starting", current_file=rel_path)
             
             # Check file size before processing
