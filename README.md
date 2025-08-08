@@ -89,11 +89,18 @@ cp config/claude_desktop_config.json ~/Library/Application\ Support/Claude/claud
 
 #### 2. Access Web Dashboard
 
-Open http://localhost:8888 in your browser to:
-- 📊 View indexing progress
-- 📚 Browse indexed documents
-- 🔍 Search your library
-- ⚙️ Monitor system status
+Open http://localhost:8888 in your browser to access the comprehensive monitoring dashboard:
+
+![Personal Document Library Monitor Dashboard](docs/images/web-monitor-dashboard.png)
+
+**Dashboard Features:**
+- 📊 **Real-time Status** - View indexing progress and system status
+- 📚 **Library Statistics** - Track total books, chunks, and failed documents
+- 🔍 **Smart Search** - Search by title, author, or category with Enter key support
+- 📈 **Progress Tracking** - Monitor indexing with consistent status updates
+- 📋 **Document Library** - Browse all indexed books with metadata
+- ⚠️ **Failed Documents** - Track and manage problematic files
+- 🔒 **Lock Status** - Monitor system locks and concurrent operations
 
 ## Services
 
