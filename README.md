@@ -39,8 +39,8 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd DocumentIndexerMCP
+git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
+cd PersonalDocLibraryRAGMCP
 
 # Run comprehensive setup
 ./setup.sh
@@ -62,8 +62,8 @@ The `setup.sh` script provides a complete installation experience:
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd DocumentIndexerMCP
+git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
+cd PersonalDocLibraryRAGMCP
 
 # Run automated setup with all options
 ./setup.sh --books-path /path/to/your/books --install-service --start-web-monitor --non-interactive
@@ -203,7 +203,7 @@ export PERSONAL_LIBRARY_LOGS_PATH="/path/to/logs"
 ### Directory Structure
 
 ```
-DocumentIndexerMCP/
+PersonalDocLibraryRAGMCP/
 ├── books/              # Your document library (configurable)
 ├── chroma_db/          # Vector database storage
 ├── logs/               # Application logs
