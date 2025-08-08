@@ -47,7 +47,7 @@ check_venv() {
     local venv_python="$PROJECT_ROOT/venv_mcp/bin/python"
     if [[ ! -f "$venv_python" ]]; then
         log "ERROR: Virtual environment not found at $venv_python"
-        log "Please run setup-script.sh first"
+        log "Please run setup.sh first"
         exit 1
     fi
     echo "$venv_python"

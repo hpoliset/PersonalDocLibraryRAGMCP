@@ -5,7 +5,7 @@ echo "🔮 Personal Document Library Web Monitor - Service Status"
 echo "================================================="
 echo ""
 
-PLIST_NAME="com.spiritual-library.webmonitor"
+PLIST_NAME="com.personal-library.webmonitor"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Check if service is loaded

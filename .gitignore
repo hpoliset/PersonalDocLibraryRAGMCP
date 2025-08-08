@@ -84,3 +84,14 @@ book_index.json
 # Editor temp files
 *~
 \#*\#
+
+# Architecture documentation in root (now in docs/)
+/architecture.html
+
+# Temporary cleaned PDFs
+*.cleaned
+tmp_cleaned_pdfs/
+
+# Old/deprecated scripts
+scripts/setup-script.sh
+scripts/run_enhanced_monitor.sh

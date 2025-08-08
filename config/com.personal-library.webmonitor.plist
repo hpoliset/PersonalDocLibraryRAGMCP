@@ -3,15 +3,15 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.spiritual-library.webmonitor</string>
+    <string>com.personal-library.webmonitor</string>
     
     <key>ProgramArguments</key>
     <array>
-        <string>{{PROJECT_ROOT}}/scripts/webmonitor_service.sh</string>
+        <string>/Users/hpoliset/DocumentIndexerMCP/scripts/webmonitor_service.sh</string>
     </array>
     
     <key>WorkingDirectory</key>
-    <string>{{PROJECT_ROOT}}</string>
+    <string>/Users/hpoliset/DocumentIndexerMCP</string>
     
     <!-- Run at startup -->
     <key>RunAtLoad</key>
@@ -30,10 +30,10 @@
     
     <!-- Log files -->
     <key>StandardOutPath</key>
-    <string>{{PROJECT_ROOT}}/logs/webmonitor_stdout.log</string>
+    <string>/Users/hpoliset/DocumentIndexerMCP/logs/webmonitor_stdout.log</string>
     
     <key>StandardErrorPath</key>
-    <string>{{PROJECT_ROOT}}/logs/webmonitor_stderr.log</string>
+    <string>/Users/hpoliset/DocumentIndexerMCP/logs/webmonitor_stderr.log</string>
     
     <!-- Environment variables -->
     <key>EnvironmentVariables</key>
@@ -43,9 +43,9 @@
         <key>PYTHONUNBUFFERED</key>
         <string>1</string>
         <key>PERSONAL_LIBRARY_DOC_PATH</key>
-        <string>{{BOOKS_PATH}}</string>
+        <string>/Users/hpoliset/SpiritualLibrary</string>
         <key>PERSONAL_LIBRARY_DB_PATH</key>
-        <string>{{DB_PATH}}</string>
+        <string>/Users/hpoliset/DocumentIndexerMCP/chroma_db</string>
     </dict>
     
     <!-- Nice value for lower priority -->

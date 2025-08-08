@@ -13,7 +13,7 @@ fi
 
 # Get the directory of this script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PLIST_NAME="com.spiritual-library.webmonitor"
+PLIST_NAME="com.personal-library.webmonitor"
 PLIST_FILE="$SCRIPT_DIR/../config/$PLIST_NAME.plist"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
 INSTALLED_PLIST="$LAUNCH_AGENTS_DIR/$PLIST_NAME.plist"

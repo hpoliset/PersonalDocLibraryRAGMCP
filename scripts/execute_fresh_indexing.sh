@@ -131,7 +131,7 @@ EOF
 echo -e "\n✅ Fresh indexing complete!"
 echo ""
 echo "Next steps:"
-echo "1. Run the enhanced web monitor: ./run_enhanced_monitor.sh"
+echo "1. Run the web monitor: ./scripts/start_web_monitor.sh"
 echo "2. View the results at http://localhost:8888"
 echo ""
 echo "The improved system ensures:"

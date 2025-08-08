@@ -87,13 +87,13 @@ echo ""
 
 # Generate plist files
 generate_config \
-    "${PROJECT_ROOT}/config/com.spiritual-library.index-monitor.plist.template" \
-    "${PROJECT_ROOT}/config/com.spiritual-library.index-monitor.plist" \
+    "${PROJECT_ROOT}/config/com.personal-library.index-monitor.plist.template" \
+    "${PROJECT_ROOT}/config/com.personal-library.index-monitor.plist" \
     "Index Monitor plist"
 
 generate_config \
-    "${PROJECT_ROOT}/config/com.spiritual-library.webmonitor.plist.template" \
-    "${PROJECT_ROOT}/config/com.spiritual-library.webmonitor.plist" \
+    "${PROJECT_ROOT}/config/com.personal-library.webmonitor.plist.template" \
+    "${PROJECT_ROOT}/config/com.personal-library.webmonitor.plist" \
     "Web Monitor plist"
 
 # Generate Claude Desktop config

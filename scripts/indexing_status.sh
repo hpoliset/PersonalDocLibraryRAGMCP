@@ -78,7 +78,7 @@ print(f\"   Pending PDFs: {data.get('pending_pdfs', 0)}\")
 print(f\"   Failed PDFs: {data.get('failed_pdfs', 0)}\")
 " 2>/dev/null || echo "   Error parsing statistics"
 else
-    echo "⚠️  Web monitor not running (start with ./scripts/run_enhanced_monitor.sh)"
+    echo "⚠️  Web monitor not running (start with ./scripts/start_web_monitor.sh)"
 fi
 echo ""
 

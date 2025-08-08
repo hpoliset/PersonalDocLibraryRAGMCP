@@ -66,7 +66,7 @@ fi
 # Check if virtual environment exists
 if [ ! -d "venv_mcp" ]; then
     echo "❌ Error: Virtual environment not found!"
-    echo "   Please run ./setup-script.sh first."
+    echo "   Please run ./setup.sh first."
     exit 1
 fi
 
