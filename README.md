@@ -91,7 +91,7 @@ cp config/claude_desktop_config.json ~/Library/Application\ Support/Claude/claud
 
 Open http://localhost:8888 in your browser to access the comprehensive monitoring dashboard:
 
-![Personal Document Library Monitor Dashboard](docs/images/web-monitor-dashboard.png)
+![Personal Document Library Monitor Dashboard](docs/images/RAGMCPWebMonitor.png)
 
 **Dashboard Features:**
 - 📊 **Real-time Status** - View indexing progress and system status
