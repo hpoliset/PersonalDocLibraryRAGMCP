@@ -1151,8 +1151,9 @@ class SharedRAG:
                 elapsed = time.time() - start_time
                 time_since_progress = time.time() - last_progress_time
                 
-                # Check progress every 10 seconds
-                time.sleep(min(10, timeout_seconds - elapsed))
+                # Check progress every 10 seconds, ensuring non-negative sleep
+                remaining_time = timeout_seconds - elapsed
+                time.sleep(min(10, max(0, remaining_time)))
                 
                 # Read current progress
                 try:
