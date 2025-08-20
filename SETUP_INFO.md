@@ -27,7 +27,7 @@ tar -xzf spiritual-library-mcp-*.tar.gz
 cd spiritual-library-export
 
 # Run the quick setup
-./quick_start.sh
+./install_interactive_nonservicemode.sh
 ```
 
 ### 3. Configure Books Location
@@ -37,7 +37,7 @@ The setup will ask you where your spiritual books are located. You can:
 - Create a new empty books directory
 
 ### 4. Complete Setup
-Follow the instructions from quick_start.sh to:
+Follow the instructions from install_interactive_nonservicemode.sh to:
 - Configure Claude Desktop
 - Start indexing your library
 - Monitor progress

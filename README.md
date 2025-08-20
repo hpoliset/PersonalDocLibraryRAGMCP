@@ -22,10 +22,13 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 ### Prerequisites
 
 - **macOS** (tested on macOS 14+)
-- **Python 3.9+** (3.11+ recommended)
+- **Python 3.12** (automatically installed if missing)
 - **Claude Desktop** installed
 - **Homebrew** (for package management)
 - **~4GB RAM** for embeddings
+- **coreutils** (provides gtimeout for service monitoring)
+
+> **Important**: This setup requires Python 3.12 specifically. Python 3.13 is not currently supported due to ChromaDB incompatibility with numpy 2.0+. The setup scripts will automatically install Python 3.12 if it's not found on your system. All other dependencies including coreutils will also be installed automatically.
 
 ### Optional Dependencies (Auto-installed by setup)
 
@@ -42,12 +45,12 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
 cd PersonalDocLibraryRAGMCP
 
-# Run comprehensive setup
-./setup.sh
+# Run comprehensive setup (with service installation)
+./serviceInstall.sh
 ```
 
-The `setup.sh` script provides a complete installation experience:
-- ✅ Check Python 3.9+ installation
+The `serviceInstall.sh` script provides a complete installation experience with background service setup:
+- ✅ Check for Python 3.12 (installs it automatically if missing)
 - ✅ Create/verify virtual environment
 - ✅ Install all Python dependencies
 - ✅ Auto-install system dependencies (ocrmypdf, LibreOffice, pandoc)
@@ -66,10 +69,10 @@ git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
 cd PersonalDocLibraryRAGMCP
 
 # Run automated setup with all options
-./setup.sh --books-path /path/to/your/books --install-service --start-web-monitor --non-interactive
+./serviceInstall.sh --books-path /path/to/your/books --install-service --start-web-monitor --non-interactive
 ```
 
-Available `setup.sh` options:
+Available `serviceInstall.sh` options:
 - `--books-path PATH` - Path to your document library
 - `--db-path PATH` - Path for vector database (default: ./chroma_db)
 - `--non-interactive` - Run without prompts
@@ -77,14 +80,14 @@ Available `setup.sh` options:
 - `--start-web-monitor` - Install web monitor as service
 - `--help` - Show all available options
 
-#### Option 3: Quick Start (Legacy)
+#### Option 3: Interactive Installation (Non-Service Mode)
 
 ```bash
-# For users familiar with the older installation
-./quick_start.sh
+# For interactive installation without background services
+./install_interactive_nonservicemode.sh
 ```
 
-Note: `quick_start.sh` is the older installation script. We recommend using `setup.sh` for a more comprehensive setup experience.
+Note: This script provides an interactive installation without setting up background services. Use `serviceInstall.sh` for a complete setup with services.
 
 ### Post-Installation
 
@@ -216,7 +219,7 @@ PersonalDocLibraryRAGMCP/
 │   └── monitoring/    # Web dashboard
 ├── docs/               # Documentation and images
 │   └── images/        # Screenshots for documentation
-└── venv_mcp/          # Python virtual environment
+└── venv_mcp/          # Python 3.12 virtual environment
 ```
 
 ## MCP Tools Available in Claude
@@ -357,7 +360,7 @@ tail -f logs/index_monitor_stderr.log
 chmod +x scripts/*.sh
 
 # Fix Python symlinks
-./setup.sh --non-interactive
+./serviceInstall.sh --non-interactive
 
 # Fix directory permissions
 chmod -R 755 logs/
@@ -376,6 +379,12 @@ soffice --headless --convert-to pdf test.docx
 find books/ -name "~\$*" -delete
 ```
 
+### Python Version Requirements
+
+**This system requires Python 3.12 specifically.** The setup scripts will automatically install Python 3.12 via Homebrew if it's not found on your system. All scripts use Python 3.12 from the virtual environment (`venv_mcp`) directly, ensuring consistency across all components.
+
+> **Note**: Python 3.13 is incompatible due to ChromaDB requiring numpy < 2.0, while Python 3.13 requires numpy ≥ 2.1.
+
 ### Reset and Clean
 
 If you need to start fresh:
@@ -389,7 +398,7 @@ rm -rf chroma_db/*
 ./scripts/uninstall_webmonitor_service.sh
 
 # Reinstall
-./quick_start.sh
+./serviceInstall.sh  # or ./install_interactive_nonservicemode.sh
 ```
 
 ## Document Support

@@ -24,7 +24,7 @@ if [ -d "$PROJECT_ROOT/venv_mcp" ]; then
     echo "✅ Virtual environment activated"
 else
     echo "❌ Virtual environment not found at $PROJECT_ROOT/venv_mcp"
-    echo "   Please run ./quick_start.sh first."
+    echo "   Please run ./install_interactive_nonservicemode.sh first."
     exit 1
 fi
 

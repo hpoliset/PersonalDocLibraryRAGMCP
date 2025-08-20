@@ -11,6 +11,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Use Python directly from virtual environment
+PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+
 # Set up environment variables if not already set
 export PERSONAL_LIBRARY_DOC_PATH="${PERSONAL_LIBRARY_DOC_PATH:-$PROJECT_ROOT/books}"
 export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
@@ -44,13 +47,12 @@ trap cleanup SIGTERM SIGINT SIGQUIT
 
 # Function to check if virtual environment exists
 check_venv() {
-    local venv_python="$PROJECT_ROOT/venv_mcp/bin/python"
-    if [[ ! -f "$venv_python" ]]; then
-        log "ERROR: Virtual environment not found at $venv_python"
-        log "Please run setup.sh first"
+    if [[ ! -f "$PYTHON_CMD" ]]; then
+        log "ERROR: Python not found at $PYTHON_CMD"
+        log "Please run serviceInstall.sh first"
         exit 1
     fi
-    echo "$venv_python"
+    echo "$PYTHON_CMD"
 }
 
 # Function to validate environment
@@ -66,7 +68,16 @@ validate_environment() {
     else
         # Count documents in books directory (with timeout for LaunchAgent)
         local doc_count
-        doc_count=$(gtimeout 10 find "$PERSONAL_LIBRARY_DOC_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | wc -l || echo "0")
+        # Use timeout if available (gtimeout on macOS with coreutils, timeout on Linux)
+        if command -v gtimeout &> /dev/null; then
+            doc_count=$(gtimeout 10 find "$PERSONAL_LIBRARY_DOC_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | wc -l || echo "0")
+        elif command -v timeout &> /dev/null; then
+            doc_count=$(timeout 10 find "$PERSONAL_LIBRARY_DOC_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | wc -l || echo "0")
+        else
+            # No timeout command available, run without timeout
+            doc_count=$(find "$PERSONAL_LIBRARY_DOC_PATH" -type f \( -name "*.pdf" -o -name "*.docx" -o -name "*.doc" -o -name "*.epub" \) 2>/dev/null | head -100 | wc -l || echo "0")
+        fi
+        doc_count=$(echo "$doc_count" | tr -d ' ')
         log "Found $doc_count documents in books directory"
     fi
     

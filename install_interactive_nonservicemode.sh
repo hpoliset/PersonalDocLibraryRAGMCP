@@ -18,6 +18,14 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$SCRIPT_DIR"
 
+# Source centralized Python environment configuration if it exists
+if [ -f "$SCRIPT_DIR/scripts/python_env.sh" ]; then
+    source "$SCRIPT_DIR/scripts/python_env.sh"
+    USE_CENTRALIZED_CONFIG=true
+else
+    USE_CENTRALIZED_CONFIG=false
+fi
+
 # Parse command line arguments
 AUTO_MODE=false
 AUTO_BOOKS_PATH=""
@@ -160,24 +168,78 @@ echo -e "${BLUE}📌 Checking system requirements...${NC}"
 echo ""
 
 python_cmd=""
-if command -v python3 &> /dev/null; then
+python_version=""
+
+# First check for Python 3.12 specifically
+if command -v python3.12 &> /dev/null; then
+    python_version=$(python3.12 --version 2>&1 | cut -d' ' -f2)
+    echo -e "  ${GREEN}✓${NC} Python 3.12 found: $python_version"
+    python_cmd="python3.12"
+elif command -v python3 &> /dev/null; then
     python_version=$(python3 --version 2>&1 | cut -d' ' -f2)
-    echo -e "  ${GREEN}✓${NC} Python 3 found: $python_version"
-    python_cmd="python3"
+    major_version=$(echo $python_version | cut -d'.' -f1)
+    minor_version=$(echo $python_version | cut -d'.' -f2)
+    
+    if [[ "$major_version" == "3" && "$minor_version" == "12" ]]; then
+        echo -e "  ${GREEN}✓${NC} Python 3.12 found: $python_version"
+        python_cmd="python3"
+    elif [[ "$major_version" == "3" && "$minor_version" -gt "12" ]]; then
+        echo -e "  ${YELLOW}⚠️${NC} Python $python_version found, but Python 3.12 is required (3.13+ not supported by ChromaDB)"
+        python_cmd=""
+    else
+        echo -e "  ${YELLOW}⚠️${NC} Python $python_version found, but Python 3.12 is required"
+        python_cmd=""
+    fi
 elif command -v python &> /dev/null; then
     python_version=$(python --version 2>&1 | cut -d' ' -f2)
-    if [[ "$python_version" == 3.* ]]; then
-        echo -e "  ${GREEN}✓${NC} Python 3 found: $python_version"
+    if [[ "$python_version" == 3.12.* ]]; then
+        echo -e "  ${GREEN}✓${NC} Python 3.12 found: $python_version"
         python_cmd="python"
     fi
 fi
 
+# If Python 3.12 not found, offer to install it
 if [ -z "$python_cmd" ]; then
-    echo -e "  ${RED}✗${NC} Python 3 not found"
+    echo -e "  ${RED}✗${NC} Python 3.12 is required but not found"
     echo ""
-    echo -e "${RED}Error: Python 3.8 or higher is required.${NC}"
-    echo "Please install Python 3 and try again."
-    exit 1
+    
+    if [[ "$OSTYPE" == "darwin"* ]] && command -v brew &> /dev/null; then
+        echo -e "${CYAN}Python 3.12 is required for ChromaDB compatibility${NC}"
+        
+        # In auto mode, install automatically; otherwise ask
+        if [ "$AUTO_MODE" = true ]; then
+            echo "  Auto: Installing Python 3.12 via Homebrew..."
+            install_python=true
+        elif prompt_yes_no "Install Python 3.12 via Homebrew?" "y"; then
+            install_python=true
+        else
+            install_python=false
+        fi
+        
+        if [ "$install_python" = true ]; then
+            echo "  Installing Python 3.12..."
+            brew install python@3.12 >/dev/null 2>&1
+            
+            # Verify installation
+            if command -v python3.12 &> /dev/null; then
+                python_cmd="python3.12"
+                python_version=$(python3.12 --version 2>&1 | cut -d' ' -f2)
+                echo -e "  ${GREEN}✓${NC} Python 3.12 installed successfully: $python_version"
+            else
+                echo -e "  ${RED}✗${NC} Failed to install Python 3.12"
+                echo "  Please install it manually: brew install python@3.12"
+                exit 1
+            fi
+        else
+            echo "  Please install Python 3.12 manually and try again"
+            echo "  On macOS: brew install python@3.12"
+            exit 1
+        fi
+    else
+        echo "  Please install Python 3.12 and try again"
+        echo "  On macOS: brew install python@3.12"
+        exit 1
+    fi
 fi
 
 # Check for virtual environment
@@ -334,7 +396,11 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     
     if prompt_yes_no "Start web monitoring dashboard?" "y"; then
         echo "Starting web monitor on http://localhost:8888..."
-        nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
+        if [ "$USE_CENTRALIZED_CONFIG" = true ]; then
+            nohup "$PYTHON_CMD" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
+        else
+            nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
+        fi
         echo -e "${GREEN}✓${NC} Web monitor started"
     fi
 fi

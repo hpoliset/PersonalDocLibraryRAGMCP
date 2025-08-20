@@ -13,6 +13,8 @@ fi
 
 # Get the directory of this script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
 PLIST_NAME="com.personal-library.webmonitor"
 PLIST_FILE="$SCRIPT_DIR/../config/$PLIST_NAME.plist"
 LAUNCH_AGENTS_DIR="$HOME/Library/LaunchAgents"
@@ -33,9 +35,9 @@ if [ ! -f "$PLIST_FILE" ]; then
 fi
 
 # Check if virtual environment exists
-if [ ! -d "$SCRIPT_DIR/../venv_mcp" ]; then
-    echo "❌ Virtual environment not found!"
-    echo "   Please run ./quick_start.sh first."
+if [ ! -d "$PROJECT_ROOT/venv_mcp" ]; then
+    echo "❌ Virtual environment not found at $PROJECT_ROOT/venv_mcp!"
+    echo "   Please run ./serviceInstall.sh first."
     exit 1
 fi
 

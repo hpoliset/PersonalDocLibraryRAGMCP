@@ -94,4 +94,4 @@ tmp_cleaned_pdfs/
 
 # Old/deprecated scripts
 scripts/setup-script.sh
-scripts/run_enhanced_monitor.sh
+scripts/run_enhanced_monitor.sh.ocr_cache/

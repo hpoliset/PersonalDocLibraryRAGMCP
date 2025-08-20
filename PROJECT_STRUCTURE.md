@@ -12,8 +12,8 @@ spiritual-library-mcp/
 ├── 📁 Scripts Directory
 │   ├── Core Operations
 │   │   ├── run.sh                   # Swiss army knife - MCP server & indexing
-│   │   ├── setup.sh                 # Comprehensive setup script
-│   │   └── quick_start.sh           # Interactive setup for new users
+│   │   ├── serviceInstall.sh                 # Comprehensive setup script
+│   │   └── install_interactive_nonservicemode.sh           # Interactive setup for new users
 │   │
 │   ├── Background Monitoring
 │   │   ├── index_monitor.sh         # Manual background monitor (Ctrl+C to stop)
@@ -213,7 +213,7 @@ graph TD
 
 ### Environment Files
 - **requirements.txt**: Python package dependencies
-- **setup.sh**: Comprehensive environment setup
+- **serviceInstall.sh**: Comprehensive environment setup
 - **.gitignore**: Excludes runtime data and logs
 
 ## Data Flow
@@ -227,7 +227,7 @@ graph TD
 
 ## Development Workflow
 
-1. **Setup**: Run `./setup.sh` for initial environment
+1. **Setup**: Run `./serviceInstall.sh` for initial environment
 2. **Development**: Edit source files, test with `./run.sh`
 3. **Testing**: Use web monitor for debugging
 4. **Integration**: Test with Claude Desktop

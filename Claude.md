@@ -64,7 +64,8 @@ The system follows a **modular, service-oriented architecture**:
 
 ```bash
 # Initial setup
-./quick_start.sh                # Interactive setup (recommended)
+./install_interactive_nonservicemode.sh  # Interactive setup (non-service mode)
+./serviceInstall.sh              # Complete setup with service installation
 pip install -r requirements.txt # Install dependencies (if manual setup)
 
 # Running the system

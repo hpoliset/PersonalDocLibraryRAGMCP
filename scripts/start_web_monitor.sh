@@ -6,6 +6,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Use Python directly from virtual environment
+PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+
 # Colors for output
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -23,10 +26,10 @@ if pgrep -f monitor_web_enhanced > /dev/null; then
     exit 1
 fi
 
-# Check virtual environment
-if [ ! -d "$PROJECT_ROOT/venv_mcp" ]; then
-    echo -e "${RED}❌ Virtual environment not found!${NC}"
-    echo "   Please run ./setup.sh first"
+# Check Python exists
+if [ ! -f "$PYTHON_CMD" ]; then
+    echo -e "${RED}❌ Python not found at $PYTHON_CMD!${NC}"
+    echo "   Please run ./serviceInstall.sh first"
     exit 1
 fi
 
@@ -39,8 +42,8 @@ export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chrom
 mkdir -p "$PROJECT_ROOT/logs"
 
 # Start the web monitor
-echo "📌 Starting web monitor..."
-nohup "$PROJECT_ROOT/venv_mcp/bin/python" "$PROJECT_ROOT/src/monitoring/monitor_web_enhanced.py" \
+echo "📌 Starting web monitor with Python 3.12..."
+nohup "$PYTHON_CMD" "$PROJECT_ROOT/src/monitoring/monitor_web_enhanced.py" \
     > "$PROJECT_ROOT/logs/webmonitor_stdout.log" 2>&1 &
 
 PID=$!

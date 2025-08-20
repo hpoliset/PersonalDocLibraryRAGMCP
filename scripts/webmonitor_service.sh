@@ -7,6 +7,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Use Python directly from virtual environment
+PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+
 # Set up environment
 export PYTHONPATH="$PROJECT_ROOT"
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
@@ -25,4 +28,4 @@ echo "[$(date)] Books Path: $PERSONAL_LIBRARY_DOC_PATH" >> "$PROJECT_ROOT/logs/w
 cd "$PROJECT_ROOT"
 
 # Start the web monitor
-exec "$PROJECT_ROOT/venv_mcp/bin/python" "$PROJECT_ROOT/src/monitoring/monitor_web_enhanced.py"
+exec "$PYTHON_CMD" "$PROJECT_ROOT/src/monitoring/monitor_web_enhanced.py"

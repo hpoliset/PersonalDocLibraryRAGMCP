@@ -5,6 +5,9 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Use Python from virtual environment
+PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+
 echo "🔮 Personal Document Library MCP Server"
 echo "==============================="
 echo ""
@@ -64,21 +67,26 @@ if [ ! -f "src/servers/mcp_complete_server.py" ]; then
 fi
 
 # Check if virtual environment exists
-if [ ! -d "venv_mcp" ]; then
-    echo "❌ Error: Virtual environment not found!"
-    echo "   Please run ./setup.sh first."
+if [ ! -d "$VENV_DIR" ]; then
+    echo "❌ Error: Virtual environment not found at $VENV_DIR!"
+    echo "   Please run ./serviceInstall.sh first."
     exit 1
 fi
 
 # Change to project root directory
 cd "$PROJECT_ROOT"
 
-# Activate virtual environment
-echo "📌 Activating virtual environment..."
-source "$PROJECT_ROOT/venv_mcp/bin/activate"
-
-# Set Python command
+# Set Python command to use virtual environment directly
 PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+
+# Verify Python exists
+if [ ! -f "$PYTHON_CMD" ]; then
+    echo "❌ Python not found at $PYTHON_CMD"
+    echo "   Please run ./serviceInstall.sh first"
+    exit 1
+fi
+
+echo "📌 Using Python from venv_mcp..."
 
 # Note: Ollama is no longer required - using direct RAG results
 
@@ -237,5 +245,5 @@ else
     echo "   New books will be indexed automatically on first use"
     echo "   Press Ctrl+C to stop"
     echo ""
-    python src/servers/mcp_complete_server.py
+    "$PYTHON_CMD" src/servers/mcp_complete_server.py
 fi
