@@ -262,6 +262,16 @@ class IndexMonitor:
         # Set up file monitoring
         self.setup_file_monitor()
         
+        # Start progress monitoring thread for PDF extraction
+        logger.info("About to start progress monitor thread...")
+        try:
+            if hasattr(self, 'start_progress_monitor'):
+                self.start_progress_monitor()
+            else:
+                logger.error("start_progress_monitor method not found!")
+        except Exception as e:
+            logger.error(f"Failed to start progress monitor: {e}", exc_info=True)
+        
         logger.info("Monitor is running. Press Ctrl+C to stop.")
         
         try:
@@ -276,6 +286,11 @@ class IndexMonitor:
         if self.observer:
             self.observer.stop()
             self.observer.join()
+        
+        # Stop progress monitor thread
+        if hasattr(self, 'progress_monitor_thread'):
+            self.progress_monitor_running = False
+            self.progress_monitor_thread.join(timeout=2)
         
         # Cancel any pending updates
         with self.update_lock:
@@ -366,6 +381,15 @@ class IndexMonitor:
                 self.total_documents_to_process = len(documents_to_index)
                 success_count = 0
                 failed_count = 0
+                
+                # Set initial progress status
+                self.rag.update_status("indexing", {
+                    "progress": f"0/{len(documents_to_index)}",
+                    "success": 0,
+                    "failed": 0,
+                    "percentage": 0,
+                    "message": "Starting indexing..."
+                })
                 
                 logger.info(f"About to process {len(documents_to_index)} documents")
                 
@@ -606,6 +630,81 @@ class IndexMonitor:
                 })
         except IOError:
             logger.warning("Could not acquire lock for deletion")
+    
+    def start_progress_monitor(self):
+        """Start a background thread to monitor PDF extraction progress from logs"""
+        self.progress_monitor_running = True
+        self.progress_monitor_thread = threading.Thread(target=self.monitor_pdf_progress, daemon=True)
+        self.progress_monitor_thread.start()
+        logger.info("Started PDF progress monitoring thread")
+    
+    def monitor_pdf_progress(self):
+        """Monitor stderr logs for PDF page extraction progress and update progress file"""
+        import re
+        import json
+        import subprocess
+        
+        logger.info("Progress monitor thread started")
+        log_file = os.path.join(config.logs_directory, 'index_monitor_stderr.log')
+        progress_file = os.path.join(self.db_directory, 'indexing_progress.json')
+        logger.info(f"Monitoring log file: {log_file}")
+        logger.info(f"Updating progress file: {progress_file}")
+        
+        while self.progress_monitor_running:
+            try:
+                # Check if we're currently indexing
+                if not os.path.exists(progress_file):
+                    time.sleep(5)
+                    continue
+                
+                # Read current progress file to see if we're in loading/extracting stage
+                with open(progress_file, 'r') as f:
+                    progress_data = json.load(f)
+                
+                current_stage = progress_data.get('stage', '')
+                if current_stage not in ['loading', 'extracting']:
+                    time.sleep(5)
+                    continue
+                
+                # Get the latest page number from stderr logs
+                if os.path.exists(log_file):
+                    try:
+                        result = subprocess.run(
+                            ['tail', '-100', log_file],
+                            capture_output=True, text=True, timeout=2
+                        )
+                        
+                        # Find all page numbers in recent logs
+                        matches = re.findall(r'page (\d+)', result.stdout)
+                        if matches:
+                            latest_page = max(int(m) for m in matches)
+                            
+                            # Check if this is a PDF file
+                            current_file = progress_data.get('current_file', '')
+                            if current_file.lower().endswith('.pdf'):
+                                # Get total pages from log if available
+                                total_matches = re.findall(r'PDF has (\d+) pages', result.stdout)
+                                total_pages = int(total_matches[-1]) if total_matches else progress_data.get('total_pages')
+                                
+                                # Update progress file with actual page number
+                                progress_data['current_page'] = latest_page
+                                if total_pages:
+                                    progress_data['total_pages'] = total_pages
+                                progress_data['stage'] = 'extracting'
+                                progress_data['timestamp'] = datetime.now().isoformat()
+                                
+                                with open(progress_file, 'w') as f:
+                                    json.dump(progress_data, f, indent=2)
+                    except subprocess.TimeoutExpired:
+                        pass
+                    except Exception as e:
+                        logger.debug(f"Error parsing logs: {e}")
+                
+                time.sleep(10)  # Check every 10 seconds
+                
+            except Exception as e:
+                logger.debug(f"Progress monitor error: {e}")
+                time.sleep(10)
 
 def main():
     """Main entry point"""

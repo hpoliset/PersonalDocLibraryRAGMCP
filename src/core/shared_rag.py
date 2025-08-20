@@ -1081,12 +1081,122 @@ class SharedRAG:
             # Handle CloudDocs permission issue by copying to temp location if needed
             working_filepath = self.prepare_file_for_processing(filepath, rel_path)
             
-            # Load the document using appropriate loader
+            # Load the document using appropriate loader with timeout protection
             self.update_progress("loading", current_file=rel_path)
             logger.info(f"Loading {doc_type}: {rel_path} ({file_size_mb:.1f}MB)")
             
-            loader = self.get_document_loader(working_filepath)
-            documents = loader.load()
+            # Set timeout based on file size
+            # Small files (<10MB): 3 minutes (180 seconds)
+            # Medium files (10-50MB): 6 minutes (360 seconds)  
+            # Large files (50-200MB): 15 minutes (900 seconds)
+            # Very large files (200-300MB): 30 minutes (1800 seconds)
+            # Huge files (>300MB): 60 minutes (3600 seconds)
+            if file_size_mb < 10:
+                timeout_seconds = 180  # 3 minutes
+            elif file_size_mb < 50:
+                timeout_seconds = 360  # 6 minutes
+            elif file_size_mb < 200:
+                timeout_seconds = 900  # 15 minutes
+            elif file_size_mb < 300:
+                timeout_seconds = 1800  # 30 minutes
+            else:
+                timeout_seconds = 3600  # 60 minutes
+            
+            logger.info(f"Processing with {timeout_seconds}s timeout for {file_size_mb:.1f}MB file")
+            
+            # Use threading to implement timeout with progress monitoring
+            import threading
+            import queue
+            import time
+            
+            result_queue = queue.Queue()
+            exception_queue = queue.Queue()
+            progress_file = os.path.join(self.db_directory, "indexing_progress.json")
+            
+            def load_with_timeout():
+                try:
+                    loader = self.get_document_loader(working_filepath)
+                    docs = loader.load()
+                    result_queue.put(docs)
+                except Exception as e:
+                    exception_queue.put(e)
+            
+            # Start the loading in a separate thread
+            load_thread = threading.Thread(target=load_with_timeout)
+            load_thread.daemon = True
+            load_thread.start()
+            
+            # Monitor progress with adaptive timeout
+            start_time = time.time()
+            last_progress_time = start_time
+            last_progress_value = None
+            extensions_granted = 0
+            max_extensions = 5  # Allow up to 5 extensions
+            
+            # Calculate extension time based on file size
+            # Small files: 5 minutes extension
+            # Medium files: 10 minutes extension
+            # Large files: 15 minutes extension
+            # Very large/Huge files: 20 minutes extension
+            if file_size_mb < 10:
+                extension_time = 300  # 5 minutes
+            elif file_size_mb < 50:
+                extension_time = 600  # 10 minutes
+            elif file_size_mb < 200:
+                extension_time = 900  # 15 minutes
+            else:
+                extension_time = 1200  # 20 minutes
+            
+            while load_thread.is_alive():
+                elapsed = time.time() - start_time
+                time_since_progress = time.time() - last_progress_time
+                
+                # Check progress every 10 seconds
+                time.sleep(min(10, timeout_seconds - elapsed))
+                
+                # Read current progress
+                try:
+                    if os.path.exists(progress_file):
+                        with open(progress_file, 'r') as f:
+                            progress_data = json.load(f)
+                            current_progress = progress_data.get('chunks_generated') or progress_data.get('current_page')
+                            
+                            # Check if progress has been made
+                            if current_progress and current_progress != last_progress_value:
+                                logger.info(f"Progress detected: {current_progress} (was {last_progress_value})")
+                                last_progress_value = current_progress
+                                last_progress_time = time.time()
+                except:
+                    pass  # Ignore errors reading progress
+                
+                # Check if we should timeout
+                if elapsed > timeout_seconds:
+                    # Check if progress was made recently (within last 60 seconds)
+                    if time_since_progress < 60 and extensions_granted < max_extensions:
+                        extensions_granted += 1
+                        timeout_seconds += extension_time
+                        logger.info(f"Extending timeout by {extension_time/60:.0f} minutes due to recent progress (extension {extensions_granted}/{max_extensions}, total time: {timeout_seconds/60:.0f} minutes)")
+                    else:
+                        # No recent progress or max extensions reached
+                        logger.error(f"Timeout after {elapsed:.0f}s loading {rel_path} ({file_size_mb:.1f}MB)")
+                        if extensions_granted > 0:
+                            logger.info(f"Granted {extensions_granted} extensions but no recent progress")
+                        self.handle_failed_document(filepath, f"Timeout after {elapsed:.0f}s - file may be corrupted or too complex")
+                        return False
+                
+                if not load_thread.is_alive():
+                    break
+            
+            # Check for exceptions
+            if not exception_queue.empty():
+                error = exception_queue.get()
+                raise error
+            
+            # Get the result
+            if result_queue.empty():
+                raise Exception("No result from document loader")
+            
+            documents = result_queue.get()
             
             if not documents:
                 raise Exception(f"No content extracted from {doc_type}")

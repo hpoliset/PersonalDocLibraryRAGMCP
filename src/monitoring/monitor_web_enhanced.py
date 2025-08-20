@@ -557,8 +557,33 @@ HTML_TEMPLATE = """
                             `📚 Processing ${current} of ${total} books (${remaining} remaining)`;
                         
                         if (data.details.current_file) {
-                            document.getElementById('current-file').innerHTML = 
-                                `<strong>Processing:</strong> ${data.details.current_file}`;
+                            let fileInfo = `<strong>Processing:</strong> ${data.details.current_file}`;
+                            
+                            // Add chunk progress if available
+                            if (data.details.chunks_generated !== undefined) {
+                                fileInfo += `<br><span style="color: #4CAF50;">📦 Chunks: ${data.details.chunks_generated || 0}`;
+                                if (data.details.total_pages) {
+                                    fileInfo += ` (from ${data.details.total_pages} pages)`;
+                                }
+                                fileInfo += '</span>';
+                            }
+                            
+                            // Add processing stage if available
+                            if (data.details.stage) {
+                                const stageEmoji = {
+                                    'loading': '📖',
+                                    'chunking': '✂️',
+                                    'embedding': '🔄',
+                                    'completed': '✅'
+                                };
+                                fileInfo += `<br><span style="color: #2196F3;">${stageEmoji[data.details.stage] || '⏳'} Stage: ${data.details.stage}`;
+                                if (data.details.current_batch) {
+                                    fileInfo += ` (${data.details.current_batch})`;
+                                }
+                                fileInfo += '</span>';
+                            }
+                            
+                            document.getElementById('current-file').innerHTML = fileInfo;
                         }
                     } else {
                         progressContainer.style.display = 'none';
@@ -923,13 +948,31 @@ def index():
 @app.route('/api/status')
 def api_status():
     """Get current indexing status"""
+    status_data = {"status": "idle", "timestamp": datetime.now().isoformat()}
+    
     if os.path.exists(STATUS_FILE):
         try:
             with open(STATUS_FILE, 'r') as f:
-                return jsonify(json.load(f))
+                status_data = json.load(f)
         except:
             pass
-    return jsonify({"status": "idle", "timestamp": datetime.now().isoformat()})
+    
+    # Add detailed progress information if available
+    progress_file = os.path.join(DB_DIR, "indexing_progress.json")
+    if os.path.exists(progress_file):
+        try:
+            with open(progress_file, 'r') as f:
+                progress_data = json.load(f)
+                if 'details' not in status_data:
+                    status_data['details'] = {}
+                status_data['details']['stage'] = progress_data.get('stage', 'unknown')
+                status_data['details']['chunks_generated'] = progress_data.get('chunks_generated')
+                status_data['details']['current_batch'] = progress_data.get('current_page')
+                status_data['details']['total_pages'] = progress_data.get('total_pages')
+        except:
+            pass
+    
+    return jsonify(status_data)
 
 @app.route('/api/stats')
 def api_stats():
