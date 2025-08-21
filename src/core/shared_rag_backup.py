@@ -1117,22 +1117,6 @@ class SharedRAG:
                 try:
                     loader = self.get_document_loader(working_filepath)
                     docs = loader.load()
-                    
-                    # EPUB file descriptor cleanup
-                    # EPUBs can leave many file descriptors open, so we need to ensure cleanup
-                    if file_ext == '.epub':
-                        import gc
-                        # Force garbage collection to close any lingering file handles
-                        gc.collect()
-                        # If the loader has any cleanup methods, call them
-                        if hasattr(loader, 'close'):
-                            loader.close()
-                        if hasattr(loader, '__del__'):
-                            try:
-                                loader.__del__()
-                            except:
-                                pass
-                    
                     result_queue.put(docs)
                 except Exception as e:
                     exception_queue.put(e)
@@ -1320,10 +1304,6 @@ class SharedRAG:
     
     def handle_failed_document(self, filepath, error_msg):
         """Handle a document that failed to index by attempting to clean it (PDFs only)"""
-        # Use full path as key to avoid collisions
-        # This fixes the issue where only basename was used, causing failures to overwrite each other
-        rel_path = os.path.relpath(filepath, self.books_directory) if hasattr(self, 'books_directory') else filepath
-        
         # Only attempt cleaning for PDFs
         if not filepath.lower().endswith('.pdf'):
             # For non-PDF documents, just log the failure
@@ -1335,12 +1315,11 @@ class SharedRAG:
                 except:
                     pass
             
-            # Use relative path as key to avoid collisions
-            failed_docs[rel_path] = {
+            doc_name = os.path.basename(filepath)
+            failed_docs[doc_name] = {
                 "error": error_msg,
                 "cleaned": False,
-                "failed_at": datetime.now().isoformat(),
-                "full_path": filepath
+                "failed_at": datetime.now().isoformat()
             }
             
             with open(self.failed_pdfs_file, 'w') as f:
@@ -1385,10 +1364,6 @@ class SharedRAG:
     
     def handle_failed_pdf(self, filepath, error_msg):
         """Handle a PDF that failed to index by attempting to clean it"""
-        # Use relative path to avoid collisions
-        rel_path = os.path.relpath(filepath, self.books_directory) if hasattr(self, 'books_directory') else filepath
-        pdf_name = os.path.basename(filepath)
-        
         # Load failed PDFs log
         failed_pdfs = {}
         if os.path.exists(self.failed_pdfs_file):
@@ -1398,8 +1373,10 @@ class SharedRAG:
             except:
                 pass
         
+        pdf_name = os.path.basename(filepath)
+        
         # Don't retry if already cleaned
-        if rel_path in failed_pdfs and failed_pdfs[rel_path].get("cleaned", False):
+        if pdf_name in failed_pdfs and failed_pdfs[pdf_name].get("cleaned", False):
             return False
         
         logger.info(f"Attempting to clean failed PDF: {pdf_name}")
@@ -1423,22 +1400,20 @@ class SharedRAG:
                 if result:
                     # If indexing succeeded, we can optionally replace the original
                     # For now, just mark it as cleaned successfully
-                    failed_pdfs[rel_path] = {
+                    failed_pdfs[pdf_name] = {
                         "error": error_msg,
                         "cleaned": True,
                         "cleaned_at": datetime.now().isoformat(),
-                        "indexed_cleaned": True,
-                        "full_path": filepath
+                        "indexed_cleaned": True
                     }
                 else:
                     # Cleaned but still failed to index
-                    failed_pdfs[rel_path] = {
+                    failed_pdfs[pdf_name] = {
                         "error": error_msg,
                         "cleaned": True,
                         "cleaned_at": datetime.now().isoformat(),
                         "indexed_cleaned": False,
-                        "final_error": "Cleaned but still failed to index",
-                        "full_path": filepath
+                        "final_error": "Cleaned but still failed to index"
                     }
                 
                 with open(self.failed_pdfs_file, 'w') as f:
@@ -1456,11 +1431,10 @@ class SharedRAG:
                 logger.error(f"Error during cleaning process: {e}")
         else:
             # Record failure
-            failed_pdfs[rel_path] = {
+            failed_pdfs[pdf_name] = {
                 "error": error_msg,
                 "cleaned": False,
-                "attempted_at": datetime.now().isoformat(),
-                "full_path": filepath
+                "attempted_at": datetime.now().isoformat()
             }
             with open(self.failed_pdfs_file, 'w') as f:
                 json.dump(failed_pdfs, f, indent=2)

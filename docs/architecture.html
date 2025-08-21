@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spiritual Library MCP Server - Architecture</title>
+    <title>Personal Document Library MCP Server - Architecture</title>
     <style>
         * {
             margin: 0;
@@ -85,6 +85,21 @@
         
         .component h4 {
             margin-bottom: 5px;
+            color: white;
+        }
+        
+        .component p, .component ul, .component li {
+            color: white;
+        }
+        
+        .component ul {
+            padding-left: 20px;
+        }
+        
+        .component pre, .component code {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f0f0f0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .file-list {
@@ -199,16 +214,16 @@
 <body>
     <div class="container">
         <header>
-            <h1>🔮 Spiritual Library MCP Server</h1>
-            <p>Production-Ready Architecture Documentation (v2.1)</p>
+            <h1>🔮 Personal Document Library MCP Server</h1>
+            <p>Production-Ready Architecture Documentation</p>
             <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 5px; margin-top: 15px;">
-                <strong>✅ FULLY OPERATIONAL</strong> - ARM64 compatible, 768-dim embeddings, all 9 tools working
+                <strong>✅ FULLY OPERATIONAL</strong> - ARM64 compatible, 768-dim embeddings, 14 MCP tools working
             </div>
         </header>
 
         <div class="section">
             <h2>System Overview</h2>
-            <p>The Spiritual Library MCP Server is a sophisticated system that enables Claude to access and analyze a personal collection of spiritual books through RAG (Retrieval-Augmented Generation). It combines PDF processing, semantic search, vector storage, and LLM-powered synthesis to provide intelligent responses about spiritual texts.</p>
+            <p>The Personal Document Library MCP Server is a sophisticated system that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). It supports PDFs, Word documents, EPUBs, MOBI/Kindle ebooks, and more. The system provides semantic search, vector storage, and intelligent synthesis capabilities.</p>
             
             <div class="stats">
                 <div class="stat-card">
@@ -260,7 +275,7 @@
 
             <div class="component">
                 <h4>1. MCP Complete Server (mcp_complete_server.py) - CURRENT</h4>
-                <p>✅ Production MCP server with 9 tools, lazy initialization, and ARM64 compatibility. Proper MCP protocol compliance with serverInfo format and JSON-RPC error handling.</p>
+                <p>✅ Production MCP server with 14 tools, lazy initialization, and ARM64 compatibility. Proper MCP protocol compliance with serverInfo format and JSON-RPC error handling.</p>
             </div>
 
             <div class="component">
@@ -269,13 +284,13 @@
             </div>
 
             <div class="component">
-                <h4>3. LLM Integration (Ollama)</h4>
-                <p>Uses llama3.3:70b model for synthesis and analysis. Requires ~40GB RAM for optimal performance. All processing happens locally without external API calls.</p>
+                <h4>3. Document Processing System</h4>
+                <p>Processes multiple document formats from configurable directory. Uses adaptive timeout protection for large/corrupted files. Chunks text into 1200-character segments with 150-character overlap. Automatically categorizes content.</p>
             </div>
 
             <div class="component">
-                <h4>4. PDF Processing System</h4>
-                <p>Processes PDFs from <code>./books/</code> directory. Chunks text into 1000-character segments with 200-character overlap. Automatically categorizes content into practice, energy_work, philosophy, and general.</p>
+                <h4>4. Real-time Monitoring</h4>
+                <p>Web dashboard at http://localhost:8888 with live progress tracking, chunk generation display, page extraction monitoring, and searchable document library. Updates every 2 seconds via AJAX polling.</p>
             </div>
         </div>
 
@@ -283,32 +298,37 @@
             <h2>Current File Structure</h2>
             
             <div class="file-list">
-                <h3>Production Files (v2.1 - Current)</h3>
+                <h3>Source Files</h3>
                 <ul>
-                    <li><strong>mcp_complete_server.py</strong> - ✅ Main MCP server (9 tools, ARM64 compatible)</li>
-                    <li><strong>shared_rag.py</strong> - ✅ Core RAG with 768-dim embeddings</li>
-                    <li><strong>index_monitor.py</strong> - Background indexing service</li>
-                    <li><strong>monitor_web_simple.py</strong> - Real-time web dashboard</li>
-                    <li><strong>clean_pdfs.py</strong> - Automatic PDF cleaning utility</li>
+                    <li><strong>src/</strong> - Main source code directory
+                        <ul>
+                            <li><strong>servers/mcp_complete_server.py</strong> - ✅ Main MCP server (14 tools, ARM64 compatible)</li>
+                            <li><strong>core/shared_rag.py</strong> - ✅ Core RAG with 768-dim embeddings & timeout protection</li>
+                            <li><strong>core/config.py</strong> - Centralized configuration management</li>
+                            <li><strong>core/logging_setup.py</strong> - Logging configuration</li>
+                            <li><strong>indexing/index_monitor.py</strong> - Background indexing service with progress monitoring</li>
+                            <li><strong>monitoring/monitor_web_enhanced.py</strong> - Real-time web dashboard with progress tracking</li>
+                            <li><strong>utils/clean_pdfs.py</strong> - Automatic PDF cleaning utility</li>
+                        </ul>
+                    </li>
+                    <li><strong>scripts/</strong> - Utility and management scripts</li>
+                    <li><strong>config/</strong> - Configuration templates</li>
+                    <li><strong>docs/</strong> - Documentation and images</li>
                     <li><strong>README.md</strong> - Complete deployment guide</li>
                     <li><strong>CLAUDE.md</strong> - Claude Code instructions</li>
-                    <li><strong>CHANGELOG.md</strong> - Version history</li>
-                    <li><strong>CONTRIBUTING.md</strong> - Developer guidelines</li>
-                    <li><strong>PROJECT_STRUCTURE.md</strong> - Architecture documentation</li>
-                    <li><strong>LICENSE</strong> - MIT License</li>
-                    <li><strong>.github/</strong> - CI/CD and issue templates</li>
                 </ul>
             </div>
 
             <div class="file-list">
                 <h3>Data Directories</h3>
                 <ul>
-                    <li><strong>books/</strong> - PDF library (auto-created)</li>
-                    <li><strong>chroma_db/</strong> - Vector database storage (768-dim)</li>
-                    <li><strong>venv_mcp/</strong> - ✅ ARM64 Python environment (CURRENT)</li>
-                    <li><strong>venv/</strong> - Legacy x86_64 environment</li>
-                    <li><strong>backup/</strong> - Legacy/backup files</li>
-                    <li><strong>.git/</strong> - Git repository with 3 commits</li>
+                    <li><strong>books/</strong> - Document library (configurable via PERSONAL_LIBRARY_DOC_PATH)</li>
+                    <li><strong>chroma_db/</strong> - Vector database storage (768-dim embeddings)</li>
+                    <li><strong>venv_mcp/</strong> - ✅ Python 3.12 virtual environment (ARM64 compatible)</li>
+                    <li><strong>logs/</strong> - Application and service logs</li>
+                    <li><strong>config/</strong> - Configuration files</li>
+                    <li><strong>scripts/</strong> - Utility and management scripts</li>
+                    <li><strong>docs/</strong> - Documentation and images</li>
                 </ul>
             </div>
         </div>
@@ -349,125 +369,190 @@
         </div>
 
         <div class="section">
-            <h2>✅ Available MCP Tools (v2.1 - All Working)</h2>
+            <h2>✅ Available MCP Tools (14 Tools - All Working)</h2>
             
-            <h3>Search & Analysis Tools</h3>
+            <h3>Search & Discovery (4 tools)</h3>
             <div class="component">
-                <h4>search</h4>
-                <p>✅ Semantic search with synthesis - returning actual results</p>
-                <p><em>Parameters:</em> query, limit, filter_type, synthesize</p>
+                <h4>1. search</h4>
+                <p>✅ Semantic search with optional book filtering and synthesis</p>
+                <p><em>Parameters:</em> query, limit, book_filter, synthesize</p>
             </div>
 
             <div class="component">
-                <h4>find_practices</h4>
-                <p>Find specific spiritual practices and techniques</p>
+                <h4>2. list_books</h4>
+                <p>List books by pattern, author, or directory</p>
+                <p><em>Parameters:</em> pattern, author, directory</p>
+            </div>
+
+            <div class="component">
+                <h4>3. recent_books</h4>
+                <p>Find recently indexed books by time period</p>
+                <p><em>Parameters:</em> hours, days</p>
+            </div>
+
+            <div class="component">
+                <h4>4. find_practices</h4>
+                <p>Find specific practices or techniques</p>
                 <p><em>Parameter:</em> practice_type</p>
             </div>
 
+            <h3>Content Extraction (3 tools)</h3>
             <div class="component">
-                <h4>compare_perspectives</h4>
-                <p>Compare perspectives from different sources on a topic</p>
-                <p><em>Parameter:</em> topic</p>
-            </div>
-
-            <h3>Content Tools (v2.1)</h3>
-            <div class="component">
-                <h4>summarize_book</h4>
-                <p>Generate AI summary of an entire book</p>
-                <p><em>Parameters:</em> book_name, summary_length (brief/detailed)</p>
+                <h4>5. extract_pages</h4>
+                <p>Extract specific pages from any book</p>
+                <p><em>Parameters:</em> book_pattern, pages (int/list/range)</p>
             </div>
 
             <div class="component">
-                <h4>extract_quotes</h4>
-                <p>Find notable quotes on a specific topic</p>
+                <h4>6. extract_quotes</h4>
+                <p>Find notable quotes on specific topics</p>
                 <p><em>Parameters:</em> topic, max_quotes</p>
             </div>
 
             <div class="component">
-                <h4>daily_reading</h4>
-                <p>Get suggested passages for daily spiritual practice</p>
-                <p><em>Parameters:</em> theme, length (short/medium/long)</p>
+                <h4>7. summarize_book</h4>
+                <p>Generate AI summary of entire books</p>
+                <p><em>Parameters:</em> book_name, summary_length (brief/detailed)</p>
+            </div>
+
+            <h3>Analysis & Synthesis (3 tools)</h3>
+            <div class="component">
+                <h4>8. compare_perspectives</h4>
+                <p>Compare perspectives across multiple sources</p>
+                <p><em>Parameter:</em> topic</p>
             </div>
 
             <div class="component">
-                <h4>question_answer</h4>
-                <p>Ask direct questions about the teachings</p>
+                <h4>9. question_answer</h4>
+                <p>Direct Q&A from your library</p>
                 <p><em>Parameters:</em> question, detail_level (concise/detailed)</p>
             </div>
 
-            <h3>Status Tools</h3>
             <div class="component">
-                <h4>library_stats</h4>
-                <p>Get comprehensive library statistics</p>
-                <p><em>Shows:</em> Books, chunks, categories, indexing status</p>
+                <h4>10. daily_reading</h4>
+                <p>Get suggested passages for daily reading</p>
+                <p><em>Parameters:</em> theme, length (short/medium/long)</p>
+            </div>
+
+            <h3>System Management (4 tools)</h3>
+            <div class="component">
+                <h4>11. library_stats</h4>
+                <p>Get library statistics and indexing status</p>
+                <p><em>Shows:</em> Books, chunks, categories, status</p>
             </div>
 
             <div class="component">
-                <h4>index_status</h4>
-                <p>Get detailed indexing status and pending files</p>
+                <h4>12. index_status</h4>
+                <p>Get detailed indexing progress</p>
                 <p><em>Shows:</em> Current activity, queue, history</p>
+            </div>
+
+            <div class="component">
+                <h4>13. refresh_cache</h4>
+                <p>Refresh search cache and reload book index</p>
+                <p><em>Purpose:</em> Clear cache after adding new books</p>
+            </div>
+
+            <div class="component">
+                <h4>14. warmup</h4>
+                <p>Initialize RAG system to prevent timeouts</p>
+                <p><em>Purpose:</em> Pre-load models for faster response</p>
             </div>
         </div>
 
 
         <div class="section">
-            <h2>🚀 Deployment Options - Hybrid Approach</h2>
+            <h2>🚀 Installation & Setup</h2>
             
             <div class="architecture-diagram">
-                <h3>Recommended Setup</h3>
+                <h3>Setup Options</h3>
                 <div class="flow-diagram">
                     <div class="flow-item">
-                        <strong>Claude Desktop</strong>
-                        <p>Auto-launches MCP server</p>
+                        <strong>Option 1</strong>
+                        <p>serviceInstall.sh</p>
+                        <p style="font-size: 0.9em;">Complete with services</p>
                     </div>
-                    <span class="flow-arrow">+</span>
+                    <span class="flow-arrow">OR</span>
                     <div class="flow-item">
-                        <strong>Ollama Service</strong>
-                        <p>Always running</p>
+                        <strong>Option 2</strong>
+                        <p>Automated flags</p>
+                        <p style="font-size: 0.9em;">Non-interactive setup</p>
                     </div>
-                    <span class="flow-arrow">+</span>
+                    <span class="flow-arrow">OR</span>
                     <div class="flow-item">
-                        <strong>Manual run.sh</strong>
-                        <p>For library management</p>
+                        <strong>Option 3</strong>
+                        <p>install_interactive_nonservicemode.sh</p>
+                        <p style="font-size: 0.9em;">No background services</p>
                     </div>
                 </div>
             </div>
 
-            <h3>Initial Setup</h3>
-            <pre><code># One-time setup
-./setup.sh
+            <h3>Option 1: Comprehensive Setup (Recommended)</h3>
+            <pre><code># Clone and setup with services
+git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
+cd PersonalDocLibraryRAGMCP
+./serviceInstall.sh</code></pre>
+            
+            <div class="component">
+                <h4>What serviceInstall.sh does:</h4>
+                <ul>
+                    <li>✅ Checks for Python 3.12 (installs if missing)</li>
+                    <li>✅ Creates virtual environment</li>
+                    <li>✅ Installs Python dependencies</li>
+                    <li>✅ Auto-installs system dependencies (ocrmypdf, LibreOffice, pandoc)</li>
+                    <li>✅ Configures paths interactively</li>
+                    <li>✅ Generates configuration files</li>
+                    <li>✅ Installs background indexing service (optional)</li>
+                    <li>✅ Installs web monitor service (optional)</li>
+                    <li>✅ Runs initial indexing (optional)</li>
+                </ul>
+            </div>
 
-# Install Ollama as system service
-brew services start ollama</code></pre>
+            <h3>Option 2: Automated Setup</h3>
+            <pre><code># Non-interactive setup with all services
+./serviceInstall.sh --books-path /path/to/books \
+  --install-service --start-web-monitor --non-interactive</code></pre>
 
-            <h3>✅ Current Working Configuration</h3>
+            <h3>Option 3: Interactive Without Services</h3>
+            <pre><code># For manual control without background services
+./install_interactive_nonservicemode.sh</code></pre>
+
+            <h3>✅ Claude Desktop Configuration</h3>
             <div class="success">
-                <p>Add to Claude Desktop's MCP settings:</p>
+                <p>After installation, add to Claude Desktop's config (~/.Library/Application Support/Claude/claude_desktop_config.json):</p>
                 <pre><code>{
   "mcpServers": {
-    "spiritual-library": {
-      "command": "/Users/KDP/AITools/venv_mcp/bin/python",
-      "args": ["/Users/KDP/AITools/mcp_complete_server.py"],
+    "personal-library": {
+      "command": "/path/to/your/DocumentIndexerMCP/venv_mcp/bin/python",
+      "args": ["/path/to/your/DocumentIndexerMCP/src/servers/mcp_complete_server.py"],
       "env": {
         "PYTHONUNBUFFERED": "1"
       }
     }
   }
 }</code></pre>
-                <p><strong>✅ WORKING:</strong> ARM64 environment, lazy initialization, all 9 tools operational. Books indexed automatically on first use.</p>
+                <p><strong>Note:</strong> The config file is auto-generated in config/claude_desktop_config.json during setup</p>
             </div>
 
-            <h3>Option 2: Manual Control (For Library Management)</h3>
+            <h3>Manual Operations</h3>
             <div class="component">
-                <h4>Use ./run.sh when you need to:</h4>
+                <h4>Running the MCP Server Manually</h4>
+                <pre><code># Start MCP server for Claude Desktop
+./scripts/run.sh
+
+# Index documents only
+./scripts/run.sh --index-only
+
+# Index with retry for large collections
+./scripts/run.sh --index-only --retry</code></pre>
+                
+                <h4>When to use manual mode:</h4>
                 <ul>
                     <li>See real-time indexing progress</li>
                     <li>Force complete re-indexing</li>
                     <li>Debug issues</li>
-                    <li>Add many books at once</li>
+                    <li>Process large document batches</li>
                 </ul>
-                <pre><code># Start manually with progress display
-./run.sh</code></pre>
             </div>
         </div>
 
@@ -475,10 +560,10 @@ brew services start ollama</code></pre>
             <h2>📖 Adding New Books - Workflow</h2>
             
             <div class="architecture-diagram">
-                <h3>When You Add New PDFs</h3>
+                <h3>When You Add New Books/Documents</h3>
                 <div class="flow-diagram">
                     <div class="flow-item">
-                        <strong>Add PDFs</strong>
+                        <strong>Add Documents</strong>
                         <p>Copy to books/</p>
                     </div>
                     <span class="flow-arrow">→</span>
@@ -503,7 +588,15 @@ brew services start ollama</code></pre>
             </div>
 
             <div class="warning">
-                <strong>⚠️ Important:</strong> First query after adding books triggers indexing (30s - 5min depending on number of books)
+                <strong>⚠️ Supported Formats:</strong>
+                <ul>
+                    <li>PDF (.pdf) - Including scanned PDFs with OCR</li>
+                    <li>Word (.docx, .doc) - Requires LibreOffice</li>
+                    <li>PowerPoint (.pptx, .ppt) - Requires LibreOffice</li>
+                    <li>EPUB (.epub) - Requires pandoc</li>
+                    <li>MOBI/Kindle (.mobi, .azw, .azw3) - Uses Calibre if available</li>
+                    <li>Text (.txt) - Plain text files</li>
+                </ul>
             </div>
 
             <h3>🔧 Automatic PDF Cleaning</h3>
@@ -591,11 +684,12 @@ python clean_pdfs.py</code></pre>
 
             <div class="component">
                 <h4>🔍 Where Indexing Happens</h4>
-                <p>The indexing logic is embedded within <code>mcp_final_server.py</code> in the <strong>SpiritualLibraryRAG</strong> class. When the server starts, it automatically:</p>
+                <p>The indexing logic is in <code>src/core/shared_rag.py</code> in the <strong>SpiritualLibraryRAG</strong> class. When documents are processed, it automatically:</p>
                 <ol>
-                    <li>Checks for new PDFs in the <code>books/</code> directory</li>
+                    <li>Checks for new documents in the configured directory</li>
                     <li>Compares file hashes with <code>chroma_db/book_index.json</code></li>
-                    <li>Indexes any new or modified PDFs</li>
+                    <li>Indexes any new or modified documents</li>
+                    <li>Supports PDF, Word, EPUB, MOBI, and text formats</li>
                 </ol>
             </div>
 
@@ -622,8 +716,8 @@ for page in pdf_reader.pages:
                 </ul>
                 <pre><code># Text splitting configuration:
 text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200,
+    chunk_size=1200,
+    chunk_overlap=150,
     length_function=len
 )</code></pre>
             </div>
@@ -664,21 +758,18 @@ vector_store = Chroma(
             </div>
 
             <div class="component">
-                <h4>5. Ollama + Llama 3.3 - Text Synthesis & Analysis</h4>
-                <p><strong>Purpose:</strong> Generates intelligent responses based on retrieved chunks</p>
-                <p><strong>Model:</strong> llama3.3:70b (70 billion parameters)</p>
-                <p><strong>Usage:</strong></p>
+                <h4>5. Local LLM Integration (Optional)</h4>
+                <p><strong>Purpose:</strong> Can optionally use local LLMs for enhanced synthesis</p>
+                <p><strong>Integration:</strong> Works with Ollama or other local models</p>
+                <p><strong>Status:</strong> ⚠️ <strong>OPTIONAL</strong> - Not required for core functionality</p>
+                <p><strong>Usage when enabled:</strong></p>
                 <ul>
-                    <li>Synthesizes information from multiple sources</li>
-                    <li>Answers questions based on retrieved context</li>
-                    <li>Compares perspectives across different books</li>
-                    <li>All processing happens locally via Ollama</li>
+                    <li>Enhanced synthesis across multiple sources</li>
+                    <li>Advanced question answering with context</li>
+                    <li>Comparative analysis across documents</li>
+                    <li>All processing happens locally</li>
                 </ul>
-                <pre><code># LLM synthesis:
-llm = Ollama(model="llama3.3:70b")
-response = llm.invoke(
-    prompt + "\n\nContext:\n" + retrieved_chunks
-)</code></pre>
+                <p><strong>Note:</strong> The system works fully without Ollama. All 14 MCP tools function using vector search and retrieval alone.</p>
             </div>
         </div>
 
@@ -689,11 +780,11 @@ response = llm.invoke(
                 <h3>From Query to Response</h3>
                 <ol>
                     <li><strong>User Query</strong> → Claude Desktop sends query via MCP protocol</li>
-                    <li><strong>Query Processing</strong> → mcp_final_server.py receives and parses request</li>
+                    <li><strong>Query Processing</strong> → mcp_complete_server.py receives and parses request</li>
                     <li><strong>Embedding Creation</strong> → HuggingFace converts query to vector</li>
                     <li><strong>Vector Search</strong> → ChromaDB finds similar chunks (cosine similarity)</li>
                     <li><strong>Context Retrieval</strong> → Top k chunks retrieved with metadata</li>
-                    <li><strong>LLM Synthesis</strong> → Llama 3.3 generates response using context</li>
+                    <li><strong>Response Assembly</strong> → Results formatted and returned (LLM synthesis optional)</li>
                     <li><strong>Response Delivery</strong> → Formatted response sent back to Claude</li>
                 </ol>
             </div>
@@ -717,9 +808,9 @@ response = llm.invoke(
                 <ul>
                     <li>Startup time: <2 seconds (lazy initialization)</li>
                     <li>Search latency: ~1.75s per query (768-dim embeddings)</li>
-                    <li>Memory usage: ~40GB for Ollama LLM + embedding model</li>
+                    <li>Memory usage: ~4GB for embedding model</li>
                     <li>ARM64 native: All dependencies optimized for Apple Silicon</li>
-                    <li>Recent test: "thought pollution" → 15 relevant passages found</li>
+                    <li>Supports: PDF, Word, EPUB, MOBI, PowerPoint, Text files</li>
                 </ul>
             </div>
 
@@ -728,8 +819,8 @@ response = llm.invoke(
                 <ul>
                     <li>First-time indexing can take 10-30 minutes</li>
                     <li>All processing is local - no external API calls</li>
-                    <li>Books indexed automatically on first query after adding</li>
-                    <li>Git repository ready for collaboration and distribution</li>
+                    <li>Documents indexed automatically or via background service</li>
+                    <li>Ollama/LLM integration is optional, not required</li>
                 </ul>
             </div>
 
@@ -792,37 +883,135 @@ response = llm.invoke(
         </div>
 
         <div class="section">
-            <h2>🖥️ Web Monitoring Interface</h2>
+            <h2>🖥️ Web Monitoring Interface - How It Works</h2>
             
             <div class="architecture-diagram">
+                <h3>System Architecture</h3>
+                <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace;">
+┌─────────────────┐     JSON Files      ┌──────────────────┐
+│  Index Monitor  │───────────────────>  │ index_status.json│
+│   (Backend)     │                      │indexing_progress │
+└─────────────────┘                      └──────────────────┘
+                                                 ↑
+                                                 │ Reads every 2s
+                                                 │
+┌─────────────────┐      Flask API       ┌──────────────────┐
+│   Web Browser   │<─────────────────────│  Web Monitor     │
+│  (localhost:8888)│     JSON Response   │  (Flask Server)  │
+└─────────────────┘                      └──────────────────┘
+                </pre>
+            </div>
+
+            <div class="component">
+                <h4>1. Data Flow Architecture</h4>
+                <p><strong>Backend Updates:</strong> The indexing service (index_monitor.py) continuously writes status to JSON files:</p>
+                <ul>
+                    <li><code>chroma_db/index_status.json</code> - Overall indexing status</li>
+                    <li><code>chroma_db/indexing_progress.json</code> - Detailed progress (pages, chunks, stage)</li>
+                </ul>
+                <p><strong>Web Monitor Reads:</strong> Flask server reads these files and serves via REST API</p>
+                <p><strong>Frontend Polling:</strong> Browser fetches updates every 2 seconds via AJAX</p>
+            </div>
+
+            <div class="component">
+                <h4>2. REST API Endpoints</h4>
+                <ul style="list-style: none; padding: 10px 0;">
+                    <li><code>/</code> - Main dashboard HTML interface</li>
+                    <li><code>/api/status</code> - Current indexing status with progress</li>
+                    <li><code>/api/stats</code> - Library statistics (books, chunks)</li>
+                    <li><code>/api/books</code> - List of indexed books</li>
+                    <li><code>/api/failed</code> - Failed documents list</li>
+                </ul>
+            </div>
+
+            <div class="component">
+                <h4>3. Real-Time Updates (JavaScript)</h4>
+                <pre><code>// Frontend polls every 2 seconds
+setInterval(async () => {
+    const response = await fetch('/api/status');
+    const data = await response.json();
+    updateUI(data);
+}, 2000);</code></pre>
+                <p>Updates happen without page refresh using JavaScript DOM manipulation</p>
+            </div>
+
+            <div class="component">
+                <h4>4. Progress Tracking Details</h4>
+                <p>The monitor displays multiple levels of progress:</p>
+                <ul>
+                    <li><strong>Document Progress:</strong> 318/1121 (28.4%)</li>
+                    <li><strong>Current File:</strong> Name of document being processed</li>
+                    <li><strong>Processing Stage:</strong>
+                        <ul>
+                            <li>📖 Loading - Reading document from disk</li>
+                            <li>✂️ Chunking - Splitting into text chunks</li>
+                            <li>🔄 Embedding - Creating vectors</li>
+                            <li>✅ Completed - Successfully indexed</li>
+                        </ul>
+                    </li>
+                    <li><strong>Page Progress:</strong> For PDFs, shows actual page numbers (e.g., 5576/39883)</li>
+                    <li><strong>Chunks Generated:</strong> Number of text chunks created</li>
+                    <li><strong>Batch Progress:</strong> During embedding (e.g., Batch 5/8)</li>
+                </ul>
+            </div>
+
+            <div class="architecture-diagram">
                 <h3>Real-Time Status Dashboard</h3>
-                <p>Access at <strong>http://localhost:8888</strong> when running <code>monitor_web.py</code></p>
+                <p>Access at <strong>http://localhost:8888</strong> when running <code>monitor_web_enhanced.py</code></p>
                 
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">
                     <div class="component">
-                        <h4>Live Information</h4>
+                        <h4>Live Information Display</h4>
                         <ul style="list-style: none; padding: 10px 0;">
                             <li>📊 Current indexing status</li>
                             <li>📈 Progress bar with percentage</li>
                             <li>📚 Library statistics</li>
                             <li>🔒 Lock status and health</li>
                             <li>📁 Pending files queue</li>
+                            <li>📄 Current page extraction progress</li>
+                            <li>📦 Chunk generation count</li>
+                            <li>💾 Memory usage tracking</li>
                         </ul>
                     </div>
                     
                     <div class="component">
-                        <h4>Interactive Controls</h4>
+                        <h4>Interactive Features</h4>
                         <ul style="list-style: none; padding: 10px 0;">
                             <li>🔄 Manual index trigger button</li>
                             <li>⚡ Auto-refresh (2s when indexing)</li>
                             <li>📝 Recent activity log</li>
-                            <li>⚠️ Failed PDF alerts</li>
+                            <li>⚠️ Failed document alerts</li>
                             <li>🎨 Modern, responsive UI</li>
-                            <li>⏸️ <strong>NEW:</strong> Pause/Resume buttons</li>
-                            <li>📊 <strong>NEW:</strong> Accurate progress tracking</li>
+                            <li>⏸️ Pause/Resume controls</li>
+                            <li>🔍 Searchable book table</li>
+                            <li>⌨️ Enter key for search</li>
                         </ul>
                     </div>
                 </div>
+            </div>
+
+            <div class="success">
+                <h4>5. Decoupled Architecture Benefits</h4>
+                <p>The web monitor is completely decoupled from the indexer:</p>
+                <ul>
+                    <li>✅ Read-only observation - doesn't interfere with indexing</li>
+                    <li>✅ Can start/stop independently of indexer</li>
+                    <li>✅ Multiple monitors can run simultaneously</li>
+                    <li>✅ No performance impact on indexing process</li>
+                    <li>✅ Works with any process that writes to the JSON files</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <h4>6. Visual Progress Indicators</h4>
+                <p>The interface uses emojis and colors to indicate status:</p>
+                <ul>
+                    <li>🟢 Green progress bar for active indexing</li>
+                    <li>🔵 Blue indicators for processing stages</li>
+                    <li>🟡 Yellow for warnings or slow operations</li>
+                    <li>🔴 Red for errors or failures</li>
+                    <li>⏸️ Gray when paused</li>
+                </ul>
             </div>
         </div>
 
@@ -897,9 +1086,9 @@ response = llm.invoke(
             <h3>Common Issues</h3>
             <ul>
                 <li><strong>Import errors:</strong> Ensure virtual environment is activated</li>
-                <li><strong>Ollama not found:</strong> Install with <code>brew install ollama</code></li>
-                <li><strong>Memory issues:</strong> Ensure sufficient RAM for LLM model</li>
-                <li><strong>Search not working:</strong> Check if PDFs are properly indexed in ChromaDB</li>
+                <li><strong>Memory issues:</strong> Ensure ~4GB RAM for embedding model</li>
+                <li><strong>Search not working:</strong> Check if documents are properly indexed in ChromaDB</li>
+                <li><strong>Ollama (if used):</strong> Optional - install with <code>brew install ollama</code></li>
                 <li><strong>Lock conflicts:</strong> Check lock status with <code>./service_status.sh</code></li>
                 <li><strong>Service won't start:</strong> Check logs in <code>index_monitor_stderr.log</code></li>
             </ul>
