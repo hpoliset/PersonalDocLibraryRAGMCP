@@ -201,18 +201,30 @@ class IndexMonitor:
                 return 50  # Conservative estimate if we can't determine
     
     def _calculate_safe_workers(self, base_workers=5):
-        """Calculate safe number of workers based on available file descriptors"""
+        """Calculate safe number of workers based on available file descriptors and system load"""
         current_fds = self._get_current_fd_usage()
         available_fds = self.max_file_descriptors - current_fds - self.fd_reserve
         
+        # Check current system load for dynamic adjustment
+        cpu_percent = psutil.cpu_percent(interval=1)
+        memory_percent = psutil.virtual_memory().percent
+        
+        # Dynamic adjustment based on system load
+        if cpu_percent > 70 or memory_percent > 80:
+            # System under load, reduce workers
+            base_workers = max(1, base_workers // 2)
+            logger.info(f"System load high (CPU: {cpu_percent}%, Memory: {memory_percent}%), reducing workers")
+        
         # Each worker might use ~20-50 file descriptors (PDF processing, temp files, etc)
-        fds_per_worker = 50
+        # Increase reserve for EPUB handling
+        fds_per_worker = 60  # Increased from 50 for EPUB safety
         max_workers_by_fds = max(1, available_fds // fds_per_worker)
         
-        # Also consider memory
+        # Also consider memory with more conservative allocation
         try:
             available_memory_gb = psutil.virtual_memory().available / (1024**3)
-            max_workers_by_memory = max(1, int(available_memory_gb // 2))  # 2GB per worker
+            # More conservative: 3GB per worker for large PDFs/EPUBs
+            max_workers_by_memory = max(1, int(available_memory_gb // 3))
         except:
             max_workers_by_memory = base_workers
         
@@ -221,6 +233,7 @@ class IndexMonitor:
         
         logger.info(f"FD usage: {current_fds}/{self.max_file_descriptors}, "
                    f"Available FDs: {available_fds}, "
+                   f"CPU: {cpu_percent:.1f}%, Memory: {memory_percent:.1f}%, "
                    f"Safe workers: {safe_workers} (FD limit: {max_workers_by_fds}, "
                    f"Memory limit: {max_workers_by_memory})")
         
@@ -468,11 +481,19 @@ class IndexMonitor:
                     available_memory_gb = psutil.virtual_memory().available / (1024**3)
                     
                     # Use dynamic worker calculation based on file descriptors and memory
+                    # Implement adaptive scaling based on system resources
                     base_workers = min(
                         max(1, cpu_count // 2),  # Half the CPU cores
                         5  # Max 5 workers as base
                     )
-                    max_workers = self._calculate_safe_workers(base_workers)
+                    
+                    # Adaptive scaling based on available memory
+                    # Each worker needs ~500MB for document processing
+                    memory_based_workers = max(1, int(available_memory_gb * 2))  # 2 workers per GB
+                    
+                    # Take the minimum to avoid overload
+                    adaptive_workers = min(base_workers, memory_based_workers)
+                    max_workers = self._calculate_safe_workers(adaptive_workers)
                     
                     logger.info(f"Processing regular files with {max_workers} parallel workers (CPUs: {cpu_count}, Available RAM: {available_memory_gb:.1f}GB)")
                 

@@ -1188,8 +1188,8 @@ class SharedRAG:
                 
                 # Check if we should timeout
                 if elapsed > timeout_seconds:
-                    # Check if progress was made recently (within last 60 seconds)
-                    if time_since_progress < 60 and extensions_granted < max_extensions:
+                    # Check if progress was made recently (within last 5 minutes for continuous extension)
+                    if time_since_progress < 300 and extensions_granted < max_extensions:
                         extensions_granted += 1
                         timeout_seconds += extension_time
                         logger.info(f"Extending timeout by {extension_time/60:.0f} minutes due to recent progress (extension {extensions_granted}/{max_extensions}, total time: {timeout_seconds/60:.0f} minutes)")
@@ -1197,7 +1197,9 @@ class SharedRAG:
                         # No recent progress or max extensions reached
                         logger.error(f"Timeout after {elapsed:.0f}s loading {rel_path} ({file_size_mb:.1f}MB)")
                         if extensions_granted > 0:
-                            logger.info(f"Granted {extensions_granted} extensions but no recent progress")
+                            logger.info(f"Granted {extensions_granted} extensions but no recent progress in {time_since_progress/60:.1f} minutes")
+                        # Try to terminate the thread cleanly if possible
+                        # Note: Thread termination in Python is limited, but we can try to signal it
                         self.handle_failed_document(filepath, f"Timeout after {elapsed:.0f}s - file may be corrupted or too complex")
                         return False
                 
