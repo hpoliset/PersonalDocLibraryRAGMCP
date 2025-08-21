@@ -342,7 +342,8 @@ class UltraLargePDFLoader:
     
     def __init__(self, file_path):
         self.file_path = file_path
-        self.chunk_size = 50  # Process 50 pages at a time for ultra-large files
+        # Increase chunk size for better throughput
+        self.chunk_size = 200  # Process 200 pages at a time for better performance
     
     def load(self):
         """Load ultra-large PDF in small chunks to avoid memory issues"""
@@ -355,6 +356,10 @@ class UltraLargePDFLoader:
             import gc  # For garbage collection
             import signal
             from contextlib import contextmanager
+            
+            # Parallel processing support for ultra-large files
+            from concurrent.futures import ThreadPoolExecutor, as_completed
+            import multiprocessing
             
             # Timeout context manager for chunk processing
             @contextmanager
@@ -377,20 +382,22 @@ class UltraLargePDFLoader:
                 total_pages = len(pdf_reader.pages)
                 logger.info(f"PDF has {total_pages} pages")
             
-            # Process in chunks with timeout
+            # Process chunks in parallel for better performance
             successful_chunks = 0
             failed_chunks = 0
-            chunk_timeout_seconds = 120  # 2 minutes per chunk
+            chunk_timeout_seconds = 180  # 3 minutes per chunk
             
-            for chunk_start in range(0, total_pages, self.chunk_size):
-                chunk_end = min(chunk_start + self.chunk_size, total_pages)
-                logger.info(f"Processing chunk: pages {chunk_start}-{chunk_end}")
-                
+            # Determine optimal workers based on CPU cores
+            max_workers = min(4, multiprocessing.cpu_count())
+            logger.info(f"Using {max_workers} parallel workers for ultra-large PDF")
+            
+            def process_chunk(chunk_start, chunk_end):
+                """Process a single chunk of pages"""
+                chunk_docs = []
                 try:
-                    with timeout(chunk_timeout_seconds):
-                        # Re-open file for each chunk to avoid memory buildup
-                        with open(self.file_path, 'rb') as file:
-                            pdf_reader = pypdf.PdfReader(file, strict=False)
+                    # Re-open file for each chunk to avoid memory buildup
+                    with open(self.file_path, 'rb') as file:
+                        pdf_reader = pypdf.PdfReader(file, strict=False)
                         
                         for page_num in range(chunk_start, chunk_end):
                             try:
@@ -404,27 +411,43 @@ class UltraLargePDFLoader:
                                             'page': page_num
                                         }
                                     )
-                                    documents.append(doc)
+                                    chunk_docs.append(doc)
                             except Exception as e:
                                 # Log but continue - we expect many errors with corrupted PDFs
-                                if page_num % 10 == 0:  # Only log every 10th page to reduce noise
+                                if page_num % 100 == 0:  # Only log every 100th page
                                     logger.debug(f"Error on page {page_num}: {str(e)[:100]}")
                                 continue
                     
-                        successful_chunks += 1
-                        # Force garbage collection after each chunk
-                        gc.collect()
-                    
-                except TimeoutError as e:
-                    logger.warning(f"Timeout processing chunk {chunk_start}-{chunk_end}: {e}")
-                    failed_chunks += 1
-                    if failed_chunks > 3:
-                        logger.error(f"Too many chunk timeouts ({failed_chunks}), abandoning file")
-                        break
-                    continue
+                    # Force garbage collection after processing
+                    gc.collect()
+                    return chunk_docs
                 except Exception as e:
-                    logger.warning(f"Error processing chunk {chunk_start}-{chunk_end}: {e}")
-                    continue
+                    logger.warning(f"Chunk {chunk_start}-{chunk_end} failed: {e}")
+                    return []
+            
+            # Process chunks in parallel
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = {}
+                for chunk_start in range(0, total_pages, self.chunk_size):
+                    chunk_end = min(chunk_start + self.chunk_size, total_pages)
+                    logger.info(f"Submitting chunk: pages {chunk_start}-{chunk_end}")
+                    future = executor.submit(process_chunk, chunk_start, chunk_end)
+                    futures[future] = (chunk_start, chunk_end)
+                
+                # Collect results as they complete
+                for future in as_completed(futures):
+                    chunk_start, chunk_end = futures[future]
+                    try:
+                        chunk_docs = future.result(timeout=chunk_timeout_seconds)
+                        documents.extend(chunk_docs)
+                        successful_chunks += 1
+                        logger.info(f"Completed chunk {chunk_start}-{chunk_end}: {len(chunk_docs)} pages extracted")
+                    
+                    except Exception as e:
+                        logger.warning(f"Failed chunk {chunk_start}-{chunk_end}: {e}")
+                        failed_chunks += 1
+                        if failed_chunks > 5:  # Allow more failures for parallel processing
+                            logger.error(f"Too many chunk failures ({failed_chunks}), continuing with partial extraction")
             
             logger.info(f"UltraLargePDFLoader extracted {len(documents)} pages from {total_pages} total pages")
             
@@ -479,13 +502,17 @@ class FastPDFLoader:
                 total_pages = len(pdf_reader.pages)
                 logger.info(f"PDF has {total_pages} pages, size: {file_size_mb:.1f}MB")
                 
-                # For large PDFs (>100MB or >1000 pages), use parallel processing
-                if file_size_mb > 100 or total_pages > 1000:
+                # For large PDFs (>50MB or >500 pages), use parallel processing
+                if file_size_mb > 50 or total_pages > 500:
                     logger.info(f"Using parallel processing for large PDF ({total_pages} pages)")
-                    batch_size = 100  # Process 100 pages per batch
+                    batch_size = 200  # Process 200 pages per batch for better throughput
                     
                     from concurrent.futures import ThreadPoolExecutor, as_completed
-                    with ThreadPoolExecutor(max_workers=4) as executor:
+                    import multiprocessing
+                    # Use more workers based on CPU cores
+                    max_workers = min(8, max(4, multiprocessing.cpu_count()))
+                    logger.info(f"Using {max_workers} workers for parallel PDF extraction")
+                    with ThreadPoolExecutor(max_workers=max_workers) as executor:
                         # Submit batch jobs
                         futures = []
                         for start_page in range(0, total_pages, batch_size):
@@ -1090,7 +1117,8 @@ class SharedRAG:
             # Medium files (10-50MB): 6 minutes (360 seconds)  
             # Large files (50-200MB): 15 minutes (900 seconds)
             # Very large files (200-300MB): 30 minutes (1800 seconds)
-            # Huge files (>300MB): 60 minutes (3600 seconds)
+            # Huge files (>300MB): 120 minutes for extremely large documents
+            # Special case for ultra-large documents like 40k page PDFs
             if file_size_mb < 10:
                 timeout_seconds = 180  # 3 minutes
             elif file_size_mb < 50:
@@ -1100,7 +1128,9 @@ class SharedRAG:
             elif file_size_mb < 300:
                 timeout_seconds = 1800  # 30 minutes
             else:
-                timeout_seconds = 3600  # 60 minutes
+                # For very large files, estimate based on pages if possible
+                # Allow up to 2 hours for massive documents
+                timeout_seconds = 7200  # 120 minutes for files >300MB
             
             logger.info(f"Processing with {timeout_seconds}s timeout for {file_size_mb:.1f}MB file")
             
@@ -1115,6 +1145,9 @@ class SharedRAG:
             
             def load_with_timeout():
                 try:
+                    # Get file extension for cleanup check
+                    file_ext = os.path.splitext(working_filepath)[1].lower()
+                    
                     loader = self.get_document_loader(working_filepath)
                     docs = loader.load()
                     
@@ -1320,6 +1353,71 @@ class SharedRAG:
         """Legacy method - now calls process_document for backward compatibility"""
         return self.process_document(filepath, rel_path)
     
+    def _update_failed_list_with_lock(self, update_func):
+        """
+        Thread-safe update of failed_pdfs.json with file locking.
+        update_func receives the current dict and should return the updated dict.
+        """
+        lock_file = self.failed_pdfs_file + '.lock'
+        max_retries = 10
+        retry_delay = 0.1
+        
+        for attempt in range(max_retries):
+            try:
+                # Create or open lock file
+                lock_fd = os.open(lock_file, os.O_CREAT | os.O_WRONLY)
+                
+                try:
+                    # Acquire exclusive lock (blocking with timeout via retries)
+                    fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    
+                    # Read current content
+                    failed_docs = {}
+                    if os.path.exists(self.failed_pdfs_file):
+                        try:
+                            with open(self.failed_pdfs_file, 'r') as f:
+                                failed_docs = json.load(f)
+                        except:
+                            pass
+                    
+                    # Apply the update
+                    updated_docs = update_func(failed_docs)
+                    
+                    # Write back atomically
+                    temp_file = self.failed_pdfs_file + '.tmp'
+                    with open(temp_file, 'w') as f:
+                        json.dump(updated_docs, f, indent=2)
+                    
+                    # Atomic rename
+                    os.rename(temp_file, self.failed_pdfs_file)
+                    
+                    # Release lock
+                    fcntl.flock(lock_fd, fcntl.LOCK_UN)
+                    os.close(lock_fd)
+                    
+                    return True
+                    
+                except BlockingIOError:
+                    # Lock is held by another process, retry
+                    os.close(lock_fd)
+                    if attempt < max_retries - 1:
+                        time.sleep(retry_delay)
+                        retry_delay *= 2  # Exponential backoff
+                    else:
+                        logger.warning(f"Could not acquire lock for failed_pdfs.json after {max_retries} attempts")
+                        return False
+                        
+            except Exception as e:
+                logger.error(f"Error updating failed list: {e}")
+                if 'lock_fd' in locals():
+                    try:
+                        os.close(lock_fd)
+                    except:
+                        pass
+                return False
+        
+        return False
+    
     def handle_failed_document(self, filepath, error_msg):
         """Handle a document that failed to index by attempting to clean it (PDFs only)"""
         # Use full path as key to avoid collisions
@@ -1329,24 +1427,17 @@ class SharedRAG:
         # Only attempt cleaning for PDFs
         if not filepath.lower().endswith('.pdf'):
             # For non-PDF documents, just log the failure
-            failed_docs = {}
-            if os.path.exists(self.failed_pdfs_file):
-                try:
-                    with open(self.failed_pdfs_file, 'r') as f:
-                        failed_docs = json.load(f)
-                except:
-                    pass
+            def update_failed(failed_docs):
+                # Use relative path as key to avoid collisions
+                failed_docs[rel_path] = {
+                    "error": error_msg,
+                    "cleaned": False,
+                    "failed_at": datetime.now().isoformat(),
+                    "full_path": filepath
+                }
+                return failed_docs
             
-            # Use relative path as key to avoid collisions
-            failed_docs[rel_path] = {
-                "error": error_msg,
-                "cleaned": False,
-                "failed_at": datetime.now().isoformat(),
-                "full_path": filepath
-            }
-            
-            with open(self.failed_pdfs_file, 'w') as f:
-                json.dump(failed_docs, f, indent=2)
+            self._update_failed_list_with_lock(update_failed)
             
             return False
         
@@ -1378,8 +1469,9 @@ class SharedRAG:
                     logger.info(f"Removed {variation} from failed list after successful indexing")
             
             if removed:
-                with open(self.failed_pdfs_file, 'w') as f:
-                    json.dump(failed_docs, f, indent=2)
+                def update_removed(current_docs):
+                    return failed_docs  # Use the already modified failed_docs
+                self._update_failed_list_with_lock(update_removed)
                     
         except Exception as e:
             # Don't let this error stop the indexing process
@@ -1443,8 +1535,11 @@ class SharedRAG:
                         "full_path": filepath
                     }
                 
-                with open(self.failed_pdfs_file, 'w') as f:
-                    json.dump(failed_pdfs, f, indent=2)
+                def update_cleaned(current_docs):
+                    # Merge our updates into current state
+                    current_docs.update(failed_pdfs)
+                    return current_docs
+                self._update_failed_list_with_lock(update_cleaned)
                 
                 # Clean up the temp file
                 try:
@@ -1464,8 +1559,11 @@ class SharedRAG:
                 "attempted_at": datetime.now().isoformat(),
                 "full_path": filepath
             }
-            with open(self.failed_pdfs_file, 'w') as f:
-                json.dump(failed_pdfs, f, indent=2)
+            def update_attempted(current_docs):
+                # Merge our updates into current state
+                current_docs[rel_path] = failed_pdfs[rel_path]
+                return current_docs
+            self._update_failed_list_with_lock(update_attempted)
         
         return False
     
