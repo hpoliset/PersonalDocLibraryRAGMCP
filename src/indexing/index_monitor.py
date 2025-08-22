@@ -618,7 +618,9 @@ class IndexMonitor:
                             if not self.running:
                                 break
                 
-                # Final status update
+                # Final status update (moved outside regular_files block)
+            # This ensures status is updated even when only large files were processed
+            if self.running and documents_to_index:
                 self.rag.update_status("idle", {
                     "last_run": datetime.now().isoformat(),
                     "indexed": success_count,

@@ -524,7 +524,9 @@ class FastPDFLoader:
                         batch_results = {}
                         for start_page, future in futures:
                             try:
-                                batch_docs = future.result(timeout=60)  # 1 minute timeout per batch
+                                # Increased timeout: 5 minutes per batch for large PDFs
+                                # This allows processing to continue as long as progress is being made
+                                batch_docs = future.result(timeout=300)  # 5 minutes timeout per batch
                                 batch_results[start_page] = batch_docs
                                 logger.info(f"Processed pages {start_page}-{start_page+batch_size}")
                             except Exception as e:
@@ -950,6 +952,12 @@ class SharedRAG:
                     
                     # Skip files that are already marked as failed
                     if self.is_document_failed(rel_path):
+                        logger.debug(f"Skipping failed document: {rel_path}")
+                        continue
+                    
+                    # Skip files that have OCR versions
+                    if self.is_document_skipped(rel_path):
+                        logger.debug(f"Skipping document with OCR version: {rel_path}")
                         continue
                     
                     file_hash = self.get_file_hash(filepath)
@@ -999,20 +1007,19 @@ class SharedRAG:
         
         return type_mapping.get(file_ext, 'Document')
     
-    def process_document_with_timeout(self, filepath, rel_path=None, timeout_minutes=30):
+    def process_document_with_timeout(self, filepath, rel_path=None, timeout_minutes=60):
         """Process any supported document with timeout protection"""
-        # For very large files, use shorter timeout and mark as failed if they repeatedly timeout
+        # For very large files, increase timeout proportionally
         file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
-        is_large_file = file_size_mb > 100
-        is_ultra_large = file_size_mb > 200
         
-        # Adjust timeout based on file size
-        if is_ultra_large:
-            timeout_minutes = min(timeout_minutes, 15)  # Max 15 minutes for ultra-large files
-            logger.info(f"Ultra-large file ({file_size_mb:.1f}MB), limiting timeout to {timeout_minutes} minutes")
-        elif is_large_file:
-            timeout_minutes = min(timeout_minutes, 20)  # Max 20 minutes for large files
-            logger.info(f"Large file ({file_size_mb:.1f}MB), limiting timeout to {timeout_minutes} minutes")
+        # Scale timeout based on file size - allow more time for larger files
+        # Approximately 1 minute per 10MB for ultra-large files
+        if file_size_mb > 500:
+            timeout_minutes = max(60, int(file_size_mb / 10))
+            logger.info(f"Ultra-large file ({file_size_mb:.1f}MB), using extended timeout of {timeout_minutes} minutes")
+        elif file_size_mb > 200:
+            timeout_minutes = max(30, int(file_size_mb / 15))
+            logger.info(f"Large file ({file_size_mb:.1f}MB), using timeout of {timeout_minutes} minutes")
         
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(self.process_document, filepath, rel_path)
@@ -1573,8 +1580,21 @@ class SharedRAG:
             try:
                 with open(self.failed_pdfs_file, 'r') as f:
                     failed_docs = json.load(f)
-                    basename = os.path.basename(rel_path)
-                    return basename in failed_docs
+                    # Check both relative path and basename for backward compatibility
+                    return rel_path in failed_docs or os.path.basename(rel_path) in failed_docs
+            except:
+                pass
+        return False
+    
+    def is_document_skipped(self, rel_path):
+        """Check if a document is in the skip list (has OCR version)"""
+        skip_list_file = os.path.join(self.db_directory, 'skip_list.json')
+        if os.path.exists(skip_list_file):
+            try:
+                with open(skip_list_file, 'r') as f:
+                    skip_list = json.load(f)
+                    # Check both relative path and basename
+                    return rel_path in skip_list or os.path.basename(rel_path) in skip_list
             except:
                 pass
         return False
@@ -1832,3 +1852,70 @@ class SharedRAG:
                 pass
         
         return stats
+    
+    def get_book_pages(self, book_pattern):
+        """Get all page numbers available in the index for a specific book
+        
+        Args:
+            book_pattern: Partial book name to match (case-insensitive)
+        
+        Returns:
+            dict with book info and available page numbers
+        """
+        # Find matching book
+        book_pattern_lower = book_pattern.lower()
+        matching_books = []
+        
+        for book_path in self.book_index.keys():
+            book_path_lower = book_path.lower()
+            # Try exact match first
+            if book_path_lower.endswith(book_pattern_lower) or book_path_lower.endswith(book_pattern_lower + '.pdf'):
+                matching_books = [book_path]
+                break
+            # Otherwise do partial match
+            elif book_pattern_lower in book_path_lower:
+                matching_books.append(book_path)
+        
+        if not matching_books:
+            return {
+                "error": f"No books found matching '{book_pattern}'",
+                "available_books": list(self.book_index.keys())[:10]  # Show first 10 as suggestions
+            }
+        
+        if len(matching_books) > 1:
+            return {
+                "error": f"Multiple books match '{book_pattern}'. Please be more specific.",
+                "matching_books": matching_books
+            }
+        
+        book_path = matching_books[0]
+        book_info = self.book_index[book_path]
+        
+        # Get all page numbers from the database
+        try:
+            # Query for all documents from this book
+            results = self.db.get(
+                where={"book": book_path}
+            )
+            
+            # Extract unique page numbers
+            page_numbers = set()
+            for metadata in results.get('metadatas', []):
+                if metadata and 'page' in metadata:
+                    page_numbers.add(metadata['page'])
+            
+            return {
+                "book": os.path.basename(book_path),
+                "book_path": book_path,
+                "total_pages": len(page_numbers),
+                "total_chunks": len(results.get('ids', [])),
+                "page_numbers": sorted(list(page_numbers))
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting pages for book '{book_pattern}': {e}")
+            return {
+                "error": f"Error retrieving pages: {str(e)}",
+                "book": os.path.basename(book_path),
+                "book_path": book_path
+            }

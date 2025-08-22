@@ -307,6 +307,26 @@ HTML_TEMPLATE = """
             background: #d97706;
         }
         
+        .ocr-button {
+            padding: 5px 10px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+        
+        .ocr-button:hover {
+            background: #7c3aed;
+        }
+        
+        .ocr-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+        }
+        
         .control-button {
             padding: 10px 20px;
             border: none;
@@ -699,6 +719,7 @@ HTML_TEMPLATE = """
                             <th>Pages</th>
                             <th>Chunks</th>
                             <th>Indexed Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -708,13 +729,20 @@ HTML_TEMPLATE = """
                 const author = extractAuthor(book.path);
                 const indexedDate = new Date(book.indexed_at).toLocaleDateString();
                 
+                // Check if extraction might be incomplete (heuristic: less than 2 chunks per page)
+                const avgChunksPerPage = book.chunks / book.pages;
+                const isSuspicious = avgChunksPerPage < 2 || book.pages < 10;
+                
                 html += `
                     <tr>
                         <td>${book.name}</td>
                         <td><span class="author-badge">${author}</span></td>
-                        <td>${book.pages}</td>
+                        <td>${book.pages} ${isSuspicious ? '⚠️' : ''}</td>
                         <td>${book.chunks}</td>
                         <td>${indexedDate}</td>
+                        <td>
+                            ${isSuspicious ? `<button class="ocr-button" onclick="ocrBook('${book.name}', '${book.path}')" title="Suspicious extraction - consider OCR">OCR</button>` : ''}
+                        </td>
                     </tr>
                 `;
             });
@@ -819,6 +847,7 @@ HTML_TEMPLATE = """
                         <div class="error-message">${details.error}</div>
                         <div class="timestamp">Failed at: ${failedDate} | Attempts: ${details.retry_count}</div>
                         <button class="retry-button" onclick="retryBook('${bookName}')">Retry</button>
+                        <button class="ocr-button" onclick="ocrBook('${bookName}', '')">Try OCR</button>
                     </div>
                 `;
             }
@@ -838,6 +867,44 @@ HTML_TEMPLATE = """
                     .catch(error => {
                         alert('Error retrying book: ' + error);
                     });
+            }
+        }
+        
+        function ocrBook(bookName, bookPath) {
+            if (confirm(`Run OCR on ${bookName}? This may take several minutes.`)) {
+                // Disable the button to prevent multiple clicks
+                event.target.disabled = true;
+                event.target.textContent = 'Processing...';
+                
+                fetch('/api/ocr', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        book_name: bookName,
+                        book_path: bookPath
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert(`✅ OCR completed successfully for ${bookName}. The file will be reindexed automatically.`);
+                    } else if (data.status === 'skipped') {
+                        alert(`⏭️ ${bookName} has already been OCR'd.`);
+                    } else {
+                        alert(`❌ OCR failed for ${bookName}: ${data.error}`);
+                    }
+                    // Reload the page to refresh the book lists
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                })
+                .catch(error => {
+                    alert('Error processing OCR: ' + error);
+                    event.target.disabled = false;
+                    event.target.textContent = 'Try OCR';
+                });
             }
         }
         
@@ -1167,6 +1234,55 @@ def api_retry_book(book_name):
             return jsonify({'success': False, 'message': str(e)})
     
     return jsonify({'success': False, 'message': 'Failed books file not found'})
+
+@app.route('/api/ocr', methods=['POST'])
+def api_ocr_book():
+    """Process OCR for a book"""
+    try:
+        # Import OCR manager
+        import sys
+        import os
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from utils.ocr_manager import OCRManager
+        
+        data = request.json
+        book_name = data.get('book_name', '')
+        book_path = data.get('book_path', '')
+        
+        # Find the actual file path
+        if not book_path:
+            # Try to find the book in failed list or book index
+            if os.path.exists(FAILED_PDFS_FILE):
+                with open(FAILED_PDFS_FILE, 'r') as f:
+                    failed_pdfs = json.load(f)
+                    if book_name in failed_pdfs:
+                        book_path = os.path.join(BOOKS_DIR, book_name)
+            
+            if not book_path and os.path.exists(BOOK_INDEX_FILE):
+                with open(BOOK_INDEX_FILE, 'r') as f:
+                    book_index = json.load(f)
+                    for path in book_index.keys():
+                        if path.endswith(book_name):
+                            book_path = os.path.join(BOOKS_DIR, path)
+                            break
+        
+        if not book_path or not os.path.exists(book_path):
+            full_path = os.path.join(BOOKS_DIR, book_name)
+            if os.path.exists(full_path):
+                book_path = full_path
+            else:
+                return jsonify({'status': 'error', 'error': 'Book file not found'})
+        
+        # Initialize OCR manager
+        manager = OCRManager(BOOKS_DIR, DB_DIR)
+        
+        # Process OCR
+        result = manager.process_ocr(book_path)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)})
 
 @app.route('/api/pause', methods=['POST'])
 def pause_indexing():

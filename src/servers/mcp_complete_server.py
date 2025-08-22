@@ -336,6 +336,20 @@ class CompleteMCPServer:
                             },
                             "required": ["book", "pages"]
                         }
+                    },
+                    {
+                        "name": "book_pages",
+                        "description": "List all page numbers available in the index for a specific book",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "book": {
+                                    "type": "string",
+                                    "description": "Book name or partial title to match (case-insensitive)"
+                                }
+                            },
+                            "required": ["book"]
+                        }
                     }
                 ]
                 }
@@ -897,6 +911,72 @@ Failed: {details.get('failed', 0)}"""
                         else:
                             text += page_data['content']
                         text += "\n"
+                
+                return {
+                    "result": {
+                        "content": [{"type": "text", "text": text}]
+                    }
+                }
+            
+            elif tool_name == "book_pages":
+                self.ensure_rag_initialized()
+                book = arguments.get("book", "")
+                
+                if not book:
+                    return {
+                        "result": {
+                            "content": [{"type": "text", "text": "Error: Book name is required"}]
+                        }
+                    }
+                
+                # Get available pages for the book
+                result = self.rag.get_book_pages(book)
+                
+                # Format response
+                if "error" in result:
+                    text = f"❌ {result['error']}\n\n"
+                    if "matching_books" in result:
+                        text += "Matching books:\n"
+                        for i, book in enumerate(result["matching_books"][:10], 1):
+                            text += f"{i}. {book}\n"
+                    elif "available_books" in result:
+                        text += "Available books (first 10):\n"
+                        for i, book in enumerate(result["available_books"], 1):
+                            text += f"{i}. {book}\n"
+                else:
+                    text = f"📚 Book: {result['book']}\n"
+                    text += f"📁 Path: {result['book_path']}\n"
+                    text += f"📄 Total pages in index: {result['total_pages']}\n"
+                    text += f"📊 Total chunks: {result['total_chunks']}\n\n"
+                    
+                    if result['page_numbers']:
+                        text += "Available pages:\n"
+                        # Group consecutive pages for better display
+                        pages = sorted(result['page_numbers'])
+                        ranges = []
+                        start = pages[0]
+                        end = pages[0]
+                        
+                        for page in pages[1:]:
+                            if page == end + 1:
+                                end = page
+                            else:
+                                if start == end:
+                                    ranges.append(str(start))
+                                else:
+                                    ranges.append(f"{start}-{end}")
+                                start = page
+                                end = page
+                        
+                        # Add the last range
+                        if start == end:
+                            ranges.append(str(start))
+                        else:
+                            ranges.append(f"{start}-{end}")
+                        
+                        text += ", ".join(ranges)
+                    else:
+                        text += "No pages found in index for this book."
                 
                 return {
                     "result": {
