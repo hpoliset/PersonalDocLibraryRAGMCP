@@ -287,6 +287,12 @@ class IndexMonitor:
         
         logger.info("Monitor is running. Press Ctrl+C to stop.")
         
+        # Set initial idle status after setup
+        self.rag.update_status("idle", {
+            "message": "Monitoring for changes",
+            "documents_indexed": len(self.rag.book_index)
+        })
+        
         try:
             while self.running:
                 time.sleep(1)
@@ -340,6 +346,11 @@ class IndexMonitor:
             self.process_documents(documents_to_index)
         else:
             logger.info("All documents are up to date")
+            # Update status to idle when no work is pending
+            self.rag.update_status("idle", {
+                "message": "Monitoring for changes",
+                "documents_indexed": len(self.rag.book_index)
+            })
         
         # Clean up removed documents
         self.cleanup_removed_documents()
