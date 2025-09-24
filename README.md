@@ -125,9 +125,33 @@ chmod +x install_ragdex_services.sh
 
 ### Configure Claude Desktop
 
-The installer will show you the exact configuration to add to Claude Desktop. Or run:
+After running the installer, it will display a JSON configuration snippet. You need to:
 
+1. **Copy the displayed configuration** (it will look like this):
+```json
+{
+  "mcpServers": {
+    "ragdex": {
+      "command": "/path/to/ragdex-mcp",
+      "env": { ... }
+    }
+  }
+}
+```
+
+2. **Open Claude Desktop's config file**:
+   - Location: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - You can open it with: `open ~/Library/Application\ Support/Claude/`
+
+3. **Add or merge the configuration**:
+   - If the file is empty, paste the entire JSON
+   - If you have other servers, add the "ragdex" section to your existing "mcpServers" object
+
+4. **Restart Claude Desktop** for changes to take effect
+
+**Alternative: Automatic Configuration**
 ```bash
+# This script can automatically update your Claude config
 curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/update_claude_config.sh
 chmod +x update_claude_config.sh
 ./update_claude_config.sh
@@ -162,6 +186,46 @@ export PERSONAL_LIBRARY_EMAIL_SOURCES=apple_mail,outlook_local
 export PERSONAL_LIBRARY_EMAIL_MAX_AGE_DAYS=365
 export PERSONAL_LIBRARY_EMAIL_EXCLUDED_FOLDERS=Spam,Junk,Trash
 ```
+
+### Claude Desktop Configuration Example
+
+<details>
+<summary>📝 Complete Configuration Example</summary>
+
+If this is your first MCP server, your `claude_desktop_config.json` should look like:
+
+```json
+{
+  "mcpServers": {
+    "ragdex": {
+      "command": "/Users/yourname/ragdex_env/bin/ragdex-mcp",
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "CHROMA_TELEMETRY": "false",
+        "PERSONAL_LIBRARY_DOC_PATH": "/Users/yourname/Documents",
+        "PERSONAL_LIBRARY_DB_PATH": "/Users/yourname/.ragdex/chroma_db",
+        "PERSONAL_LIBRARY_LOGS_PATH": "/Users/yourname/.ragdex/logs"
+      }
+    }
+  }
+}
+```
+
+If you already have other MCP servers, add ragdex to the existing structure:
+
+```json
+{
+  "mcpServers": {
+    "existing-server": { ... },
+    "ragdex": {
+      "command": "/Users/yourname/ragdex_env/bin/ragdex-mcp",
+      "env": { ... }
+    }
+  }
+}
+```
+
+</details>
 
 ### Advanced Installation
 
