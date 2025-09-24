@@ -301,11 +301,14 @@ ragdex manage-failed                 # Handle failed documents
 # Stop all services first
 launchctl unload ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
 
-# Upgrade the package
-pip install --upgrade ragdex
+# Using uv (recommended, faster)
+uv pip install --upgrade ragdex
 
 # Or with extras
-pip install --upgrade ragdex[document-processing,services]
+uv pip install --upgrade ragdex[document-processing,services]
+
+# Alternative: standard pip
+pip install --upgrade ragdex
 
 # Restart services
 launchctl load ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
@@ -323,8 +326,11 @@ launchctl unload ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
 cd ragdex
 git pull origin main
 
-# Upgrade dependencies
-pip install --upgrade -e .
+# Upgrade dependencies (using uv for speed)
+uv pip install --upgrade -e .
+
+# Or with standard pip
+# pip install --upgrade -e .
 
 # Restart services
 launchctl load ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
@@ -350,8 +356,9 @@ launchctl unload ~/Library/LaunchAgents/com.ragdex.webmonitor.plist
 
 #### 2. Perform Upgrade
 ```bash
-# Upgrade via pip or git pull (see above)
-pip install --upgrade ragdex
+# Upgrade via uv (recommended) or pip
+uv pip install --upgrade ragdex
+# Or: pip install --upgrade ragdex
 ```
 
 #### 3. Clear Cache & Locks (Optional)
