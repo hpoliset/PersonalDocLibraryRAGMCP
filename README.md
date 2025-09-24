@@ -208,9 +208,9 @@ ragdex-web            # Launch web dashboard
 ragdex --help                        # Show all commands
 ragdex ensure-dirs                   # Create directories
 ragdex config                        # View configuration
-ragdex check-indexing-status         # Check status
+ragdex index-status                  # Check indexing status
 ragdex find-unindexed                # Find new documents
-ragdex manage-failed-pdfs            # Handle failures
+ragdex manage-failed                 # Handle failed documents
 ```
 
 </details>
@@ -349,7 +349,7 @@ tail -f ~/ragdex/logs/ragdex_*.log
 **Documents not indexing?**
 ```bash
 # Check for failed documents
-ragdex manage-failed-pdfs
+ragdex manage-failed
 
 # Verify paths
 ragdex config

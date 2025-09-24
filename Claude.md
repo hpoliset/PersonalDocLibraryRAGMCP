@@ -4,22 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a **Personal Document Library MCP Server** - a production-ready Model Context Protocol server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system supports multiple document formats (PDFs, Word documents, EPUBs, MOBI/AZW/AZW3 ebooks) and features automatic indexing, real-time monitoring, and robust error handling.
+**Ragdex** is a production-ready MCP (Model Context Protocol) server that enables Claude to access and analyze a personal collection of documents and emails through RAG (Retrieval-Augmented Generation). The system supports multiple document formats (PDFs, Word documents, EPUBs, MOBI/AZW/AZW3 ebooks) and email archives (Apple Mail EMLX, Outlook OLM), featuring automatic indexing, real-time monitoring, smart filtering, and robust error handling.
 
-**Current Status**: ✅ **FULLY OPERATIONAL** with ARM64 compatibility, 768-dim embeddings, all 14 MCP tools working, MOBI support, and multi-document support.
+**Current Status**: ✅ **FULLY OPERATIONAL** v0.2.0 with ARM64 compatibility, 768-dim embeddings, 17 MCP tools, email support, and smart filtering.
 
 ## Repository Structure
 
 ```
-AITools/
-├── src/                    # Main source code
+DocumentIndexerMCP/ (Ragdex)
+├── src/personal_doc_library/  # Main source code
 │   ├── core/              # Core functionality (shared_rag.py, config.py, logging)
 │   ├── servers/           # MCP server implementation
 │   ├── indexing/          # Document indexing tools
+│   ├── loaders/           # Email loaders (EMLX, Outlook)
 │   ├── monitoring/        # Web monitoring interface
 │   └── utils/             # Utility scripts
 ├── scripts/               # Shell scripts for running the system
-├── tests/                 # Test files (no formal test suite yet)
+├── tests/                 # Test files
 ├── config/                # Configuration templates
 ├── logs/                 # Log files (gitignored)
 ├── books/                # Document library (gitignored)
@@ -31,14 +32,14 @@ AITools/
 
 The system follows a **modular, service-oriented architecture**:
 
-1. **MCP Complete Server** (`src/personal_doc_library/servers/mcp_complete_server.py`): Main MCP server with 14 tools
+1. **MCP Complete Server** (`src/personal_doc_library/servers/mcp_complete_server.py`): Main MCP server with 17 tools
 2. **Shared RAG System** (`src/personal_doc_library/core/shared_rag.py`): Core RAG functionality with vector storage
 3. **Index Monitor** (`src/personal_doc_library/indexing/index_monitor.py`): Background service for automatic indexing
 4. **Web Monitor** (`src/personal_doc_library/monitoring/monitor_web_enhanced.py`): Real-time dashboard (localhost:8888) with Enter key search support
 5. **Configuration System** (`src/personal_doc_library/core/config.py`): Centralized path and settings management
 
-### MCP Tools Available
-- **search**: Search library with optional book filtering and synthesis
+### MCP Tools Available (17 total)
+- **search**: Search library with optional book/email filtering and synthesis
 - **find_practices**: Find specific practices or techniques
 - **compare_perspectives**: Compare perspectives across sources
 - **library_stats**: Get library statistics and indexing status
@@ -52,6 +53,9 @@ The system follows a **modular, service-oriented architecture**:
 - **list_books**: List books by pattern/author/directory
 - **recent_books**: Find recently indexed books
 - **extract_pages**: Extract specific pages from books
+- **find_book_by_metadata**: Search by title/author/publisher
+- **get_book_metadata**: Get detailed book metadata
+- **search_by_date_range**: Search within date ranges
 
 ### Key Architectural Patterns
 - **Lazy Loading**: RAG system initialized only when needed to avoid MCP timeouts

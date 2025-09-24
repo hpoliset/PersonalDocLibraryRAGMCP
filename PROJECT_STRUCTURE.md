@@ -26,6 +26,12 @@ DocumentIndexerMCP/ (or ~/ragdex_env/ for PyPI installation)
 │   │       ├── manage_failed_pdfs.py   # Failed document management
 │   │       └── clean_pdfs.py           # PDF cleaning utility
 │   │
+│   ├── 📁 Email Loaders (v0.2.0+)
+│   │   └── loaders/
+│   │       ├── email_loaders.py        # Base email loader & filtering
+│   │       ├── emlx_loader.py          # Apple Mail EMLX support
+│   │       └── outlook_loader.py       # Outlook OLM support
+│   │
 │   ├── 📁 Web Monitoring
 │   │   └── monitoring/
 │   │       └── monitor_web_enhanced.py # Web dashboard (localhost:8888)

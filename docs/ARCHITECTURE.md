@@ -2,7 +2,7 @@
 
 ## System Overview
 
-The Personal Document Library is a Model Context Protocol (MCP) server that provides Claude Desktop with access to a local document library through a RAG (Retrieval-Augmented Generation) system.
+Ragdex is a Model Context Protocol (MCP) server that provides Claude Desktop with access to a local document library and email archives through a RAG (Retrieval-Augmented Generation) system. It supports documents (PDFs, Word, EPUB, MOBI) and emails (Apple Mail EMLX, Outlook OLM) with intelligent filtering.
 
 ## Architecture Diagram
 
@@ -24,12 +24,14 @@ graph TB
         IDX[Book Index<br/>MD5 hash tracking]
     end
 
-    subgraph "Document Processing"
+    subgraph "Document & Email Processing"
         LOAD[Document Loaders]
         PDF[PDF Processor<br/>+ OCR Support]
         WORD[Word/PPT<br/>LibreOffice]
         EPUB[EPUB<br/>Pandoc]
         MOBI[MOBI/AZW<br/>Calibre]
+        EMLX[Apple Mail<br/>EMLX Parser]
+        OLM[Outlook<br/>OLM Extractor]
     end
 
     subgraph "Background Services"
@@ -57,6 +59,8 @@ graph TB
     LOAD --> WORD
     LOAD --> EPUB
     LOAD --> MOBI
+    LOAD --> EMLX
+    LOAD --> OLM
 
     MON --> BOOKS
     MON --> RAG
@@ -77,7 +81,7 @@ graph TB
 
     class MCP,INIT mcp
     class RAG,EMB,VDB,IDX rag
-    class LOAD,PDF,WORD,EPUB,MOBI proc
+    class LOAD,PDF,WORD,EPUB,MOBI,EMLX,OLM proc
     class MON,WEB,LOCK service
     class BOOKS,LOGS,CACHE storage
 ```

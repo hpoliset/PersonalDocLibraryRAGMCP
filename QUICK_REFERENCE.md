@@ -42,10 +42,10 @@ ragdex-index                        # Start background indexer
 ragdex-web                          # Start web dashboard (localhost:8888)
 
 # Utilities
-ragdex check-indexing-status        # Check indexing progress
+ragdex index-status                 # Check indexing progress
 ragdex find-unindexed               # Find unindexed documents
-ragdex manage-failed-pdfs           # Manage failed documents
-ragdex show-config                  # Display detailed config
+ragdex manage-failed                 # Manage failed documents
+ragdex config                       # Display detailed config
 ```
 
 ## Traditional Scripts (Alternative)
