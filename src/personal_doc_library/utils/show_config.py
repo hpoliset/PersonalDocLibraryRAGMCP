@@ -13,7 +13,6 @@ def main():
     config_info = config.get_config_info()
     
     print("📁 Current Paths:")
-    print(f"  Base Directory: {config_info['base_dir']}")
     print(f"  Books Directory: {config_info['books_directory']}")
     print(f"  Database Directory: {config_info['db_directory']}")
     print(f"  Logs Directory: {config_info['logs_directory']}")
