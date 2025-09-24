@@ -397,9 +397,13 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     if prompt_yes_no "Start web monitoring dashboard?" "y"; then
         echo "Starting web monitor on http://localhost:8888..."
         if [ "$USE_CENTRALIZED_CONFIG" = true ]; then
-            nohup "$PYTHON_CMD" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
+            nohup env PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+                "$PYTHON_CMD" -m personal_doc_library.monitoring.monitor_web_enhanced \
+                > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
         else
-            nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
+            nohup env PYTHONPATH="$PROJECT_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+                "$venv_path/bin/python" -m personal_doc_library.monitoring.monitor_web_enhanced \
+                > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
         fi
         echo -e "${GREEN}✓${NC} Web monitor started"
     fi
@@ -457,8 +461,8 @@ if [ -d "$BOOKS_PATH" ]; then
             else
                 "$venv_path/bin/python" -c "
 import sys
-sys.path.append('${PROJECT_ROOT}')
-from src.core.shared_rag import SharedRAG
+sys.path.append('${PROJECT_ROOT}/src')
+from personal_doc_library.core.shared_rag import SharedRAG
 
 print('Initializing RAG system...')
 rag = SharedRAG('$BOOKS_PATH', '$DB_PATH')

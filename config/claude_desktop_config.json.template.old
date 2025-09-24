@@ -2,8 +2,9 @@
   "mcpServers": {
     "spiritual-library": {
       "command": "/Users/KDP/AITools/venv_mcp/bin/python",
-      "args": ["/Users/KDP/AITools/src/servers/mcp_complete_server.py"],
+      "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
       "env": {
+        "PYTHONPATH": "/Users/KDP/AITools/src",
         "PYTHONUNBUFFERED": "1",
         "PERSONAL_LIBRARY_DOC_PATH": "/Users/KDP/SpiritualLibrary",
         "PERSONAL_LIBRARY_DB_PATH": "/Users/KDP/AITools/chroma_db",

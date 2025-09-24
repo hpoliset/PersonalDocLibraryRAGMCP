@@ -34,7 +34,11 @@ if [ ! -f "$PYTHON_CMD" ]; then
 fi
 
 # Set environment variables
-export PYTHONPATH="$PROJECT_ROOT"
+if [[ -z "${PYTHONPATH:-}" ]]; then
+    export PYTHONPATH="$PROJECT_ROOT/src"
+else
+    export PYTHONPATH="$PROJECT_ROOT/src:$PYTHONPATH"
+fi
 export PERSONAL_LIBRARY_DOC_PATH="${PERSONAL_LIBRARY_DOC_PATH:-$PROJECT_ROOT/books}"
 export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
 
@@ -43,7 +47,7 @@ mkdir -p "$PROJECT_ROOT/logs"
 
 # Start the web monitor
 echo "📌 Starting web monitor with Python 3.12..."
-nohup "$PYTHON_CMD" "$PROJECT_ROOT/src/monitoring/monitor_web_enhanced.py" \
+nohup "$PYTHON_CMD" -m personal_doc_library.monitoring.monitor_web_enhanced \
     > "$PROJECT_ROOT/logs/webmonitor_stdout.log" 2>&1 &
 
 PID=$!

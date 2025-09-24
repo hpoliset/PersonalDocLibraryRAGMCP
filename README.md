@@ -1,17 +1,25 @@
-# Personal Document Library MCP Server
+# Ragdex - RAG Document Indexer for MCP
 
-A Model Context Protocol (MCP) server that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). The system processes PDFs, Word documents, EPUBs, and MOBI/Kindle ebooks locally, creates semantic search capabilities, and provides synthesis across multiple sources.
+[![PyPI Version](https://img.shields.io/pypi/v/ragdex.svg)](https://pypi.org/project/ragdex/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![MCP Protocol](https://img.shields.io/badge/MCP-Protocol-green.svg)](https://modelcontextprotocol.io/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black.svg)](https://github.com/hpoliset/DocumentIndexerMCP)
+
+**Ragdex** is a production-ready RAG (Retrieval-Augmented Generation) document indexer and search system for MCP (Model Context Protocol) that enables Claude to access and analyze your personal document collection. The system processes PDFs, Word documents, EPUBs, and MOBI/Kindle ebooks locally, creates semantic search capabilities, and provides synthesis across multiple sources.
 
 ## Features
 
-- **14 Powerful MCP Tools** for Claude integration
-- **Local RAG System** with ChromaDB vector storage
-- **Semantic Search** with book filtering and synthesis capabilities  
+- **17 Powerful MCP Tools** for Claude integration
+- **5 Interactive Prompts** for common document analysis workflows
+- **4 Dynamic Resources** for library statistics and configuration
+- **Local RAG System** with ChromaDB vector storage (768-dim embeddings)
+- **Semantic Search** with book filtering and synthesis capabilities
 - **Background Monitoring** with automatic indexing service
 - **Automatic PDF Cleaning** for problematic files
 - **Web Dashboard** with real-time monitoring at http://localhost:8888
-- **Enter Key Search** support in web interface
-- **Lazy Initialization** for fast MCP startup
+- **Python Package Distribution** via `ragdex` command-line tools
+- **Lazy Initialization** for fast MCP startup (<1s)
 - **ARM64 Compatible** (Apple Silicon optimized)
 - **Multi-format Support** (PDF, DOCX, DOC, PPTX, PPT, EPUB, MOBI, AZW, AZW3, TXT)
 - **Calibre Integration** for MOBI/Kindle ebook conversion
@@ -21,14 +29,12 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 
 ### Prerequisites
 
-- **macOS** (tested on macOS 14+)
-- **Python 3.12** (automatically installed if missing)
-- **Claude Desktop** installed
-- **Homebrew** (for package management)
-- **~4GB RAM** for embeddings
-- **coreutils** (provides gtimeout for service monitoring)
+- **Python 3.10+** (3.10, 3.11, or 3.12 supported)
+- **Claude Desktop** or other MCP-compatible client
+- **~4GB RAM** for embedding model
+- **macOS** or **Linux** (Windows support coming soon)
 
-> **Important**: This setup requires Python 3.12 specifically. Python 3.13 is not currently supported due to ChromaDB incompatibility with numpy 2.0+. The setup scripts will automatically install Python 3.12 if it's not found on your system. All other dependencies including coreutils will also be installed automatically.
+> **Note**: Python 3.13 is not currently supported due to ChromaDB incompatibility with numpy 2.0+.
 
 ### Optional Dependencies (Auto-installed by setup)
 
@@ -38,69 +44,111 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 
 ### Installation
 
-#### Option 1: Comprehensive Setup (Recommended)
+#### Option 1: Install from PyPI (Recommended)
+
+```bash
+# Using uv for faster installation (recommended)
+uv venv ~/ragdex_env
+cd ~/ragdex_env
+uv pip install ragdex
+
+# Or using standard pip
+python -m venv ~/ragdex_env
+source ~/ragdex_env/bin/activate
+pip install ragdex
+
+# With optional dependencies
+pip install ragdex[document-processing,services]
+```
+
+#### Option 2: Install from Source (Development)
 
 ```bash
 # Clone the repository
-git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
-cd PersonalDocLibraryRAGMCP
+git clone https://github.com/hpoliset/DocumentIndexerMCP
+cd DocumentIndexerMCP
 
-# Run comprehensive setup (with service installation)
-./serviceInstall.sh
+# Install in editable mode with all dependencies
+pip install -e .
+
+# Or with optional extras
+pip install -e ".[document-processing,services]"
+
+# Create data directories and review configuration
+ragdex ensure-dirs
+ragdex config
+
+# Launch services from anywhere on your system
+ragdex-mcp            # Start the MCP server
+ragdex-index          # Start the background index monitor
+ragdex-web            # Run the web dashboard
 ```
 
-The `serviceInstall.sh` script provides a complete installation experience with background service setup:
-- ✅ Check for Python 3.12 (installs it automatically if missing)
-- ✅ Create/verify virtual environment
-- ✅ Install all Python dependencies
-- ✅ Auto-install system dependencies (ocrmypdf, LibreOffice, pandoc)
-- ✅ Configure paths interactively or via command line
-- ✅ Generate all configuration files
-- ✅ Install background indexing service (optional)
-- ✅ Install web monitor as service (optional)
-- ✅ Run initial document indexing (optional)
-- ✅ Save environment configuration
-
-#### Option 2: Automated Setup
+#### Available CLI Commands
 
 ```bash
-# Clone the repository
-git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
-cd PersonalDocLibraryRAGMCP
-
-# Run automated setup with all options
-./serviceInstall.sh --books-path /path/to/your/books --install-service --start-web-monitor --non-interactive
+ragdex --help                        # Show all available commands
+ragdex ensure-dirs                   # Create necessary directories
+ragdex config                        # View current configuration
+ragdex check-indexing-status         # Check document indexing status
+ragdex find-unindexed                # Find documents not yet indexed
+ragdex manage-failed-pdfs            # Manage failed document list
+ragdex show-config                   # Display configuration details
 ```
 
-Available `serviceInstall.sh` options:
-- `--books-path PATH` - Path to your document library
-- `--db-path PATH` - Path for vector database (default: ./chroma_db)
-- `--non-interactive` - Run without prompts
-- `--install-service` - Install background indexing service
-- `--start-web-monitor` - Install web monitor as service
-- `--help` - Show all available options
-
-#### Option 3: Interactive Installation (Non-Service Mode)
+### Quick Setup with Services (macOS)
 
 ```bash
-# For interactive installation without background services
-./install_interactive_nonservicemode.sh
+# Install ragdex and services
+uv venv ~/ragdex_env
+cd ~/ragdex_env
+uv pip install ragdex
+
+# Download service installer scripts
+curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/install_ragdex_services.sh
+curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/uninstall_ragdex_services.sh
+curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/ragdex_status.sh
+chmod +x *.sh
+
+# Install services
+./install_ragdex_services.sh
+
+# Check status
+./ragdex_status.sh
 ```
 
-Note: This script provides an interactive installation without setting up background services. Use `serviceInstall.sh` for a complete setup with services.
+The service installer script provides:
+- ✅ Automatic service installation for background indexing
+- ✅ Web monitor dashboard at http://localhost:8888
+- ✅ Automatic startup on system boot
+- ✅ Log rotation and monitoring
 
 ### Post-Installation
 
 #### 1. Configure Claude Desktop
 
-Copy the generated configuration to Claude Desktop:
+Add ragdex to your Claude Desktop configuration:
 
-```bash
-# macOS
-cp config/claude_desktop_config.json ~/Library/Application\ Support/Claude/claude_desktop_config.json
-
-# Restart Claude Desktop for changes to take effect
+```json
+{
+  "mcpServers": {
+    "ragdex": {
+      "command": "/Users/YOUR_USERNAME/ragdex_env/bin/ragdex-mcp",
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "CHROMA_TELEMETRY": "false",
+        "PERSONAL_LIBRARY_DOC_PATH": "/Users/YOUR_USERNAME/SpiritualLibrary",
+        "PERSONAL_LIBRARY_DB_PATH": "/Users/YOUR_USERNAME/DocumentIndexerMCP/chroma_db",
+        "PERSONAL_LIBRARY_LOGS_PATH": "/Users/YOUR_USERNAME/DocumentIndexerMCP/logs"
+      }
+    }
+  }
+}
 ```
+
+Save this to: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+Restart Claude Desktop for changes to take effect.
 
 #### 2. Access Web Dashboard
 
@@ -130,20 +178,15 @@ The system includes two LaunchAgent services that run automatically:
 
 ```bash
 # Check service status
-./scripts/service_status.sh
-./scripts/webmonitor_service_status.sh
-
-# Install services
-./scripts/install_service.sh          # Index monitor
-./scripts/install_webmonitor_service.sh # Web monitor
-
-# Uninstall services
-./scripts/uninstall_service.sh
-./scripts/uninstall_webmonitor_service.sh
+launchctl list | grep ragdex
 
 # View logs
-tail -f logs/index_monitor_stdout.log
-tail -f logs/webmonitor_stdout.log
+tail -f ~/DocumentIndexerMCP/logs/ragdex_indexer_stderr.log
+tail -f ~/DocumentIndexerMCP/logs/ragdex_web_stderr.log
+
+# Restart services
+launchctl unload ~/Library/LaunchAgents/com.ragdex.*.plist
+launchctl load ~/Library/LaunchAgents/com.ragdex.*.plist
 ```
 
 ## Usage
@@ -151,14 +194,13 @@ tail -f logs/webmonitor_stdout.log
 ### Running the MCP Server
 
 ```bash
-# Start MCP server (for Claude Desktop)
-./scripts/run.sh
+# If installed from PyPI
+ragdex-mcp            # Start the MCP server
+ragdex-index          # Start background indexing
+ragdex-web            # Start web dashboard
 
-# Index documents only
-./scripts/run.sh --index-only
-
-# Index with retry for large collections
-./scripts/run.sh --index-only --retry
+# Or use the CLI
+ragdex --help         # Show all available commands
 ```
 
 ### Manual Operations
@@ -206,47 +248,77 @@ export PERSONAL_LIBRARY_LOGS_PATH="/path/to/logs"
 ### Directory Structure
 
 ```
-PersonalDocLibraryRAGMCP/
-├── books/              # Your document library (configurable)
-├── chroma_db/          # Vector database storage
-├── logs/               # Application logs
-├── config/             # Configuration files
-├── scripts/            # Utility scripts
-├── src/                # Source code
-│   ├── core/          # Core RAG functionality
-│   ├── servers/       # MCP server implementation
-│   ├── indexing/      # Document indexing
-│   └── monitoring/    # Web dashboard
-├── docs/               # Documentation and images
-│   └── images/        # Screenshots for documentation
-└── venv_mcp/          # Python 3.12 virtual environment
+~/ragdex_env/
+├── books/                           # Your document library (configurable)
+├── chroma_db/                       # Vector database storage
+├── logs/                           # Application logs
+├── config/                         # Configuration files
+├── scripts/                        # Utility scripts
+├── src/
+│   └── personal_doc_library/       # Main package
+│       ├── __init__.py
+│       ├── cli.py                  # Command-line interface
+│       ├── core/                   # Core RAG functionality
+│       │   ├── config.py          # Configuration management
+│       │   ├── shared_rag.py      # RAG implementation
+│       │   └── logging_config.py  # Logging setup
+│       ├── servers/                # MCP server implementation
+│       │   └── mcp_complete_server.py
+│       ├── indexing/               # Document indexing
+│       │   ├── index_monitor.py   # Background monitoring
+│       │   └── execute_indexing.py
+│       ├── monitoring/             # Web dashboard
+│       │   └── monitor_web_enhanced.py
+│       └── utils/                  # Utility modules
+├── docs/                           # Documentation and images
+│   └── images/                     # Screenshots for documentation
+├── pyproject.toml                  # Package configuration
+└── venv_mcp/                       # Python 3.12 virtual environment
 ```
 
-## MCP Tools Available in Claude
+## MCP Protocol Features
 
-Once configured, Claude will have access to these 14 tools:
+### Tools (17 Available)
 
-### Search & Discovery
+#### Search & Discovery
 1. **search** - Semantic search with optional book filtering and synthesis
 2. **list_books** - List books by pattern, author, or directory
 3. **recent_books** - Find recently indexed books by time period
 4. **find_practices** - Find specific practices or techniques
 
-### Content Extraction
+#### Content Extraction
 5. **extract_pages** - Extract specific pages from any book
 6. **extract_quotes** - Find notable quotes on specific topics
 7. **summarize_book** - Generate AI summary of entire books
 
-### Analysis & Synthesis
+#### Analysis & Synthesis
 8. **compare_perspectives** - Compare perspectives across multiple sources
 9. **question_answer** - Direct Q&A from your library
 10. **daily_reading** - Get suggested passages for daily reading
 
-### System Management
+#### System Management
 11. **library_stats** - Get library statistics and indexing status
 12. **index_status** - Get detailed indexing progress
 13. **refresh_cache** - Refresh search cache and reload book index
 14. **warmup** - Initialize RAG system to prevent timeouts
+15. **find_unindexed** - Find documents not yet indexed
+16. **reindex_book** - Force reindex of specific book
+17. **clear_failed** - Clear failed document list
+
+### Prompts (5 Templates)
+
+1. **analyze_theme** - Analyze a theme across your library
+2. **compare_authors** - Compare writing styles and perspectives of authors
+3. **extract_practices** - Extract practical techniques from books
+4. **research_topic** - Deep research on a specific topic
+5. **daily_wisdom** - Get daily wisdom from your library
+
+### Resources (4 Dynamic)
+
+1. **library://stats** - Current library statistics and metrics
+2. **library://recent** - Recently indexed documents
+3. **library://search-tips** - Search tips and query examples
+4. **library://config** - Current configuration settings
 
 ## Troubleshooting
 
@@ -431,9 +503,16 @@ brew install ghostscript
 
 ## Development
 
-### Running Tests
+### Testing MCP Features
+
 ```bash
-# Activate virtual environment
+# Test MCP protocol implementation
+python test_mcp_features.py
+
+# Test resources functionality
+python test_resources.py
+
+# Activate virtual environment for development
 source venv_mcp/bin/activate
 
 # Run tests (when available)
@@ -442,10 +521,23 @@ python -m pytest tests/
 
 ### Adding New Document Types
 
-Edit `src/core/shared_rag.py` to add support for new formats:
+Edit `src/personal_doc_library/core/shared_rag.py` to add support for new formats:
 1. Add file extension to `SUPPORTED_EXTENSIONS`
 2. Implement loader in `load_document()`
 3. Update categorization if needed
+
+### Package Development
+
+```bash
+# Install in editable mode
+pip install -e .
+
+# Build distribution
+python -m build
+
+# Run from module
+python -m personal_doc_library.servers.mcp_complete_server
+```
 
 ## Security Notes
 
@@ -464,12 +556,12 @@ Contributions are welcome! Please:
 
 ## License
 
-[Your License Here]
+MIT License - See [LICENSE](LICENSE) file for details.
 
 ## Support
 
 For issues or questions:
-- Open an issue on GitHub
-- Check logs in `logs/` directory
-- Review `CLAUDE.md` for development details
-- See `QUICK_REFERENCE.md` for command reference
+- Open an issue on [GitHub](https://github.com/hpoliset/DocumentIndexerMCP/issues)
+- Check logs in `~/DocumentIndexerMCP/logs/` directory
+- Review [Documentation](https://github.com/hpoliset/DocumentIndexerMCP/tree/main/docs)
+- See `ragdex --help` for command reference

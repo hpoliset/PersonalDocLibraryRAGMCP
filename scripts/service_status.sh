@@ -95,9 +95,9 @@ echo ""
 echo "Checking for new PDFs..."
 $SCRIPT_DIR/../venv_mcp/bin/python -c "
 import sys
-sys.path.append('$SCRIPT_DIR/..')
+sys.path.append('$SCRIPT_DIR/../src')
 try:
-    from src.core.shared_rag import SharedRAG
+    from personal_doc_library.core.shared_rag import SharedRAG
     rag = SharedRAG()
     new_pdfs = rag.find_new_or_modified_pdfs()
     if new_pdfs:

@@ -35,7 +35,9 @@ cd "$PROJECT_ROOT"
 import json
 import os
 import sys
-from src.utils.ocr_manager import OCRManager
+
+sys.path.append('$PROJECT_ROOT/src')
+from personal_doc_library.utils.ocr_manager import OCRManager
 
 # Initialize manager
 books_dir = os.environ.get('PERSONAL_LIBRARY_DOC_PATH', '/Users/hpoliset/SpiritualLibrary')

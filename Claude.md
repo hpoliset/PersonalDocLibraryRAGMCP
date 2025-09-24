@@ -31,11 +31,11 @@ AITools/
 
 The system follows a **modular, service-oriented architecture**:
 
-1. **MCP Complete Server** (`src/servers/mcp_complete_server.py`): Main MCP server with 14 tools
-2. **Shared RAG System** (`src/core/shared_rag.py`): Core RAG functionality with vector storage
-3. **Index Monitor** (`src/indexing/index_monitor.py`): Background service for automatic indexing
-4. **Web Monitor** (`src/monitoring/monitor_web_enhanced.py`): Real-time dashboard (localhost:8888) with Enter key search support
-5. **Configuration System** (`src/core/config.py`): Centralized path and settings management
+1. **MCP Complete Server** (`src/personal_doc_library/servers/mcp_complete_server.py`): Main MCP server with 14 tools
+2. **Shared RAG System** (`src/personal_doc_library/core/shared_rag.py`): Core RAG functionality with vector storage
+3. **Index Monitor** (`src/personal_doc_library/indexing/index_monitor.py`): Background service for automatic indexing
+4. **Web Monitor** (`src/personal_doc_library/monitoring/monitor_web_enhanced.py`): Real-time dashboard (localhost:8888) with Enter key search support
+5. **Configuration System** (`src/personal_doc_library/core/config.py`): Centralized path and settings management
 
 ### MCP Tools Available
 - **search**: Search library with optional book filtering and synthesis
@@ -83,7 +83,8 @@ pip install -r requirements.txt # Install dependencies (if manual setup)
 ./scripts/stop_monitor.sh       # Stop background monitor
 
 # Web monitoring
-python src/monitoring/monitor_web_enhanced.py  # Start web dashboard (http://localhost:8888)
+export PYTHONPATH="$(pwd)/src:${PYTHONPATH:-}"
+python -m personal_doc_library.monitoring.monitor_web_enhanced  # Start web dashboard (http://localhost:8888)
 
 # Debugging
 ./scripts/test_logs.sh          # Test log viewing
@@ -100,8 +101,9 @@ python src/monitoring/monitor_web_enhanced.py  # Start web dashboard (http://loc
   "mcpServers": {
     "personal-library": {
       "command": "/path/to/your/DocumentIndexerMCP/venv_mcp/bin/python",
-      "args": ["/path/to/your/DocumentIndexerMCP/src/servers/mcp_complete_server.py"],
+      "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
       "env": {
+        "PYTHONPATH": "/path/to/your/DocumentIndexerMCP/src",
         "PYTHONUNBUFFERED": "1"
       }
     }

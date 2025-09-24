@@ -2,8 +2,9 @@
   "mcpServers": {
     "spiritual-library": {
       "command": "{{PYTHON_PATH}}",
-      "args": ["{{PROJECT_ROOT}}/src/servers/mcp_complete_server.py"],
+      "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
       "env": {
+        "PYTHONPATH": "{{PROJECT_ROOT}}/src",
         "PYTHONUNBUFFERED": "1",
         "PERSONAL_LIBRARY_DOC_PATH": "{{BOOKS_PATH}}",
         "PERSONAL_LIBRARY_DB_PATH": "{{DB_PATH}}",

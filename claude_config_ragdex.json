@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "ragdex": {
+      "command": "/tmp/ragdex_pypi_test/bin/ragdex-mcp",
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "CHROMA_TELEMETRY": "false",
+        "PERSONAL_LIBRARY_DOC_PATH": "/Users/hpoliset/SpiritualLibrary",
+        "PERSONAL_LIBRARY_DB_PATH": "/Users/hpoliset/DocumentIndexerMCP/chroma_db",
+        "PERSONAL_LIBRARY_LOGS_PATH": "/Users/hpoliset/DocumentIndexerMCP/logs"
+      }
+    }
+  }
+}

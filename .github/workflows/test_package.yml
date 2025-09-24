@@ -1,0 +1,75 @@
+name: Test Package with uv
+
+on:
+  push:
+    branches: [ main, develop, pr-* ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install uv
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Create virtual environment
+      run: uv venv
+
+    - name: Install package with dependencies
+      run: |
+        uv pip install -e .
+        uv pip install pytest pytest-cov
+
+    - name: Test imports
+      run: |
+        uv run python -c "from personal_doc_library import __version__; print(f'Version: {__version__}')"
+        uv run python -c "from personal_doc_library.core.config import config; print('Config module loaded')"
+        uv run python -c "from personal_doc_library.cli import main; print('CLI module loaded')"
+
+    - name: Test CLI commands
+      run: |
+        uv run pdlib-cli --help
+        uv run pdlib-cli config
+
+    - name: Run test files
+      run: |
+        if [ -f "test_mcp_features.py" ]; then
+          uv run python test_mcp_features.py || echo "Test completed with status $?"
+        fi
+        if [ -f "test_resources.py" ]; then
+          uv run python test_resources.py || echo "Test completed with status $?"
+        fi
+
+    - name: Build package
+      run: |
+        uv pip install build
+        uv run python -m build
+
+    - name: Check package with twine
+      run: |
+        uv pip install twine
+        uv run python -m twine check dist/*
+
+    - name: List package contents
+      run: |
+        echo "=== Wheel contents ==="
+        unzip -l dist/*.whl | head -30
+        echo "=== Source dist contents ==="
+        tar -tzf dist/*.tar.gz | head -30

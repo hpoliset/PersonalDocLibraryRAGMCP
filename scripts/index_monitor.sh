@@ -6,7 +6,7 @@ echo "=================================="
 echo ""
 
 # Check if already running
-if pgrep -f "python.*src/indexing/index_monitor.py" > /dev/null; then
+if pgrep -f "python.*personal_doc_library.indexing.index_monitor" > /dev/null; then
     echo "❌ Index monitor is already running!"
     echo "   Use ./stop_monitor.sh to stop it first."
     exit 1
@@ -38,7 +38,11 @@ fi
 # Use existing environment variable or default to local books directory
 export PERSONAL_LIBRARY_DOC_PATH="${PERSONAL_LIBRARY_DOC_PATH:-$PROJECT_ROOT/books}"
 export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
-export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+if [[ -z "${PYTHONPATH:-}" ]]; then
+    export PYTHONPATH="$PROJECT_ROOT/src"
+else
+    export PYTHONPATH="$PROJECT_ROOT/src:$PYTHONPATH"
+fi
 
 # Change to project root directory
 cd "$PROJECT_ROOT"
@@ -48,4 +52,4 @@ echo "📌 Starting index monitor..."
 echo "   Monitor will watch for changes in $PERSONAL_LIBRARY_DOC_PATH"
 echo "   Press Ctrl+C to stop"
 echo ""
-python src/indexing/index_monitor.py
+python -m personal_doc_library.indexing.index_monitor
