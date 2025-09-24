@@ -165,3 +165,4 @@ python -m personal_doc_library.monitoring.monitor_web_enhanced  # Start web dash
 4. **Test before committing** - no commits until testing complete
 5. **Follow existing patterns** - check neighboring files for conventions
 6. **No documentation files** unless explicitly requested
+- Always prefer using uv for pip for both installation and running the services
