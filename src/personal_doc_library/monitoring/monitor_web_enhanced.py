@@ -450,10 +450,18 @@ HTML_TEMPLATE = """
             <!-- Library Statistics -->
             <div class="card">
                 <h2>Library Statistics</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
                     <div>
                         <div class="stat-value" id="total-books">0</div>
-                        <div class="stat-label">Total Books</div>
+                        <div class="stat-label">📚 Documents</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="total-emails">0</div>
+                        <div class="stat-label">📧 Emails</div>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="email-attachments">0</div>
+                        <div class="stat-label">📎 Email Attachments</div>
                     </div>
                     <div>
                         <div class="stat-value" id="total-chunks">0</div>
@@ -646,6 +654,8 @@ HTML_TEMPLATE = """
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('total-books').textContent = data.total_books;
+                    document.getElementById('total-emails').textContent = data.total_emails || 0;
+                    document.getElementById('email-attachments').textContent = data.email_attachments || 0;
                     document.getElementById('total-chunks').textContent = data.total_chunks.toLocaleString();
                     document.getElementById('pending-pdfs').textContent = data.pending_pdfs;
                     document.getElementById('failed-pdfs').textContent = data.failed_pdfs;
@@ -1048,19 +1058,40 @@ def api_stats():
         'total_books': 0,
         'total_chunks': 0,
         'failed_pdfs': 0,
-        'pending_pdfs': 0
+        'pending_pdfs': 0,
+        'total_emails': 0,
+        'email_attachments': 0
     }
-    
-    # Count indexed books
+
+    # Count indexed books and emails separately
     if os.path.exists(INDEX_FILE):
         try:
             with open(INDEX_FILE, 'r') as f:
                 book_index = json.load(f)
-                stats['total_books'] = len(book_index)
-                stats['total_chunks'] = sum(entry.get('chunks', 0) for entry in book_index.values())
+
+                # Separate documents and emails
+                for path, entry in book_index.items():
+                    if path.endswith(('.emlx', '.eml')) or entry.get('type') == 'email':
+                        stats['total_emails'] += 1
+                    else:
+                        stats['total_books'] += 1
+                    stats['total_chunks'] += entry.get('chunks', 0)
         except Exception as e:
             print(f"Error reading book index: {e}")
-    
+
+    # Count email attachments from vector store metadata
+    try:
+        # Query vector store for email attachments
+        from ..core.shared_rag import RAGSystem
+        rag = RAGSystem(initialize=False)
+        if rag.vector_store:
+            # Get all documents with type='email_attachment'
+            results = rag.vector_store.get(where={"type": "email_attachment"})
+            if results and 'ids' in results:
+                stats['email_attachments'] = len(results['ids'])
+    except:
+        pass
+
     # Count failed PDFs
     if os.path.exists(FAILED_PDFS_FILE):
         try:

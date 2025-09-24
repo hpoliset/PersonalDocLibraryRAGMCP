@@ -329,16 +329,16 @@ class IndexMonitor:
     def initial_sync(self):
         """Perform initial synchronization"""
         logger.info("Performing initial synchronization...")
-        
+
         # Debug: Check book index state
         logger.info(f"Current book index has {len(self.rag.book_index)} entries")
         logger.info(f"Books directory: {self.books_directory}")
         logger.info(f"Books directory exists: {os.path.exists(self.books_directory)}")
-        
+
         # Find new or modified documents
         documents_to_index = self.rag.find_new_or_modified_documents()
         logger.info(f"find_new_or_modified_documents returned {len(documents_to_index)} documents")
-        
+
         if documents_to_index:
             logger.info(f"Found {len(documents_to_index)} documents to index")
             self.process_documents(documents_to_index)
@@ -349,7 +349,22 @@ class IndexMonitor:
                 "message": "Monitoring for changes",
                 "documents_indexed": len(self.rag.book_index)
             })
-        
+
+        # Index emails if enabled
+        if os.getenv('PERSONAL_LIBRARY_INDEX_EMAILS', 'false').lower() == 'true':
+            logger.info("Email indexing is enabled, processing emails...")
+            try:
+                email_count = self.rag.index_emails()
+                if email_count > 0:
+                    logger.info(f"Successfully indexed {email_count} emails")
+                    self.rag.update_status("idle", {
+                        "message": "Monitoring for changes",
+                        "documents_indexed": len(self.rag.book_index),
+                        "emails_indexed": email_count
+                    })
+            except Exception as e:
+                logger.error(f"Error indexing emails: {e}")
+
         # Clean up removed documents
         self.cleanup_removed_documents()
     

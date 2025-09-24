@@ -927,13 +927,87 @@ class SharedRAG:
                 persist_directory=self.db_directory
             )
     
+    def index_emails(self):
+        """Index emails from Apple Mail and Outlook"""
+        logger.info("Starting email indexing...")
+
+        # Import email loaders
+        try:
+            from ..loaders.emlx_loader import EMLXLoader
+            from ..loaders.outlook_loader import OutlookLocalLoader
+            from ..loaders.email_loaders import EmailFilterConfig
+        except ImportError as e:
+            logger.error(f"Could not import email loaders: {e}")
+            return 0
+
+        # Create email filter configuration from environment
+        filter_config = EmailFilterConfig({
+            'max_age_days': int(os.getenv('PERSONAL_LIBRARY_EMAIL_MAX_AGE_DAYS', '365')),
+            'excluded_folders': os.getenv('PERSONAL_LIBRARY_EMAIL_EXCLUDED_FOLDERS', 'Spam,Junk,Trash,Deleted Items,Drafts').split(','),
+            'included_folders': os.getenv('PERSONAL_LIBRARY_EMAIL_INCLUDED_FOLDERS', '').split(',') if os.getenv('PERSONAL_LIBRARY_EMAIL_INCLUDED_FOLDERS') else [],
+            'important_senders': os.getenv('PERSONAL_LIBRARY_EMAIL_IMPORTANT_SENDERS', '').split(',') if os.getenv('PERSONAL_LIBRARY_EMAIL_IMPORTANT_SENDERS') else []
+        })
+
+        all_email_documents = []
+        email_sources = os.getenv('PERSONAL_LIBRARY_EMAIL_SOURCES', 'apple_mail').split(',')
+
+        # Index Apple Mail if enabled
+        if 'apple_mail' in email_sources:
+            try:
+                logger.info("Indexing Apple Mail emails...")
+                emlx_loader = EMLXLoader(filter_config=filter_config)
+                apple_mail_docs = emlx_loader.load()
+                all_email_documents.extend(apple_mail_docs)
+                logger.info(f"Indexed {len(apple_mail_docs)} Apple Mail emails")
+            except Exception as e:
+                logger.error(f"Error indexing Apple Mail: {e}")
+
+        # Index Outlook if enabled
+        if 'outlook_local' in email_sources:
+            try:
+                logger.info("Indexing Outlook emails...")
+                olm_path = os.getenv('PERSONAL_LIBRARY_OUTLOOK_OLM_PATH')
+                outlook_loader = OutlookLocalLoader(olm_path=olm_path, filter_config=filter_config)
+                outlook_docs = outlook_loader.load()
+                all_email_documents.extend(outlook_docs)
+                logger.info(f"Indexed {len(outlook_docs)} Outlook emails")
+            except Exception as e:
+                logger.error(f"Error indexing Outlook: {e}")
+
+        # Add emails to vector store if any were found
+        if all_email_documents:
+            logger.info(f"Adding {len(all_email_documents)} total email documents to vector store...")
+
+            # Split emails into chunks if needed
+            text_splitter = RecursiveCharacterTextSplitter(
+                chunk_size=1200,
+                chunk_overlap=150
+            )
+            split_email_docs = text_splitter.split_documents(all_email_documents)
+
+            # Add to vector store
+            if self.vector_store is None:
+                # Create new vector store
+                self.vector_store = Chroma.from_documents(
+                    documents=split_email_docs,
+                    embedding=self.embeddings,
+                    persist_directory=self.persist_directory
+                )
+            else:
+                # Add to existing vector store
+                self.vector_store.add_documents(split_email_docs)
+
+            logger.info(f"Successfully indexed {len(all_email_documents)} emails")
+
+        return len(all_email_documents)
+
     def find_new_or_modified_documents(self):
         """Find documents that need indexing (PDFs, Word docs, EPUBs)"""
         if not os.path.exists(self.books_directory):
             return []
         
-        # Supported file extensions
-        supported_extensions = ('.pdf', '.docx', '.doc', '.epub', '.mobi', '.azw', '.azw3', '.pptx', '.ppt')
+        # Supported file extensions (including email formats)
+        supported_extensions = ('.pdf', '.docx', '.doc', '.epub', '.mobi', '.azw', '.azw3', '.pptx', '.ppt', '.emlx', '.eml', '.olm')
         documents_to_index = []
         
         for root, dirs, files in os.walk(self.books_directory):

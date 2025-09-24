@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ragdex"
-version = "0.1.4"
+version = "0.2.0"
 description = "RAG-powered document indexing and search for MCP (Model Context Protocol)"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -46,7 +46,8 @@ dependencies = [
   "psutil==5.9.7",
   "flask==3.0.0",
   "watchdog>=3.0.0",
-  "platformdirs>=4.0.0"
+  "platformdirs>=4.0.0",
+  "emlx>=1.0.0"
 ]
 
 [project.urls]
