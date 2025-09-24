@@ -6,19 +6,50 @@ Centralizes all configurable paths and settings
 
 import os
 from pathlib import Path
+from typing import Optional
 
-# Base directory - project root (two levels up from this file)
-BASE_DIR = Path(__file__).parent.parent.parent.absolute()
+from platformdirs import user_data_dir, user_log_dir
+
+# Discover project/package layout for legacy defaults
+PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+SRC_ROOT = PACKAGE_ROOT.parent
+REPO_ROOT: Optional[Path] = None
+if SRC_ROOT.name == "src":
+    candidate = SRC_ROOT.parent
+    if (candidate / ".git").exists():
+        REPO_ROOT = candidate
 
 # Environment variable names
 ENV_BOOKS_PATH = "PERSONAL_LIBRARY_DOC_PATH"
 ENV_DB_PATH = "PERSONAL_LIBRARY_DB_PATH"
 ENV_LOGS_PATH = "PERSONAL_LIBRARY_LOGS_PATH"
 
-# Default paths (relative to BASE_DIR)
-DEFAULT_BOOKS_PATH = BASE_DIR / "books"
-DEFAULT_DB_PATH = BASE_DIR / "chroma_db"
-DEFAULT_LOGS_PATH = BASE_DIR / "logs"
+APP_NAME = "personal_doc_library"
+APP_AUTHOR = "pdlib"
+
+USER_DATA_DIR = Path(user_data_dir(APP_NAME, APP_AUTHOR))
+USER_LOG_DIR = Path(user_log_dir(APP_NAME, APP_AUTHOR))
+
+
+def _legacy_path(relative: str) -> Optional[Path]:
+    if REPO_ROOT is None:
+        return None
+    legacy = (REPO_ROOT / relative).resolve()
+    if legacy.exists():
+        return legacy
+    return None
+
+
+def _default_books_path() -> Path:
+    return _legacy_path("books") or (USER_DATA_DIR / "books")
+
+
+def _default_db_path() -> Path:
+    return _legacy_path("chroma_db") or (USER_DATA_DIR / "chroma_db")
+
+
+def _default_logs_path() -> Path:
+    return _legacy_path("logs") or USER_LOG_DIR
 
 class Config:
     """Configuration class with environment variable support"""
@@ -26,33 +57,26 @@ class Config:
     @property
     def books_directory(self) -> Path:
         """Get the books directory path"""
-        env_path = os.getenv(ENV_BOOKS_PATH)
-        default_path = str(DEFAULT_BOOKS_PATH)
-        path = env_path if env_path else default_path
-        
-        # Debug logging for troubleshooting service issues
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Config DEBUG - ENV_BOOKS_PATH: {ENV_BOOKS_PATH}")
-        logger.info(f"Config DEBUG - env_path: {env_path}")
-        logger.info(f"Config DEBUG - default_path: {default_path}")
-        logger.info(f"Config DEBUG - selected path: {path}")
-        
-        result = Path(path).expanduser().resolve()
-        logger.info(f"Config DEBUG - resolved path: {result}")
-        return result
+        path = os.getenv(ENV_BOOKS_PATH)
+        default_path = _default_books_path()
+        target = Path(path).expanduser() if path else default_path
+        return target.resolve()
     
     @property
     def db_directory(self) -> Path:
         """Get the database directory path"""
-        path = os.getenv(ENV_DB_PATH, str(DEFAULT_DB_PATH))
-        return Path(path).expanduser().resolve()
+        path = os.getenv(ENV_DB_PATH)
+        default_path = _default_db_path()
+        target = Path(path).expanduser() if path else default_path
+        return target.resolve()
     
     @property
     def logs_directory(self) -> Path:
         """Get the logs directory path"""
-        path = os.getenv(ENV_LOGS_PATH, str(DEFAULT_LOGS_PATH))
-        return Path(path).expanduser().resolve()
+        path = os.getenv(ENV_LOGS_PATH)
+        default_path = _default_logs_path()
+        target = Path(path).expanduser() if path else default_path
+        return target.resolve()
     
     def ensure_directories(self):
         """Create directories if they don't exist"""
@@ -62,7 +86,9 @@ class Config:
     def get_config_info(self) -> dict:
         """Get configuration information for debugging"""
         return {
-            "base_dir": str(BASE_DIR),
+            "package_root": str(PACKAGE_ROOT),
+            "user_data_dir": str(USER_DATA_DIR),
+            "user_log_dir": str(USER_LOG_DIR),
             "books_directory": str(self.books_directory),
             "db_directory": str(self.db_directory),
             "logs_directory": str(self.logs_directory),

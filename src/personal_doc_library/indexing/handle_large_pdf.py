@@ -21,10 +21,8 @@ import PyPDF2
 from PyPDF2 import PdfWriter, PdfReader
 import hashlib
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from src.core.shared_rag import SharedRAG
-from src.core.config import config
+from personal_doc_library.core.shared_rag import SharedRAG
+from personal_doc_library.core.config import config
 
 class LargePDFHandler:
     def __init__(self):

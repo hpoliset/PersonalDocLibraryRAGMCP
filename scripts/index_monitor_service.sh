@@ -99,18 +99,21 @@ run_service() {
     # Change to project root directory
     cd "$PROJECT_ROOT"
     
-    # Start the Python indexer in service mode
-    local python_script="$PROJECT_ROOT/src/indexing/index_monitor.py"
-    
     # Execute Python process with full permission inheritance
     # Use exec to replace this shell process so Python inherits all permissions
     log "Executing Python indexer with full permissions"
-    
+
     # Store our PID for the health check
     echo "$$" > "$SERVICE_PID_FILE"
-    
+
+    if [[ -z "${PYTHONPATH:-}" ]]; then
+        export PYTHONPATH="$PROJECT_ROOT/src"
+    else
+        export PYTHONPATH="$PROJECT_ROOT/src:$PYTHONPATH"
+    fi
+
     # Use exec to replace the shell with Python, inheriting all permissions
-    exec "$venv_python" "$python_script" --service \
+    exec "$venv_python" -m personal_doc_library.indexing.index_monitor --service \
         --books-dir "$PERSONAL_LIBRARY_DOC_PATH" \
         --db-dir "$PERSONAL_LIBRARY_DB_PATH"
 }

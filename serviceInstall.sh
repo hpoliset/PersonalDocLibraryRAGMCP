@@ -390,13 +390,15 @@ if [ "$START_WEB_MONITOR" = true ]; then
             echo -e "  ${GREEN}✓${NC} Dashboard available at http://localhost:8888"
         else
             # Fallback to background process
-            nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" \
+            nohup env PYTHONPATH="${PROJECT_ROOT}/src${PYTHONPATH:+:$PYTHONPATH}" \
+                "$venv_path/bin/python" -m personal_doc_library.monitoring.monitor_web_enhanced \
                 > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
             echo -e "  ${GREEN}✓${NC} Web monitor started at http://localhost:8888"
         fi
     else
         # Non-macOS: run as background process
-        nohup "$venv_path/bin/python" "${PROJECT_ROOT}/src/monitoring/monitor_web_enhanced.py" \
+        nohup env PYTHONPATH="${PROJECT_ROOT}/src${PYTHONPATH:+:$PYTHONPATH}" \
+            "$venv_path/bin/python" -m personal_doc_library.monitoring.monitor_web_enhanced \
             > "${PROJECT_ROOT}/logs/webmonitor_stdout.log" 2>&1 &
         echo -e "  ${GREEN}✓${NC} Web monitor started at http://localhost:8888"
     fi

@@ -10,9 +10,8 @@ import psutil
 import logging
 from datetime import datetime
 from pathlib import Path
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from src.core.shared_rag import SharedRAG
+
+from personal_doc_library.core.shared_rag import SharedRAG
 
 # Setup detailed logging
 def setup_detailed_logging():

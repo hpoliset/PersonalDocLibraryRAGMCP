@@ -5,7 +5,6 @@ Watches for changes and automatically indexes new/modified PDFs
 """
 
 import os
-import sys
 import signal
 import time
 import logging
@@ -15,10 +14,9 @@ from watchdog.events import FileSystemEventHandler
 import threading
 import resource
 import psutil
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from src.core.shared_rag import SharedRAG, IndexLock
-from src.core.config import config
+
+from personal_doc_library.core.shared_rag import SharedRAG, IndexLock
+from personal_doc_library.core.config import config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -746,6 +744,7 @@ def main():
     args = parser.parse_args()
     
     # Create directories if needed (use config defaults if not specified)
+    config.ensure_directories()
     books_dir = args.books_dir if args.books_dir is not None else str(config.books_directory)
     db_dir = args.db_dir if args.db_dir is not None else str(config.db_directory)
     os.makedirs(books_dir, exist_ok=True)
@@ -763,10 +762,13 @@ def main():
         with daemon.DaemonContext():
             monitor = IndexMonitor(args.books_dir, args.db_dir)
             monitor.start()
-    else:
-        # Run in foreground
-        monitor = IndexMonitor(args.books_dir, args.db_dir)
-        monitor.start()
+        return 0
+
+    # Run in foreground
+    monitor = IndexMonitor(args.books_dir, args.db_dir)
+    monitor.start()
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

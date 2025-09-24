@@ -38,6 +38,35 @@ A Model Context Protocol (MCP) server that enables Claude to access and analyze 
 
 ### Installation
 
+#### Option 0: Install as a Python package (New)
+
+The project now ships as an installable Python package so you can bootstrap the tools without cloning the repository:
+
+```bash
+pip install personal-doc-library
+
+# Create data directories and review configuration
+pdlib-cli ensure-dirs
+pdlib-cli config
+
+# Launch services from anywhere on your system
+pdlib-mcp            # Start the MCP server
+pdlib-indexer        # Start the background index monitor
+pdlib-webmonitor     # Run the Flask-based dashboard
+```
+
+If you plan to use advanced document conversion tooling or the optional service helpers, install the corresponding extras:
+
+```bash
+# Enable document-processing extras such as pandoc and unstructured
+pip install "personal-doc-library[document-processing]"
+
+# Add service helpers including python-daemon
+pip install "personal-doc-library[services]"
+```
+
+Use `pdlib-cli --help` to explore additional utility commands (failed document recovery, indexing diagnostics, and more). The optional extras described below remain available if you need automated service installation or a fully scripted environment.
+
 #### Option 1: Comprehensive Setup (Recommended)
 
 ```bash
@@ -442,7 +471,7 @@ python -m pytest tests/
 
 ### Adding New Document Types
 
-Edit `src/core/shared_rag.py` to add support for new formats:
+Edit `src/personal_doc_library/core/shared_rag.py` to add support for new formats:
 1. Add file extension to `SUPPORTED_EXTENSIONS`
 2. Implement loader in `load_document()`
 3. Update categorization if needed

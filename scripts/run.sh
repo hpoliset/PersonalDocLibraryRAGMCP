@@ -4,9 +4,11 @@
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+VENV_DIR="$PROJECT_ROOT/venv_mcp"
+SERVER_FILE="$PROJECT_ROOT/src/personal_doc_library/servers/mcp_complete_server.py"
 
 # Use Python from virtual environment
-PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+PYTHON_CMD="$VENV_DIR/bin/python"
 
 echo "🔮 Personal Document Library MCP Server"
 echo "==============================="
@@ -60,8 +62,8 @@ if [ "$HELP" = true ]; then
 fi
 
 # Check if we're in the right directory
-if [ ! -f "src/servers/mcp_complete_server.py" ]; then
-    echo "❌ Error: src/servers/mcp_complete_server.py not found!"
+if [ ! -f "$SERVER_FILE" ]; then
+    echo "❌ Error: $SERVER_FILE not found!"
     echo "   Please run this script from the AITools directory."
     exit 1
 fi
@@ -77,13 +79,19 @@ fi
 cd "$PROJECT_ROOT"
 
 # Set Python command to use virtual environment directly
-PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
+PYTHON_CMD="$VENV_DIR/bin/python"
 
 # Verify Python exists
 if [ ! -f "$PYTHON_CMD" ]; then
     echo "❌ Python not found at $PYTHON_CMD"
     echo "   Please run ./serviceInstall.sh first"
     exit 1
+fi
+
+if [[ -z "${PYTHONPATH:-}" ]]; then
+    export PYTHONPATH="$PROJECT_ROOT/src"
+else
+    export PYTHONPATH="$PROJECT_ROOT/src:$PYTHONPATH"
 fi
 
 echo "📌 Using Python from venv_mcp..."
@@ -113,7 +121,9 @@ import sys
 import signal
 import psutil
 from datetime import datetime
-from src.core.shared_rag import SharedRAG
+
+sys.path.append('src')
+from personal_doc_library.core.shared_rag import SharedRAG
 
 # Monitor memory usage
 def check_memory():
@@ -214,7 +224,10 @@ except Exception as e:
         echo ""
         "$PYTHON_CMD" -c "
 import os
-from src.core.shared_rag import SharedRAG
+import sys
+
+sys.path.append('src')
+from personal_doc_library.core.shared_rag import SharedRAG
 
 # Use environment variables or defaults
 books_path = os.getenv('PERSONAL_LIBRARY_DOC_PATH')
@@ -245,5 +258,5 @@ else
     echo "   New books will be indexed automatically on first use"
     echo "   Press Ctrl+C to stop"
     echo ""
-    "$PYTHON_CMD" src/servers/mcp_complete_server.py
+    "$PYTHON_CMD" -m personal_doc_library.servers.mcp_complete_server
 fi

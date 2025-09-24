@@ -51,7 +51,7 @@ With the new dependencies installed, the following previously failed documents c
 
 2. **Monitor indexing progress**: Use the web monitor to track progress
    ```bash
-   python src/monitoring/monitor_web_enhanced.py
+   python -m personal_doc_library.monitoring.monitor_web_enhanced
    ```
 
 3. **Verify in Claude**: After indexing, test the new documents in Claude by asking about content from Word documents or EPUB books
@@ -67,6 +67,6 @@ With the new dependencies installed, the following previously failed documents c
 - `README.md`: Added installation instructions for Word and EPUB support
 - `serviceInstall.sh`: Added automatic dependency installation
 - `CLAUDE.md`: Updated status to reflect multi-document support
-- `src/core/shared_rag.py`: Already supports multiple document types
+- `src/personal_doc_library/core/shared_rag.py`: Already supports multiple document types
 
 The system is now fully operational with comprehensive document format support!

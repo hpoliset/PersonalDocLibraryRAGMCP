@@ -4,9 +4,7 @@ Show current configuration for Personal Document Library MCP Server
 Demonstrates how to use the config system
 """
 
-import os
-import sys
-from src.core.config import config
+from personal_doc_library.core.config import config
 
 def main():
     print("=== Personal Document Library MCP Server Configuration ===\n")
@@ -51,7 +49,7 @@ def main():
     
     # Show some example paths
     print("\n📚 Example Usage:")
-    print("  from src.core.config import config")
+    print("  from personal_doc_library.core.config import config")
     print("  books_path = config.books_directory")
     print("  db_path = config.db_directory")
     print("  # Or use the convenience functions:")
