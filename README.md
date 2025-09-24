@@ -116,7 +116,7 @@ pip install ragdex
 
 ```bash
 # Download installer
-curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/install_ragdex_services.sh
+curl -O https://raw.githubusercontent.com/hpoliset/ragdex/main/install_ragdex_services.sh
 chmod +x install_ragdex_services.sh
 
 # Run interactive setup
@@ -154,7 +154,7 @@ After running the installer, it will display a JSON configuration snippet. You n
 **Alternative: Automatic Configuration**
 ```bash
 # This script can automatically update your Claude config
-curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/update_claude_config.sh
+curl -O https://raw.githubusercontent.com/hpoliset/ragdex/main/update_claude_config.sh
 chmod +x update_claude_config.sh
 ./update_claude_config.sh
 ```
@@ -175,7 +175,7 @@ chmod +x update_claude_config.sh
 - **Storage**:
   - ~500MB for Ragdex installation
   - ~2GB for embedding models (auto-downloaded on first run)
-  - 1-10GB for vector database (depends on library size)
+  - ~1MB per 100-page PDF for vector database storage
 - **Claude Desktop** (required for MCP integration)
 - **Optional dependencies**:
   - Calibre (for MOBI/AZW ebooks)
@@ -261,8 +261,8 @@ pip install ragdex[document-processing,services]
 <summary>🔧 Install from Source</summary>
 
 ```bash
-git clone https://github.com/hpoliset/DocumentIndexerMCP
-cd DocumentIndexerMCP
+git clone https://github.com/hpoliset/ragdex
+cd ragdex
 pip install -e .
 
 # With extras
@@ -357,24 +357,36 @@ print(f"Documents indexed: {len(rag.book_index)}")
 
 ```mermaid
 graph TD
-    A[Document Sources] --> B[Ragdex Indexer]
-    B --> C[ChromaDB Vector Store]
-    C --> D[MCP Server]
-    D --> E[Claude Desktop]
+    A[📚 Document Sources<br/>PDF, Word, EPUB, MOBI] --> B[⚙️ Ragdex Indexer<br/>Background Service]
+    B --> C[🗄️ ChromaDB<br/>Vector Store<br/>768-dim embeddings]
+    C --> D[🔌 MCP Server<br/>17 Tools & Resources]
+    D --> E[🤖 Claude Desktop<br/>AI Assistant]
 
-    F[Email Archives] --> B
-    G[Web Dashboard] --> C
+    F[📧 Email Archives<br/>Apple Mail, Outlook] --> B
+    G[📊 Web Dashboard<br/>localhost:8888] --> C
 
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style E fill:#9f9,stroke:#333,stroke-width:2px
+    B -.->|MD5 Hash<br/>Deduplication| H[🔍 Change Detection]
+    B -.->|OCR Support| I[📄 Scanned Docs]
+
+    style A fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
+    style E fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    style F fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    style G fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000
+    style B fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+    style C fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,color:#000
+    style D fill:#e3f2fd,stroke:#0d47a1,stroke-width:2px,color:#000
+    style H fill:#fffde7,stroke:#f57f17,stroke-width:1px,color:#000
+    style I fill:#fffde7,stroke:#f57f17,stroke-width:1px,color:#000
 ```
+
+> 📖 **[View Detailed Architecture Documentation →](docs/ARCHITECTURE.md)**
 
 ### Components
 
-- **Indexer**: Background service monitoring document changes
-- **Vector Store**: ChromaDB with 768-dim embeddings
-- **MCP Server**: 17 tools for document interaction
-- **Web Monitor**: Real-time dashboard at localhost:8888
+- **⚙️ Indexer**: Background service monitoring document changes with automatic retry
+- **🗄️ Vector Store**: ChromaDB with 768-dim embeddings (all-mpnet-base-v2)
+- **🔌 MCP Server**: 17 tools, 5 prompts, 4 resources for document interaction
+- **📊 Web Monitor**: Real-time dashboard at localhost:8888 with search interface
 
 ---
 
@@ -386,8 +398,8 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ```bash
 # Clone and install in dev mode
-git clone https://github.com/hpoliset/DocumentIndexerMCP
-cd DocumentIndexerMCP
+git clone https://github.com/hpoliset/ragdex
+cd ragdex
 pip install -e ".[dev]"
 
 # Run tests
@@ -472,14 +484,14 @@ Built with:
 
 ## 📞 Support
 
-- 📧 **Issues**: [GitHub Issues](https://github.com/hpoliset/DocumentIndexerMCP/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/hpoliset/DocumentIndexerMCP/discussions)
-- 📖 **Wiki**: [Documentation Wiki](https://github.com/hpoliset/DocumentIndexerMCP/wiki)
+- 📧 **Issues**: [GitHub Issues](https://github.com/hpoliset/ragdex/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/hpoliset/ragdex/discussions)
+- 📖 **Wiki**: [Documentation Wiki](https://github.com/hpoliset/ragdex/wiki)
 
 ---
 
 <div align="center">
 Made with ❤️ for the AI community
 
-**[⭐ Star us on GitHub](https://github.com/hpoliset/DocumentIndexerMCP)**
+**[⭐ Star us on GitHub](https://github.com/hpoliset/ragdex)**
 </div>

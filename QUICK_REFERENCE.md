@@ -19,8 +19,8 @@ pip install ragdex[document-processing,services]
 ### Install from Source (Development)
 ```bash
 # Clone and install in editable mode
-git clone https://github.com/hpoliset/DocumentIndexerMCP
-cd DocumentIndexerMCP
+git clone https://github.com/hpoliset/ragdex
+cd ragdex
 pip install -e .
 
 # With optional extras
@@ -235,7 +235,7 @@ export ANONYMIZED_TELEMETRY=false
 pip install -e .
 
 # Or set PYTHONPATH manually
-export PYTHONPATH="/path/to/DocumentIndexerMCP/src:${PYTHONPATH:-}"
+export PYTHONPATH="/path/to/ragdex/src:${PYTHONPATH:-}"
 ```
 
 ### Service Issues
@@ -293,7 +293,7 @@ ragdex-mcp          # Run MCP server
 
 # Option 2: Services (macOS)
 # Download and run service installer
-curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/install_ragdex_services.sh
+curl -O https://raw.githubusercontent.com/hpoliset/ragdex/main/install_ragdex_services.sh
 chmod +x install_ragdex_services.sh
 ./install_ragdex_services.sh
 # Services run automatically

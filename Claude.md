@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository Structure
 
 ```
-DocumentIndexerMCP/ (Ragdex)
+ragdex/
 ├── src/personal_doc_library/  # Main source code
 │   ├── core/              # Core functionality (shared_rag.py, config.py, logging)
 │   ├── servers/           # MCP server implementation
@@ -104,10 +104,10 @@ python -m personal_doc_library.monitoring.monitor_web_enhanced  # Start web dash
 {
   "mcpServers": {
     "personal-library": {
-      "command": "/path/to/your/DocumentIndexerMCP/venv_mcp/bin/python",
+      "command": "/path/to/your/ragdex/venv_mcp/bin/python",
       "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
       "env": {
-        "PYTHONPATH": "/path/to/your/DocumentIndexerMCP/src",
+        "PYTHONPATH": "/path/to/your/ragdex/src",
         "PYTHONUNBUFFERED": "1"
       }
     }

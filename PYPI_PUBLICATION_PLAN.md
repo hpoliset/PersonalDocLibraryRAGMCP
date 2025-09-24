@@ -30,10 +30,10 @@ Add the following sections:
 
 ```toml
 [project.urls]
-Homepage = "https://github.com/hpoliset/PersonalDocLibraryRAGMCP"
-Documentation = "https://github.com/hpoliset/PersonalDocLibraryRAGMCP#readme"
-Issues = "https://github.com/hpoliset/PersonalDocLibraryRAGMCP/issues"
-Repository = "https://github.com/hpoliset/PersonalDocLibraryRAGMCP"
+Homepage = "https://github.com/hpoliset/ragdex"
+Documentation = "https://github.com/hpoliset/ragdex#readme"
+Issues = "https://github.com/hpoliset/ragdex/issues"
+Repository = "https://github.com/hpoliset/ragdex"
 
 [project]
 authors = [

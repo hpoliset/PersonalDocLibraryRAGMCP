@@ -41,7 +41,7 @@ from personal_doc_library.utils.ocr_manager import OCRManager
 
 # Initialize manager
 books_dir = os.environ.get('PERSONAL_LIBRARY_DOC_PATH', '/Users/hpoliset/SpiritualLibrary')
-db_dir = os.environ.get('PERSONAL_LIBRARY_DB_PATH', '/Users/hpoliset/DocumentIndexerMCP/chroma_db')
+db_dir = os.environ.get('PERSONAL_LIBRARY_DB_PATH', '/Users/hpoliset/ragdex/chroma_db')
 
 manager = OCRManager(books_dir, db_dir)
 

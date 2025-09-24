@@ -2,7 +2,7 @@
 
 ## Repository Overview
 ```
-DocumentIndexerMCP/ (or ~/ragdex_env/ for PyPI installation)
+ragdex/ (or ~/ragdex_env/ for PyPI installation)
 ├── 📁 Source Code (src/personal_doc_library/)
 │   ├── __init__.py               # Package initialization
 │   ├── cli.py                    # Command-line interface (ragdex)
