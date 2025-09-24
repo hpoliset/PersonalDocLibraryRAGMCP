@@ -245,14 +245,17 @@ If you already have other MCP servers, add ragdex to the existing structure:
 <summary>📦 Install with Optional Dependencies</summary>
 
 ```bash
-# Document processing extras
-pip install ragdex[document-processing]
+# Document processing extras (using uv - recommended)
+uv pip install ragdex[document-processing]
 
 # Service management
-pip install ragdex[services]
+uv pip install ragdex[services]
 
 # Everything
-pip install ragdex[document-processing,services]
+uv pip install ragdex[document-processing,services]
+
+# Alternative: standard pip
+# pip install ragdex[document-processing,services]
 ```
 
 </details>
@@ -263,10 +266,15 @@ pip install ragdex[document-processing,services]
 ```bash
 git clone https://github.com/hpoliset/ragdex
 cd ragdex
-pip install -e .
+
+# Using uv (recommended)
+uv pip install -e .
 
 # With extras
-pip install -e ".[document-processing,services]"
+uv pip install -e ".[document-processing,services]"
+
+# Alternative: standard pip
+# pip install -e ".[document-processing,services]"
 ```
 
 </details>
@@ -558,7 +566,12 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 # Clone and install in dev mode
 git clone https://github.com/hpoliset/ragdex
 cd ragdex
-pip install -e ".[dev]"
+
+# Using uv (recommended)
+uv pip install -e ".[dev]"
+
+# Alternative: standard pip
+# pip install -e ".[dev]"
 
 # Run tests
 pytest tests/
