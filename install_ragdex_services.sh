@@ -353,4 +353,35 @@ echo ""
 echo "💡 To use these paths in other sessions, run:"
 echo "   source $CONFIG_FILE"
 echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+echo "🤖 ${BLUE}Claude Desktop Configuration${NC}"
+echo ""
+echo "Add this to your Claude Desktop configuration file:"
+echo "   ${YELLOW}~/Library/Application Support/Claude/claude_desktop_config.json${NC}"
+echo ""
+echo "${GREEN}────────────────────────────────────────────────────${NC}"
+cat << EOF
+{
+  "mcpServers": {
+    "ragdex": {
+      "command": "$RAGDEX_MCP_PATH",
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "CHROMA_TELEMETRY": "false",
+        "PERSONAL_LIBRARY_DOC_PATH": "$DOCS_PATH",
+        "PERSONAL_LIBRARY_DB_PATH": "$DB_PATH",
+        "PERSONAL_LIBRARY_LOGS_PATH": "$LOGS_PATH"
+      }
+    }
+  }
+}
+EOF
+echo "${GREEN}────────────────────────────────────────────────────${NC}"
+echo ""
+echo "📌 Note: If you have other MCP servers configured, merge this"
+echo "   'ragdex' section into your existing mcpServers object."
+echo ""
+echo "After updating the config, restart Claude Desktop for changes to take effect."
+echo ""
 echo "✅ Ragdex services installed successfully!"

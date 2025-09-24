@@ -108,6 +108,7 @@ uv pip install ragdex
 curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/install_ragdex_services.sh
 curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/uninstall_ragdex_services.sh
 curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/ragdex_status.sh
+curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/update_claude_config.sh
 chmod +x *.sh
 
 # Install services (interactive - will prompt for paths)
@@ -129,11 +130,12 @@ export PERSONAL_LIBRARY_LOGS_PATH="/path/to/logs"
 ./ragdex_status.sh
 ```
 
-The service installer script (v0.1.3+) provides:
+The service installer script (v0.1.4+) provides:
 - ✅ **Interactive path configuration** - prompts for custom paths if not set
 - ✅ **Environment variable support** - respects your exported paths
 - ✅ **Command-line options** - specify paths directly
 - ✅ **Configuration saving** - saves your paths for future use
+- ✅ **Claude Desktop config output** - shows ready-to-use configuration
 - ✅ **Automatic service installation** for background indexing
 - ✅ **Web monitor dashboard** at http://localhost:8888
 - ✅ **Automatic startup** on system boot
@@ -168,6 +170,17 @@ The service installer script (v0.1.3+) provides:
    ./install_ragdex_services.sh --non-interactive
    # Uses env vars or defaults without prompting
    ```
+
+#### Update Claude Desktop Configuration
+
+After installing services, you can use the helper script to automatically update your Claude Desktop configuration:
+
+```bash
+# Automatically updates or creates Claude config
+./update_claude_config.sh
+```
+
+Or manually copy the configuration shown at the end of the installation process.
 
 ### Post-Installation
 
