@@ -231,22 +231,25 @@ Once configured, you can ask Claude:
 "What meetings did I have last month?" (from emails)
 ```
 
-### Programmatic Usage
+### Python API Usage (Advanced)
+
+While Ragdex is primarily designed for Claude Desktop via MCP, you can also use it programmatically:
 
 ```python
-from ragdex import RAGSystem
+from personal_doc_library.core.shared_rag import RAGSystem
 
 # Initialize the system
 rag = RAGSystem()
 
 # Search documents
-results = rag.search("artificial intelligence", max_results=5)
+results = rag.search_documents("artificial intelligence", max_results=5)
 
-# Get statistics
-stats = rag.get_library_stats()
-print(f"Total documents: {stats['total_documents']}")
-print(f"Total emails: {stats['total_emails']}")
+# Get document stats
+stats = rag.get_library_statistics()
+print(f"Documents indexed: {len(rag.book_index)}")
 ```
+
+**Note**: The primary use case is through Claude Desktop. Direct API usage requires understanding the internal architecture.
 
 ---
 
