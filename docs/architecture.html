@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal Document Library MCP Server - Architecture</title>
+    <title>Ragdex - Complete Architecture Documentation</title>
     <style>
         * {
             margin: 0;
@@ -11,255 +11,574 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --dark: #1f2937;
+            --light: #f9fafb;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
+            color: var(--dark);
+            background: linear-gradient(135deg, #667eea10 0%, #764ba210 100%);
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
 
         header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 40px 0;
+            padding: 60px 40px;
             text-align: center;
             margin-bottom: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff10" d="M0,96L48,112C96,128,192,160,288,165.3C384,171,480,149,576,128C672,107,768,85,864,96C960,107,1056,149,1152,154.7C1248,160,1344,128,1392,112L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>') no-repeat;
+            background-size: cover;
+            opacity: 0.3;
         }
 
         header h1 {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
         header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+            font-size: 1.3em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .status-banner {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            backdrop-filter: blur(10px);
+            font-weight: bold;
+        }
+
+        .badges {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+        }
+
+        .badge-new {
+            background: var(--success);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .badge-count {
+            background: var(--info);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-top: 5px;
         }
 
         .section {
             background: white;
-            padding: 30px;
+            padding: 40px;
             margin-bottom: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.8em;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 2em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            margin-right: 10px;
         }
 
         h3 {
-            color: #764ba2;
+            color: var(--secondary);
+            margin: 30px 0 15px 0;
+            font-size: 1.5em;
+        }
+
+        h4 {
+            color: var(--primary);
             margin: 20px 0 10px 0;
-            font-size: 1.3em;
+            font-size: 1.2em;
         }
 
-        .architecture-diagram {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-            border: 2px solid #e9ecef;
-        }
-
-        .component {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .component h4 {
-            margin-bottom: 5px;
-            color: white;
-        }
-
-        .component p, .component ul, .component li {
-            color: white;
-        }
-
-        .component ul {
-            padding-left: 20px;
-        }
-
-        .component pre, .component code {
-            background: rgba(255, 255, 255, 0.1);
-            color: #f0f0f0;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .file-list {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-
-        .file-list ul {
-            list-style-type: none;
-            padding-left: 20px;
-        }
-
-        .file-list li {
-            padding: 5px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .file-list li:last-child {
-            border-bottom: none;
-        }
-
-        code {
-            background: #f8f9fa;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9em;
-        }
-
-        pre {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            margin: 10px 0;
-            border: 1px solid #e9ecef;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .stat-card h3 {
-            color: white;
-            font-size: 2em;
-            margin: 0;
-        }
-
-        .stat-card p {
-            margin-top: 5px;
-            opacity: 0.9;
-        }
-
-        .flow-diagram {
+        .architecture-flow {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
-            margin: 20px 0;
+            gap: 20px;
+            padding: 30px 0;
         }
 
         .flow-item {
             flex: 1;
             min-width: 150px;
             text-align: center;
+            position: relative;
+            background: var(--light);
             padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin: 10px;
-            border: 2px solid #667eea;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+        }
+
+        .flow-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
         }
 
         .flow-arrow {
-            font-size: 2em;
-            color: #667eea;
-            margin: 0 10px;
+            position: absolute;
+            top: 50%;
+            right: -25px;
+            font-size: 1.5em;
+            color: var(--primary);
+            transform: translateY(-50%);
+        }
+
+        .flow-item:last-child .flow-arrow {
+            display: none;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .component-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .component-card:hover {
+            transform: scale(1.02);
+        }
+
+        .component-card h4 {
+            color: white;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .component-card .icon {
+            font-size: 1.5em;
+        }
+
+        .component-card p {
+            opacity: 0.95;
+            margin-bottom: 15px;
+        }
+
+        .component-card ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .component-card li {
+            padding: 5px 0;
+            padding-left: 20px;
+            position: relative;
+            color: white;
+        }
+
+        .component-card li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            opacity: 0.8;
+        }
+
+        .component-card code {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .tool-item {
+            background: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .tool-item:hover {
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .tool-name {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tool-desc {
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .file-list {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .file-list h3 {
+            margin-top: 0;
+        }
+
+        .file-list ul {
+            list-style-type: none;
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+
+        .file-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .file-list li:last-child {
+            border-bottom: none;
+        }
+
+        .file-list strong {
+            color: var(--primary);
+        }
+
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: var(--danger);
+        }
+
+        pre {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
         }
 
         .warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
+            background: #fef3c7;
+            border-left: 4px solid var(--warning);
+            color: #92400e;
             padding: 15px;
             border-radius: 5px;
-            margin: 10px 0;
+            margin: 20px 0;
         }
 
         .success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+            background: #d1fae5;
+            border-left: 4px solid var(--success);
+            color: #065f46;
             padding: 15px;
             border-radius: 5px;
-            margin: 10px 0;
+            margin: 20px 0;
         }
 
-        .badge {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 0.85em;
+        .info {
+            background: #dbeafe;
+            border-left: 4px solid var(--info);
+            color: #1e40af;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 15px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
             font-weight: bold;
-            margin: 0 3px;
+            color: var(--primary);
         }
 
-        .badge-new {
-            background: #28a745;
-            color: white;
+        .metric-label {
+            font-size: 0.9em;
+            color: #6b7280;
+            margin-top: 5px;
         }
 
-        .badge-count {
-            background: #17a2b8;
-            color: white;
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .tech-badge {
+            background: linear-gradient(135deg, var(--primary)20, var(--secondary)20);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            border: 2px solid var(--primary);
+            font-weight: 500;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .architecture-flow {
+                flex-direction: column;
+            }
+
+            .flow-arrow {
+                display: none;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            .stat-card {
+                min-width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🔮 Personal Document Library MCP Server</h1>
-            <p>Production-Ready Architecture Documentation</p>
-            <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 5px; margin-top: 15px;">
-                <strong>✅ FULLY OPERATIONAL</strong> - Package structure, 17 tools, 5 prompts, 4 resources, 768-dim embeddings
+            <h1>🚀 Ragdex Architecture</h1>
+            <p>Complete Technical Documentation - Transform Your Documents & Emails into an AI-Powered Knowledge Base</p>
+            <div class="status-banner">
+                ✅ FULLY OPERATIONAL - Package structure, 17 tools, 5 prompts, 4 resources, 768-dim embeddings, Email support
+            </div>
+            <div class="badges">
+                <span class="badge">v0.2.0</span>
+                <span class="badge">MCP Compatible</span>
+                <span class="badge">Python 3.10-3.12</span>
+                <span class="badge">ARM64 Ready</span>
+                <span class="badge">100% Local</span>
             </div>
         </header>
 
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">17</div>
+                <div class="stat-label">MCP Tools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Prompt Templates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">4</div>
+                <div class="stat-label">Dynamic Resources</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">768</div>
+                <div class="stat-label">Embedding Dimensions</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">10+</div>
+                <div class="stat-label">File Formats</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Local Processing</div>
+            </div>
+        </div>
+
         <div class="section">
             <h2>System Overview</h2>
-            <p>The Personal Document Library MCP Server is a sophisticated system that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). Now distributed as a Python package with enhanced MCP protocol support including tools, prompts, and resources.</p>
+            <p>Ragdex (formerly Personal Document Library MCP Server) is a sophisticated Model Context Protocol server that enables Claude Desktop to access and analyze a personal collection of documents and emails through RAG (Retrieval-Augmented Generation). The system features a complete MCP protocol implementation with tools, prompts, and resources, supporting multiple document formats and intelligent email filtering.</p>
 
-            <div class="stats">
-                <div class="stat-card">
-                    <h3>17</h3>
-                    <p>MCP Tools</p>
+            <div class="architecture-flow">
+                <div class="flow-item">
+                    <div class="flow-icon">📚</div>
+                    <strong>Documents & Emails</strong>
+                    <p>PDFs, Word, EPUB, MOBI, EMLX, OLM</p>
+                    <span class="flow-arrow">→</span>
                 </div>
-                <div class="stat-card">
-                    <h3>5</h3>
-                    <p>Prompt Templates</p>
+                <div class="flow-item">
+                    <div class="flow-icon">⚙️</div>
+                    <strong>Ragdex Indexer</strong>
+                    <p>Background Processing & OCR</p>
+                    <span class="flow-arrow">→</span>
                 </div>
-                <div class="stat-card">
-                    <h3>4</h3>
-                    <p>Dynamic Resources</p>
+                <div class="flow-item">
+                    <div class="flow-icon">🗄️</div>
+                    <strong>ChromaDB</strong>
+                    <p>768-dim Vector Storage</p>
+                    <span class="flow-arrow">→</span>
                 </div>
-                <div class="stat-card">
-                    <h3>100%</h3>
-                    <p>Local Processing</p>
+                <div class="flow-item">
+                    <div class="flow-icon">🔌</div>
+                    <strong>MCP Server</strong>
+                    <p>17 Tools + 5 Prompts + 4 Resources</p>
+                    <span class="flow-arrow">→</span>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🤖</div>
+                    <strong>Claude Desktop</strong>
+                    <p>AI Assistant Interface</p>
                 </div>
             </div>
         </div>
@@ -267,661 +586,532 @@
         <div class="section">
             <h2>Package Architecture</h2>
 
-            <div class="architecture-diagram">
-                <h3>System Flow</h3>
-                <div class="flow-diagram">
-                    <div class="flow-item">
-                        <strong>Claude Desktop</strong>
-                        <p>MCP Client</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>MCP Server</strong>
-                        <p>17 Tools + 5 Prompts + 4 Resources</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>SharedRAG</strong>
-                        <p>Search & Synthesis</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>ChromaDB</strong>
-                        <p>Vector Storage</p>
-                    </div>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h4><span class="icon">📦</span> Python Package Structure <span class="badge-new">NEW</span></h4>
+                    <p>Properly structured as <code>personal_doc_library</code> package with pyproject.toml configuration</p>
+                    <ul>
+                        <li>CLI commands: <code>ragdex</code>, <code>ragdex-mcp</code>, <code>ragdex-index</code>, <code>ragdex-web</code></li>
+                        <li>Package installation: <code>pip install ragdex</code></li>
+                        <li>Development: <code>pip install -e .</code></li>
+                        <li>With extras: <code>pip install -e ".[document-processing,services]"</code></li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4><span class="icon">🔌</span> MCP Complete Server</h4>
+                    <p>Full Model Context Protocol implementation with lazy initialization for < 1s startup</p>
+                    <ul>
+                        <li>Location: <code>src/personal_doc_library/servers/mcp_complete_server.py</code></li>
+                        <li>17 specialized tools for document interaction</li>
+                        <li>5 prompt templates for workflows</li>
+                        <li>4 dynamic resources for real-time info</li>
+                        <li>Async request handling with error recovery</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4><span class="icon">🧠</span> SharedRAG Engine</h4>
+                    <p>Core retrieval-augmented generation system with vector embeddings</p>
+                    <ul>
+                        <li>Model: <code>sentence-transformers/all-mpnet-base-v2</code></li>
+                        <li>768-dimensional embeddings</li>
+                        <li>Semantic search with synthesis</li>
+                        <li>Cross-document analysis</li>
+                        <li>MD5 hash-based deduplication</li>
+                        <li>30-minute lock timeout protection</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4><span class="icon">📊</span> ChromaDB Vector Store</h4>
+                    <p>High-performance vector database for document embeddings</p>
+                    <ul>
+                        <li>Persistent storage with WAL mode</li>
+                        <li>Metadata filtering support</li>
+                        <li>Cosine similarity search</li>
+                        <li>Storage: ~1MB per 100 pages</li>
+                        <li>Telemetry disabled: <code>CHROMA_TELEMETRY=false</code></li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4><span class="icon">📁</span> Document Loaders</h4>
+                    <p>Comprehensive file format support with intelligent processing</p>
+                    <ul>
+                        <li>PDF with OCR (ocrmypdf integration)</li>
+                        <li>Word/PowerPoint/Excel (LibreOffice)</li>
+                        <li>EPUB (ebooklib + pandoc)</li>
+                        <li>MOBI/AZW/AZW3 (Calibre ebook-convert)</li>
+                        <li>Apple Mail EMLX (native parser)</li>
+                        <li>Outlook OLM (archive extraction)</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4><span class="icon">⚡</span> Background Services</h4>
+                    <p>Automatic monitoring and indexing services</p>
+                    <ul>
+                        <li>Index Monitor with file watching</li>
+                        <li>LaunchAgent service support (macOS)</li>
+                        <li>Web Dashboard at localhost:8888</li>
+                        <li>Progress tracking and status updates</li>
+                        <li>Failed document management</li>
+                        <li>Automatic retry with backoff</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>MCP Protocol Implementation</h2>
+
+            <h3>🔧 Tools (17 Available)</h3>
+
+            <h4>Search & Discovery</h4>
+            <div class="tool-grid">
+                <div class="tool-item">
+                    <div class="tool-name">search</div>
+                    <div class="tool-desc">Semantic search with optional book/email filtering and AI synthesis. Returns chunks with relevance scores.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">list_books</div>
+                    <div class="tool-desc">List documents by pattern (fnmatch), author, or directory. Includes metadata like chunks and page counts.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">recent_books</div>
+                    <div class="tool-desc">Find recently indexed documents by hours or days. Groups by time periods (today, yesterday, this week).</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">find_practices</div>
+                    <div class="tool-desc">Discover specific techniques and practices. Uses category filtering for practice-focused content.</div>
                 </div>
             </div>
 
-            <div class="component">
-                <h4>1. Python Package Structure <span class="badge badge-new">NEW</span></h4>
-                <p>✅ Properly structured as `personal_doc_library` package with pyproject.toml configuration</p>
-                <ul>
-                    <li>CLI commands: pdlib-cli, pdlib-mcp, pdlib-indexer, pdlib-webmonitor</li>
-                    <li>Package installation: pip install -e .</li>
-                    <li>Module imports: from personal_doc_library.core.shared_rag import SharedRAG</li>
-                </ul>
+            <h4>Content Extraction</h4>
+            <div class="tool-grid">
+                <div class="tool-item">
+                    <div class="tool-name">extract_pages</div>
+                    <div class="tool-desc">Extract specific pages from PDFs. Supports ranges (1-5), lists [1,3,5], or single pages.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">extract_quotes</div>
+                    <div class="tool-desc">Find notable quotes on topics. Uses regex patterns for quote detection with attribution.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">summarize_book</div>
+                    <div class="tool-desc">Generate AI summaries of documents. Options for brief (10-15 chunks) or detailed (all chunks).</div>
+                </div>
             </div>
 
-            <div class="component">
-                <h4>2. MCP Complete Server <span class="badge badge-count">17 Tools</span></h4>
-                <p>✅ Full MCP protocol implementation with tools, prompts, and resources</p>
-                <p>Location: src/personal_doc_library/servers/mcp_complete_server.py</p>
+            <h4>Analysis & Synthesis</h4>
+            <div class="tool-grid">
+                <div class="tool-item">
+                    <div class="tool-name">compare_perspectives</div>
+                    <div class="tool-desc">Compare viewpoints across multiple sources. Creates comparison matrices with similarities and differences.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">question_answer</div>
+                    <div class="tool-desc">Direct Q&A from library. Analyzes question type (factual/conceptual/practical) for optimization.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">daily_reading</div>
+                    <div class="tool-desc">Suggested daily passages. Maintains reading history to avoid repetition.</div>
+                </div>
             </div>
 
-            <div class="component">
-                <h4>3. Vector Database (ChromaDB)</h4>
-                <p>✅ Stores 768-dimensional embeddings using sentence-transformers/all-mpnet-base-v2</p>
-                <p>Telemetry disabled via CHROMA_TELEMETRY=false</p>
+            <h4>System Management</h4>
+            <div class="tool-grid">
+                <div class="tool-item">
+                    <div class="tool-name">library_stats</div>
+                    <div class="tool-desc">Comprehensive statistics: document count, chunks, storage size, indexing status.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">index_status</div>
+                    <div class="tool-desc">Detailed indexing progress with PID checking and stale lock detection.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">refresh_cache</div>
+                    <div class="tool-desc">Refresh search cache and reload book index. Forces reconnection to ChromaDB.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">warmup</div>
+                    <div class="tool-desc">Initialize RAG system to prevent timeouts. Pre-loads ~4GB embedding model.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">find_unindexed</div>
+                    <div class="tool-desc">Find unindexed documents. Categorizes as New, Modified, or Failed.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">reindex_book</div>
+                    <div class="tool-desc">Force reindex specific document. Full cleanup before reprocessing.</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">clear_failed</div>
+                    <div class="tool-desc">Clear failed document list. Creates backup before clearing.</div>
+                </div>
+            </div>
+
+            <h3>📝 Prompts (5 Templates) <span class="badge-new">NEW</span></h3>
+            <div class="tool-grid">
+                <div class="tool-item">
+                    <div class="tool-name">analyze_theme</div>
+                    <div class="tool-desc">Analyze a theme across your entire library with cross-referencing</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">compare_authors</div>
+                    <div class="tool-desc">Compare writing styles, perspectives, and approaches of different authors</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">extract_practices</div>
+                    <div class="tool-desc">Extract practical techniques, exercises, and actionable insights</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">research_topic</div>
+                    <div class="tool-desc">Deep research on a specific topic with comprehensive synthesis</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">daily_wisdom</div>
+                    <div class="tool-desc">Get daily wisdom passages with reflection questions</div>
+                </div>
+            </div>
+
+            <h3>📊 Resources (4 Dynamic) <span class="badge-new">NEW</span></h3>
+            <div class="tool-grid">
+                <div class="tool-item">
+                    <div class="tool-name">library://stats</div>
+                    <div class="tool-desc">Real-time library statistics and metrics (document count, storage size, etc.)</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">library://recent</div>
+                    <div class="tool-desc">Recently indexed documents with timestamps and metadata</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">library://search-tips</div>
+                    <div class="tool-desc">Search tips, query examples, and usage patterns</div>
+                </div>
+                <div class="tool-item">
+                    <div class="tool-name">library://config</div>
+                    <div class="tool-desc">Current configuration settings and environment variables</div>
+                </div>
             </div>
         </div>
 
         <div class="section">
-            <h2>MCP Protocol Features</h2>
-
-            <h3>🔧 Tools <span class="badge badge-count">17</span></h3>
-
-            <div class="architecture-diagram">
-                <h4>Search & Discovery</h4>
-                <ul>
-                    <li><strong>search</strong> - Semantic search with optional book filtering and synthesis</li>
-                    <li><strong>list_books</strong> - List books by pattern, author, or directory</li>
-                    <li><strong>recent_books</strong> - Find recently indexed books by time period</li>
-                    <li><strong>find_practices</strong> - Find specific practices or techniques</li>
-                </ul>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>Content Extraction</h4>
-                <ul>
-                    <li><strong>extract_pages</strong> - Extract specific pages from any book</li>
-                    <li><strong>extract_quotes</strong> - Find notable quotes on specific topics</li>
-                    <li><strong>summarize_book</strong> - Generate AI summary of entire books</li>
-                </ul>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>Analysis & Synthesis</h4>
-                <ul>
-                    <li><strong>compare_perspectives</strong> - Compare perspectives across multiple sources</li>
-                    <li><strong>question_answer</strong> - Direct Q&A from your library</li>
-                    <li><strong>daily_reading</strong> - Get suggested passages for daily reading</li>
-                </ul>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>System Management</h4>
-                <ul>
-                    <li><strong>library_stats</strong> - Get library statistics and indexing status</li>
-                    <li><strong>index_status</strong> - Get detailed indexing progress</li>
-                    <li><strong>refresh_cache</strong> - Refresh search cache and reload book index</li>
-                    <li><strong>warmup</strong> - Initialize RAG system to prevent timeouts</li>
-                    <li><strong>find_unindexed</strong> - Find documents not yet indexed <span class="badge badge-new">NEW</span></li>
-                    <li><strong>reindex_book</strong> - Force reindex of specific book <span class="badge badge-new">NEW</span></li>
-                    <li><strong>clear_failed</strong> - Clear failed document list <span class="badge badge-new">NEW</span></li>
-                </ul>
-            </div>
-
-            <h3>📝 Prompts <span class="badge badge-count">5</span> <span class="badge badge-new">NEW</span></h3>
-
-            <div class="architecture-diagram">
-                <ul>
-                    <li><strong>analyze_theme</strong> - Analyze a theme across your library</li>
-                    <li><strong>compare_authors</strong> - Compare writing styles and perspectives</li>
-                    <li><strong>extract_practices</strong> - Extract practical techniques from books</li>
-                    <li><strong>research_topic</strong> - Deep research on a specific topic</li>
-                    <li><strong>daily_wisdom</strong> - Get daily wisdom from your library</li>
-                </ul>
-            </div>
-
-            <h3>📊 Resources <span class="badge badge-count">4</span> <span class="badge badge-new">NEW</span></h3>
-
-            <div class="architecture-diagram">
-                <ul>
-                    <li><strong>library://stats</strong> - Current library statistics and metrics</li>
-                    <li><strong>library://recent</strong> - Recently indexed documents</li>
-                    <li><strong>library://search-tips</strong> - Search tips and query examples</li>
-                    <li><strong>library://config</strong> - Current configuration settings</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Current File Structure</h2>
+            <h2>File Structure & Organization</h2>
 
             <div class="file-list">
-                <h3>Package Structure <span class="badge badge-new">NEW</span></h3>
+                <h3>Package Structure <span class="badge-new">v0.2.0</span></h3>
                 <ul>
                     <li><strong>src/personal_doc_library/</strong> - Main package directory
                         <ul>
                             <li><strong>__init__.py</strong> - Package initialization</li>
-                            <li><strong>cli.py</strong> - Command-line interface</li>
+                            <li><strong>cli.py</strong> - Command-line interface (<code>ragdex</code> command)</li>
                             <li><strong>core/</strong> - Core functionality
                                 <ul>
-                                    <li>config.py - Configuration management</li>
-                                    <li>shared_rag.py - RAG implementation</li>
-                                    <li>logging_config.py - Logging setup</li>
+                                    <li><strong>config.py</strong> - Configuration management with env vars</li>
+                                    <li><strong>shared_rag.py</strong> - RAG implementation with singleton pattern</li>
+                                    <li><strong>logging_config.py</strong> - Centralized logging setup</li>
+                                    <li><strong>timeout_handler.py</strong> - 15-minute timeout protection</li>
                                 </ul>
                             </li>
-                            <li><strong>servers/</strong> - MCP server
+                            <li><strong>servers/</strong> - MCP server implementation
                                 <ul>
-                                    <li>mcp_complete_server.py - Main MCP server</li>
+                                    <li><strong>mcp_complete_server.py</strong> - Main MCP server with all protocols</li>
                                 </ul>
                             </li>
                             <li><strong>indexing/</strong> - Document indexing
                                 <ul>
-                                    <li>index_monitor.py - Background monitor</li>
-                                    <li>execute_indexing.py - Indexing logic</li>
+                                    <li><strong>index_monitor.py</strong> - Background monitoring service</li>
+                                    <li><strong>execute_indexing.py</strong> - Core indexing logic</li>
+                                    <li><strong>complete_indexing.py</strong> - Full indexing workflow</li>
+                                    <li><strong>handle_large_pdf.py</strong> - Large PDF processing</li>
+                                    <li><strong>manage_failed_pdfs.py</strong> - Failed document management</li>
                                 </ul>
                             </li>
-                            <li><strong>monitoring/</strong> - Web dashboard
+                            <li><strong>loaders/</strong> - Email loaders <span class="badge-new">NEW</span>
                                 <ul>
-                                    <li>monitor_web_enhanced.py - Web interface</li>
+                                    <li><strong>email_loaders.py</strong> - Base email loader with filtering</li>
+                                    <li><strong>emlx_loader.py</strong> - Apple Mail EMLX support</li>
+                                    <li><strong>outlook_loader.py</strong> - Outlook OLM support</li>
                                 </ul>
                             </li>
-                            <li><strong>utils/</strong> - Utility modules</li>
+                            <li><strong>monitoring/</strong> - Web interface
+                                <ul>
+                                    <li><strong>monitor_web_enhanced.py</strong> - Flask dashboard (localhost:8888)</li>
+                                </ul>
+                            </li>
+                            <li><strong>utils/</strong> - Utility modules
+                                <ul>
+                                    <li><strong>check_indexing_status.py</strong> - Status checking</li>
+                                    <li><strong>find_unindexed.py</strong> - Find new documents</li>
+                                    <li><strong>ocr_manager.py</strong> - OCR processing manager</li>
+                                    <li><strong>show_config.py</strong> - Display configuration</li>
+                                </ul>
+                            </li>
                         </ul>
                     </li>
-                    <li><strong>pyproject.toml</strong> - Package configuration</li>
-                    <li><strong>requirements.txt</strong> - Dependencies</li>
+                </ul>
+            </div>
+
+            <div class="file-list">
+                <h3>Configuration Files</h3>
+                <ul>
+                    <li><strong>pyproject.toml</strong> - Package configuration with dependencies and entry points</li>
+                    <li><strong>requirements.txt</strong> - Direct dependencies list</li>
+                    <li><strong>MANIFEST.in</strong> - Package distribution configuration</li>
+                    <li><strong>.gitignore</strong> - Git ignore patterns</li>
                 </ul>
             </div>
 
             <div class="file-list">
                 <h3>Data Directories</h3>
                 <ul>
-                    <li><strong>books/</strong> - Document library (configurable via PERSONAL_LIBRARY_DOC_PATH)</li>
-                    <li><strong>chroma_db/</strong> - Vector database storage (768-dim embeddings)</li>
-                    <li><strong>venv_mcp/</strong> - ✅ Python 3.12 virtual environment (ARM64 compatible)</li>
-                    <li><strong>logs/</strong> - Application and service logs</li>
+                    <li><strong>books/</strong> or <code>$PERSONAL_LIBRARY_DOC_PATH</code> - Document library location</li>
+                    <li><strong>chroma_db/</strong> or <code>$PERSONAL_LIBRARY_DB_PATH</code> - Vector database (55MB for 68 books)</li>
+                    <li><strong>logs/</strong> or <code>$PERSONAL_LIBRARY_LOGS_PATH</code> - Application and service logs</li>
+                    <li><strong>venv_mcp/</strong> - Python 3.12 virtual environment (ARM64 compatible)</li>
+                </ul>
+            </div>
+
+            <div class="file-list">
+                <h3>Service Scripts</h3>
+                <ul>
+                    <li><strong>scripts/run.sh</strong> - Main runner for MCP server</li>
+                    <li><strong>scripts/install_service.sh</strong> - Install as LaunchAgent service</li>
+                    <li><strong>scripts/index_monitor.sh</strong> - Start background monitor</li>
+                    <li><strong>scripts/start_web_monitor.sh</strong> - Start web dashboard</li>
+                    <li><strong>install_ragdex_services.sh</strong> - One-click service installer</li>
                 </ul>
             </div>
         </div>
 
         <div class="section">
-            <h2>🔧 Installation - Package-Based Approach</h2>
+            <h2>Installation & Configuration</h2>
 
-            <div class="architecture-diagram">
-                <h3>Installation Options</h3>
-                <div class="flow-diagram">
-                    <div class="flow-item">
-                        <strong>Development</strong>
-                        <p>pip install -e .</p>
-                        <p style="font-size: 0.9em;">Editable install</p>
-                    </div>
-                    <span class="flow-arrow">OR</span>
-                    <div class="flow-item">
-                        <strong>With Extras</strong>
-                        <p>pip install -e ".[services]"</p>
-                        <p style="font-size: 0.9em;">All features</p>
-                    </div>
-                    <span class="flow-arrow">OR</span>
-                    <div class="flow-item">
-                        <strong>Traditional</strong>
-                        <p>./serviceInstall.sh</p>
-                        <p style="font-size: 0.9em;">Shell scripts</p>
-                    </div>
-                </div>
-            </div>
+            <h3>🚀 Quick Start (PyPI)</h3>
+            <pre><code># Using uv (recommended, faster)
+uv venv ~/ragdex_env
+uv pip install ragdex
 
-            <h3>Package Installation <span class="badge badge-new">RECOMMENDED</span></h3>
-            <pre><code># Clone and install as package
-git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
-cd PersonalDocLibraryRAGMCP
+# Or standard pip
+python -m venv ~/ragdex_env
+source ~/ragdex_env/bin/activate
+pip install ragdex
+
+# With optional extras
+pip install ragdex[document-processing,services]</code></pre>
+
+            <h3>📦 Development Installation</h3>
+            <pre><code># Clone repository
+git clone https://github.com/hpoliset/ragdex
+cd ragdex
+
+# Install in editable mode
 pip install -e .
 
-# Or with optional extras
+# Or with extras
 pip install -e ".[document-processing,services]"
 
-# Use CLI commands from anywhere
-pdlib-cli --help
-pdlib-mcp            # Start MCP server
-pdlib-indexer        # Start indexer
-pdlib-webmonitor     # Start web dashboard</code></pre>
+# Use CLI commands
+ragdex --help
+ragdex-mcp          # Start MCP server
+ragdex-index        # Start indexer
+ragdex-web          # Start web dashboard</code></pre>
 
-            <h3>✅ Claude Desktop Configuration</h3>
+            <h3>⚙️ Claude Desktop Configuration</h3>
             <div class="success">
-                <p>After installation, update Claude Desktop config:</p>
+                <p><strong>Location:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
                 <pre><code>{
   "mcpServers": {
-    "personal-library": {
-      "command": "/path/to/venv_mcp/bin/python",
-      "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
+    "ragdex": {
+      "command": "/Users/YOUR_USERNAME/ragdex_env/bin/ragdex-mcp",
       "env": {
-        "PYTHONPATH": "/path/to/DocumentIndexerMCP/src",
         "PYTHONUNBUFFERED": "1",
-        "CHROMA_TELEMETRY": "false"
+        "CHROMA_TELEMETRY": "false",
+        "PERSONAL_LIBRARY_DOC_PATH": "/path/to/documents",
+        "PERSONAL_LIBRARY_DB_PATH": "/path/to/database",
+        "PERSONAL_LIBRARY_LOGS_PATH": "/path/to/logs"
       }
     }
   }
 }</code></pre>
             </div>
+
+            <h3>🔧 Environment Variables</h3>
+            <pre><code># Core paths
+export PERSONAL_LIBRARY_DOC_PATH="/path/to/documents"
+export PERSONAL_LIBRARY_DB_PATH="/path/to/database"
+export PERSONAL_LIBRARY_LOGS_PATH="/path/to/logs"
+
+# Email settings (v0.2.0+)
+export PERSONAL_LIBRARY_INDEX_EMAILS=true
+export PERSONAL_LIBRARY_EMAIL_SOURCES=apple_mail,outlook_local
+export PERSONAL_LIBRARY_EMAIL_MAX_AGE_DAYS=365
+export PERSONAL_LIBRARY_EMAIL_EXCLUDED_FOLDERS=Spam,Junk,Trash,Deleted Items,Drafts
+
+# Performance tuning
+export INDEXING_MEMORY_LIMIT_GB=8
+export CHROMA_TELEMETRY=false
+export TOKENIZERS_PARALLELISM=false</code></pre>
         </div>
 
         <div class="section">
-            <h2>CLI Commands <span class="badge badge-new">NEW</span></h2>
+            <h2>Technical Implementation Details</h2>
 
-            <div class="component">
-                <h4>Main CLI Tool: pdlib-cli</h4>
-                <pre><code>pdlib-cli --help                    # Show all commands
-pdlib-cli ensure-dirs                # Create necessary directories
-pdlib-cli config                     # View configuration
-pdlib-cli check-indexing-status      # Check indexing progress
-pdlib-cli find-unindexed            # Find unindexed documents
-pdlib-cli manage-failed-pdfs        # Manage failed documents
-pdlib-cli show-config               # Display detailed config</code></pre>
-            </div>
-
-            <div class="component">
-                <h4>Service Launchers</h4>
-                <pre><code>pdlib-mcp            # Start MCP server
-pdlib-indexer        # Start background indexer
-pdlib-webmonitor     # Start web dashboard (localhost:8888)</code></pre>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>📚 Document Processing Pipeline</h2>
-
-            <div class="architecture-diagram">
-                <h3>Processing Workflow</h3>
-                <div class="flow-diagram">
-                    <div class="flow-item">
-                        <strong>Document</strong>
-                        <p>PDF/DOCX/EPUB/MOBI</p>
-                    </div>
+            <h3>Document Processing Pipeline</h3>
+            <div class="architecture-flow">
+                <div class="flow-item">
+                    <div class="flow-icon">📄</div>
+                    <strong>Discovery</strong>
+                    <p>Scan for supported formats</p>
                     <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>MD5 Hash</strong>
-                        <p>Change Detection</p>
-                    </div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🔐</div>
+                    <strong>MD5 Hash</strong>
+                    <p>Check for changes</p>
                     <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>Text Extraction</strong>
-                        <p>Format-specific</p>
-                    </div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">✂️</div>
+                    <strong>Chunking</strong>
+                    <p>1200 chars, 150 overlap</p>
                     <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>Chunking</strong>
-                        <p>1200 chars</p>
-                    </div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🏷️</div>
+                    <strong>Categorize</strong>
+                    <p>practice, energy_work, philosophy, general</p>
                     <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>Embedding</strong>
-                        <p>768-dim vectors</p>
-                    </div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">🧮</div>
+                    <strong>Embeddings</strong>
+                    <p>768-dim vectors</p>
                     <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>ChromaDB</strong>
-                        <p>Vector Storage</p>
-                    </div>
+                </div>
+                <div class="flow-item">
+                    <div class="flow-icon">💾</div>
+                    <strong>Storage</strong>
+                    <p>ChromaDB + Index</p>
                 </div>
             </div>
 
-            <div class="warning">
-                <strong>⚠️ Supported Formats:</strong>
-                <ul>
-                    <li>PDF (.pdf) - Including scanned PDFs with OCR</li>
-                    <li>Word (.docx, .doc) - Requires LibreOffice</li>
-                    <li>PowerPoint (.pptx, .ppt) - Requires LibreOffice</li>
-                    <li>EPUB (.epub) - Requires pandoc</li>
-                    <li>MOBI/Kindle (.mobi, .azw, .azw3) - Uses Calibre</li>
-                    <li>Text (.txt) - Plain text files</li>
-                </ul>
-            </div>
-        </div>
+            <h3>Key Architectural Patterns</h3>
+            <ul>
+                <li><strong>Lazy Loading:</strong> RAG system initialized only when needed to avoid MCP timeouts</li>
+                <li><strong>Singleton Pattern:</strong> SharedRAG uses <code>_instance</code> class variable for reuse</li>
+                <li><strong>File-based Locking:</strong> Cross-process coordination with 30-minute stale lock detection</li>
+                <li><strong>Event-Driven Processing:</strong> File system events trigger automatic indexing</li>
+                <li><strong>Circuit Breaker:</strong> 15-minute timeout protection for long operations</li>
+                <li><strong>Batch Processing:</strong> Documents chunked and processed in batches for efficiency</li>
+            </ul>
 
-        <div class="section">
-            <h2>🖥️ Web Monitoring Interface</h2>
-
-            <div class="architecture-diagram">
-                <h3>Real-Time Dashboard</h3>
-                <p>Access at <strong>http://localhost:8888</strong></p>
-
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">
-                    <div class="component">
-                        <h4>Live Information</h4>
-                        <ul style="list-style: none; padding: 10px 0;">
-                            <li>📊 Current indexing status</li>
-                            <li>📈 Progress with percentage</li>
-                            <li>📚 Library statistics</li>
-                            <li>🔒 Lock status and health</li>
-                            <li>📄 Page extraction progress</li>
-                            <li>📦 Chunk generation count</li>
-                        </ul>
-                    </div>
-
-                    <div class="component">
-                        <h4>Interactive Features</h4>
-                        <ul style="list-style: none; padding: 10px 0;">
-                            <li>🔍 Search with Enter key</li>
-                            <li>🔄 Auto-refresh (2s)</li>
-                            <li>📝 Activity log</li>
-                            <li>⚠️ Failed document alerts</li>
-                            <li>⏸️ Pause/Resume controls</li>
-                            <li>📊 Sortable book table</li>
-                        </ul>
-                    </div>
+            <h3>Performance Metrics</h3>
+            <div class="performance-metrics">
+                <div class="metric">
+                    <div class="metric-value">< 1s</div>
+                    <div class="metric-label">MCP Startup Time</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">~1.75s</div>
+                    <div class="metric-label">First Search Query</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">100-500ms</div>
+                    <div class="metric-label">Subsequent Searches</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">10-20/min</div>
+                    <div class="metric-label">Document Indexing</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">1-2 pages/min</div>
+                    <div class="metric-label">OCR Processing</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">~4GB</div>
+                    <div class="metric-label">Embedding Model RAM</div>
                 </div>
             </div>
+
+            <h3>Email Filtering Intelligence <span class="badge-new">v0.2.0</span></h3>
+            <div class="info">
+                <p><strong>Smart Filtering:</strong> Automatically excludes marketing, promotional, and spam emails</p>
+                <ul>
+                    <li><strong>Pattern Matching:</strong> Detects unsubscribe links, marketing language, order confirmations</li>
+                    <li><strong>Domain Filtering:</strong> Excludes known marketing domains (amazon.com, ebay.com, etc.)</li>
+                    <li><strong>Folder Exclusion:</strong> Skips Spam, Junk, Trash, Deleted Items, Drafts folders</li>
+                    <li><strong>Date Filtering:</strong> Configurable max age (default 365 days)</li>
+                    <li><strong>Whitelist Support:</strong> Important senders can bypass filters</li>
+                </ul>
+            </div>
         </div>
 
         <div class="section">
-            <h2>Technical Details</h2>
-
-            <div class="success">
-                <strong>✅ Current Performance:</strong>
-                <ul>
-                    <li>Startup time: < 1 second (lazy initialization)</li>
-                    <li>Search latency: ~1.75s per query (768-dim embeddings)</li>
-                    <li>Memory usage: ~4GB for embedding model</li>
-                    <li>Package-based distribution with pyproject.toml</li>
-                    <li>Full MCP protocol support (tools, prompts, resources)</li>
-                </ul>
+            <h2>Technology Stack</h2>
+            <div class="tech-stack">
+                <span class="tech-badge">Python 3.10-3.12</span>
+                <span class="tech-badge">LangChain 0.1.0</span>
+                <span class="tech-badge">ChromaDB 0.4.22</span>
+                <span class="tech-badge">Sentence Transformers</span>
+                <span class="tech-badge">PyPDF2</span>
+                <span class="tech-badge">Flask 3.0.0</span>
+                <span class="tech-badge">MCP Protocol</span>
+                <span class="tech-badge">EMLX 1.0.0</span>
+                <span class="tech-badge">Pandoc</span>
+                <span class="tech-badge">Calibre</span>
+                <span class="tech-badge">OCRmyPDF</span>
+                <span class="tech-badge">LibreOffice</span>
             </div>
+        </div>
 
-            <div class="component">
-                <h4>Embedding Model</h4>
-                <p><strong>Model:</strong> sentence-transformers/all-mpnet-base-v2</p>
-                <p><strong>Dimensions:</strong> 768</p>
-                <p><strong>Chunk Size:</strong> 1200 characters</p>
-                <p><strong>Overlap:</strong> 150 characters</p>
-            </div>
+        <div class="section">
+            <h2>Known Issues & Solutions</h2>
 
             <div class="warning">
-                <strong>⚠️ Environment Variables:</strong>
+                <h4>LaunchAgent Permissions (macOS)</h4>
+                <p><strong>Issue:</strong> LaunchAgent services restricted by sandboxing</p>
+                <p><strong>Solution:</strong> Use shell script wrapper (<code>scripts/index_monitor_service.sh</code>)</p>
+                <p><strong>Details:</strong> See <code>docs/LAUNCHAGENT_PERMISSIONS_SOLUTION.md</code></p>
+            </div>
+
+            <div class="info">
+                <h4>Common Troubleshooting</h4>
                 <ul>
-                    <li>PERSONAL_LIBRARY_DOC_PATH - Document directory</li>
-                    <li>PERSONAL_LIBRARY_DB_PATH - Database directory</li>
-                    <li>PERSONAL_LIBRARY_LOGS_PATH - Logs directory</li>
-                    <li>CHROMA_TELEMETRY=false - Disable telemetry</li>
+                    <li>If indexing finds 0 documents, check CloudDocs permissions</li>
+                    <li>For "Empty content" errors, documents may need OCR processing</li>
+                    <li>Stale locks automatically cleaned after 30 minutes</li>
+                    <li>MOBI files require Calibre's ebook-convert tool</li>
+                    <li>Large PDFs (>100MB) may need 2-5 minutes to process</li>
                 </ul>
             </div>
-        </div>
-
-        <div class="section">
-            <h2>🔒 Security & Privacy</h2>
 
             <div class="success">
-                <h4>✅ Privacy Features</h4>
+                <h4>Best Practices</h4>
                 <ul>
-                    <li>100% local processing - no external API calls</li>
-                    <li>No telemetry (CHROMA_TELEMETRY=false)</li>
-                    <li>User permissions only</li>
-                    <li>Sandboxed MCP process</li>
-                    <li>File-based locking with 30-minute timeout</li>
+                    <li>Always use <code>venv_mcp/bin/python</code> for consistency</li>
+                    <li>Run <code>ragdex warmup</code> before heavy usage to pre-load models</li>
+                    <li>Monitor indexing progress via web dashboard at localhost:8888</li>
+                    <li>Use <code>ragdex manage-failed</code> to handle problematic documents</li>
+                    <li>Set <code>INDEXING_MEMORY_LIMIT_GB</code> for large libraries</li>
                 </ul>
             </div>
         </div>
 
-        <div class="section">
-            <h2>🔧 Detailed Tool Implementation Flows</h2>
-
-            <h3>Search & Discovery Tools</h3>
-
-            <div class="architecture-diagram">
-                <h4>1. search Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Query Input  │────▶│ Embedding Gen   │────▶│ Vector Search│
-│              │     │ (768-dim)       │     │ (ChromaDB)   │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Format Output│◀────│ Apply Filters   │◀────│ Rank Results │
-│              │     │ (book/category) │     │ (similarity) │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Lazy RAG initialization, HuggingFace embedding generation, cosine similarity search, optional synthesis</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>2. list_books Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Pattern/     │────▶│ Load Book Index │────▶│ Apply Filter │
-│ Author/Dir   │     │ (JSON file)     │     │ (fnmatch)    │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-                                              ┌──────────────┐
-                                              │ Enrich with  │
-                                              │ Metadata     │
-                                              └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> JSON index reading, pattern matching, metadata enrichment (chunks, pages, indexed_at)</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>3. recent_books Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Time Period  │────▶│ Calculate       │────▶│ Filter Books │
-│ (hours/days) │     │ Cutoff Time     │     │ by Timestamp │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-                                              ┌──────────────┐
-                                              │ Format with  │
-                                              │ Relative Time│
-                                              └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Datetime parsing, relative time calculation, chronological sorting</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>4. find_practices Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Practice     │────▶│ Build Semantic  │────▶│ Category     │
-│ Type         │     │ Query           │     │ Filter       │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Group by     │◀────│ Deduplicate     │◀────│ Extract      │
-│ Type         │     │ Similar         │     │ Practices    │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Practice-focused queries, category filtering, similarity deduplication</p>
-            </div>
-
-            <h3>Content Extraction Tools</h3>
-
-            <div class="architecture-diagram">
-                <h4>5. extract_pages Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Book Pattern │────▶│ Find Book       │────▶│ Parse Page   │
-│ + Pages      │     │ in Index        │     │ Specification│
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Return Text  │◀────│ Extract Text    │◀────│ Load PDF     │
-│              │     │ per Page        │     │ (PyPDF2)     │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Book resolution, page range parsing, PDF text extraction</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>6. extract_quotes Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Topic        │────▶│ Search for      │────▶│ Detect Quote │
-│              │     │ Quotes          │     │ Patterns     │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Format with  │◀────│ Select Top      │◀────│ Score by     │
-│ Attribution  │     │ Quotes          │     │ Relevance    │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Quote pattern regex, relevance scoring, attribution preservation</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>7. summarize_book Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Book Name    │────▶│ Find Book       │────▶│ Get All      │
-│ + Length     │     │ in Index        │     │ Chunks       │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Build        │◀────│ Extract Themes  │◀────│ Sample/Use   │
-│ Summary      │     │ (TF-IDF)        │     │ All Chunks   │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Chunk retrieval by metadata, theme extraction, structured summarization</p>
-            </div>
-
-            <h3>Analysis & Synthesis Tools</h3>
-
-            <div class="architecture-diagram">
-                <h4>8. compare_perspectives Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Topic        │────▶│ Search All      │────▶│ Group by     │
-│              │     │ Sources         │     │ Source Book  │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Format as    │◀────│ Build           │◀────│ Extract      │
-│ Comparison   │     │ Comparison      │     │ Viewpoints   │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Multi-source search, viewpoint extraction, comparison matrix generation</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>9. question_answer Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Question     │────▶│ Analyze Q Type  │────▶│ Optimize     │
-│ + Detail     │     │ (fact/concept)  │     │ Query        │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Add Citations│◀────│ Synthesize      │◀────│ Rank & Select│
-│              │     │ Answer          │     │ Chunks       │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Question classification, relevance ranking, citation formatting</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>10. daily_reading Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Theme +      │────▶│ Check Reading   │────▶│ Filter Recent│
-│ Length       │     │ History         │     │ Selections   │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Log Selection│◀────│ Add Reflection  │◀────│ Select       │
-│              │     │ Prompts         │     │ Passages     │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> History tracking, weighted selection, reflection prompt generation</p>
-            </div>
-
-            <h3>System Management Tools</h3>
-
-            <div class="architecture-diagram">
-                <h4>11. library_stats Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Stats Request│────▶│ Initialize RAG  │────▶│ Count Books  │
-│              │     │ (if needed)     │     │ in Index     │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Format Stats │◀────│ Calculate       │◀────│ Query DB     │
-│              │     │ Metrics         │     │ Counts       │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Multi-source aggregation, storage calculation, comprehensive metrics</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>12. index_status Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Status Req   │────▶│ Read Status     │────▶│ Check Lock   │
-│              │     │ Files           │     │ File         │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Return Status│◀────│ Format Progress │◀────│ Check PID    │
-│              │     │ Info            │     │ Active       │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Status file reading, process verification, progress calculation</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>13. refresh_cache Tool - Internal Flow</h4>
-                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Refresh Req  │────▶│ Clear Memory    │────▶│ Reload Index │
-│              │     │ Caches          │     │ Files        │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                                                     │
-                                                     ▼
-┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│ Return Status│◀────│ Get Updated     │◀────│ Reconnect DB │
-│              │     │ Counts          │     │              │
-└──────────────┘     └─────────────────┘     └──────────────┘
-                </pre>
-                <p><strong>Key Operations:</strong> Singleton clearing, forced reload, connectivity verification</p>
-            </div>
-
-            <div class="architecture-diagram">
-                <h4>14-17. Additional Management Tools</h4>
-                <ul style="list-style: none; padding: 10px;">
-                    <li><strong>14. warmup:</strong> Pre-loads embedding model (~4GB), runs test query, prevents timeout</li>
-                    <li><strong>15. find_unindexed:</strong> Directory scan, hash comparison, categorization (new/modified/failed)</li>
-                    <li><strong>16. reindex_book:</strong> Full cleanup, chunk deletion, re-processing pipeline</li>
-                    <li><strong>17. clear_failed:</strong> Backup creation, list reset, retry enablement</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Troubleshooting</h2>
-
-            <h3>Package Installation Issues</h3>
-            <pre><code># Ensure editable install
-pip install -e .
-
-# Set PYTHONPATH if needed
-export PYTHONPATH="/path/to/DocumentIndexerMCP/src:${PYTHONPATH:-}"</code></pre>
-
-            <h3>Common Issues</h3>
-            <ul>
-                <li><strong>Import errors:</strong> Ensure package is installed with pip install -e .</li>
-                <li><strong>Telemetry errors:</strong> Set CHROMA_TELEMETRY=false</li>
-                <li><strong>MCP not responding:</strong> Check capability advertisement in initialize</li>
-                <li><strong>Resources not visible:</strong> Claude Desktop UI limitation (use other MCP clients)</li>
-            </ul>
-
-            <h3>Logs Location</h3>
-            <ul>
-                <li><code>logs/mcp_server_stdout.log</code> - Server output</li>
-                <li><code>logs/mcp_server_stderr.log</code> - Error logs</li>
-                <li><code>logs/index_monitor_stdout.log</code> - Indexer output</li>
-                <li><code>logs/webmonitor_stdout.log</code> - Web dashboard logs</li>
-            </ul>
-        </div>
+        <footer>
+            <p>
+                <strong>Ragdex v0.2.0</strong> - Production Ready |
+                <a href="https://github.com/hpoliset/ragdex" target="_blank">GitHub</a> |
+                <a href="https://pypi.org/project/ragdex/" target="_blank">PyPI</a> |
+                <a href="https://modelcontextprotocol.io/" target="_blank">MCP Protocol</a> |
+                <a href="docs/ARCHITECTURE.md" target="_blank">Detailed Architecture</a>
+            </p>
+            <p style="margin-top: 20px; opacity: 0.7;">
+                Built with ❤️ for the AI community
+            </p>
+        </footer>
     </div>
 </body>
 </html>

@@ -293,6 +293,157 @@ ragdex manage-failed                 # Handle failed documents
 
 ---
 
+## 🔄 Upgrading Ragdex
+
+### Upgrading from PyPI
+
+```bash
+# Stop all services first
+launchctl unload ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
+
+# Upgrade the package
+pip install --upgrade ragdex
+
+# Or with extras
+pip install --upgrade ragdex[document-processing,services]
+
+# Restart services
+launchctl load ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
+
+# Restart Claude Desktop to reload MCP server
+```
+
+### Upgrading from Source
+
+```bash
+# Stop services
+launchctl unload ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
+
+# Pull latest changes
+cd ragdex
+git pull origin main
+
+# Upgrade dependencies
+pip install --upgrade -e .
+
+# Restart services
+launchctl load ~/Library/LaunchAgents/com.ragdex.* 2>/dev/null
+```
+
+### Service Management During Upgrades
+
+<details>
+<summary>⚙️ Complete Service Restart Process</summary>
+
+#### 1. Stop All Services
+```bash
+# Stop background indexer
+launchctl unload ~/Library/LaunchAgents/com.ragdex.index-monitor.plist
+
+# Stop web dashboard
+launchctl unload ~/Library/LaunchAgents/com.ragdex.webmonitor.plist
+
+# Or use the uninstall script (doesn't delete configs)
+./scripts/uninstall_service.sh
+./scripts/uninstall_webmonitor_service.sh
+```
+
+#### 2. Perform Upgrade
+```bash
+# Upgrade via pip or git pull (see above)
+pip install --upgrade ragdex
+```
+
+#### 3. Clear Cache & Locks (Optional)
+```bash
+# Clear any stale locks
+rm -f ~/ragdex/chroma_db/*.lock
+
+# Clear failed documents list if needed
+ragdex clear-failed
+
+# Refresh the search cache
+ragdex refresh-cache
+```
+
+#### 4. Restart Services
+```bash
+# Reinstall services (updates paths if needed)
+./scripts/install_service.sh
+./scripts/install_webmonitor_service.sh
+
+# Or manually load
+launchctl load ~/Library/LaunchAgents/com.ragdex.index-monitor.plist
+launchctl load ~/Library/LaunchAgents/com.ragdex.webmonitor.plist
+
+# Verify services are running
+launchctl list | grep ragdex
+```
+
+#### 5. Restart Claude Desktop
+- **Important**: Claude Desktop must be fully quit and restarted to reload the MCP server
+- On macOS: Cmd+Q to quit, then reopen Claude Desktop
+- The MCP server will automatically reinitialize with the upgraded version
+
+</details>
+
+### Post-Upgrade Verification
+
+```bash
+# Check version
+ragdex --version
+
+# Verify services are running
+ragdex index-status
+
+# Check web dashboard
+open http://localhost:8888
+
+# Test MCP connection in Claude
+# Ask Claude: "Can you check my library stats?"
+```
+
+### Troubleshooting Upgrades
+
+<details>
+<summary>🔧 Common Upgrade Issues</summary>
+
+**Services not starting after upgrade?**
+```bash
+# Check service logs
+tail -f ~/.ragdex/logs/ragdex_*.log
+
+# Reinstall services with fresh configs
+./install_ragdex_services.sh
+```
+
+**Claude not recognizing new features?**
+- Fully quit Claude Desktop (Cmd+Q on macOS)
+- Wait 5 seconds
+- Reopen Claude Desktop
+- The MCP server will reinitialize
+
+**Database compatibility issues?**
+```bash
+# Backup existing database
+cp -r ~/.ragdex/chroma_db ~/.ragdex/chroma_db.backup
+
+# Clear and rebuild index (last resort)
+rm -rf ~/.ragdex/chroma_db
+ragdex-index --full-reindex
+```
+
+**Permission errors after upgrade?**
+```bash
+# Ensure directories have correct permissions
+chmod -R 755 ~/.ragdex
+ragdex ensure-dirs
+```
+
+</details>
+
+---
+
 ## 💡 Examples
 
 ### Using with Claude Desktop

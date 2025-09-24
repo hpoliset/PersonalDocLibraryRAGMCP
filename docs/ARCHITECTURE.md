@@ -7,53 +7,34 @@ Ragdex is a Model Context Protocol (MCP) server that provides Claude Desktop wit
 ## Architecture Diagram
 
 ```mermaid
-graph TB
-    subgraph "Claude Desktop"
-        CD[Claude Desktop Client]
-    end
-
-    subgraph "MCP Server Layer"
-        MCP[MCP Complete Server<br/>17 Tools | 5 Prompts | 4 Resources]
-        INIT[Lazy Initialization<br/>< 1s startup]
-    end
-
-    subgraph "Core RAG System"
-        RAG[SharedRAG Engine]
-        EMB[Embeddings<br/>all-mpnet-base-v2<br/>768 dimensions]
-        VDB[(ChromaDB<br/>Vector Store)]
-        IDX[Book Index<br/>MD5 hash tracking]
-    end
-
-    subgraph "Document & Email Processing"
-        LOAD[Document Loaders]
-        PDF[PDF Processor<br/>+ OCR Support]
-        WORD[Word/PPT<br/>LibreOffice]
-        EPUB[EPUB<br/>Pandoc]
-        MOBI[MOBI/AZW<br/>Calibre]
-        EMLX[Apple Mail<br/>EMLX Parser]
-        OLM[Outlook<br/>OLM Extractor]
-    end
-
-    subgraph "Background Services"
-        MON[Index Monitor<br/>File watching]
-        WEB[Web Dashboard<br/>localhost:8888]
-        LOCK[Lock Manager<br/>30min timeout]
-    end
-
-    subgraph "File System"
-        BOOKS[Books Directory]
-        LOGS[Logs Directory]
-        CACHE[Failed PDFs Cache]
-    end
+graph TD
+    CD[Claude Desktop Client]
+    MCP[MCP Complete Server]
+    INIT[Lazy Initialization]
+    RAG[SharedRAG Engine]
+    EMB[Embeddings Model]
+    VDB[(ChromaDB)]
+    IDX[Book Index]
+    LOAD[Document Loaders]
+    PDF[PDF Processor]
+    WORD[Word/PPT]
+    EPUB[EPUB]
+    MOBI[MOBI/AZW]
+    EMLX[Apple Mail]
+    OLM[Outlook]
+    MON[Index Monitor]
+    WEB[Web Dashboard]
+    LOCK[Lock Manager]
+    BOOKS[Books Directory]
+    LOGS[Logs]
+    CACHE[Failed Cache]
 
     CD -->|MCP Protocol| MCP
     MCP --> INIT
     INIT --> RAG
-
     RAG --> EMB
     EMB --> VDB
     RAG --> IDX
-
     RAG --> LOAD
     LOAD --> PDF
     LOAD --> WORD
@@ -61,29 +42,24 @@ graph TB
     LOAD --> MOBI
     LOAD --> EMLX
     LOAD --> OLM
-
     MON --> BOOKS
     MON --> RAG
     MON --> LOCK
-
     WEB --> RAG
     WEB --> VDB
-
     BOOKS --> LOAD
     RAG --> LOGS
     RAG --> CACHE
 
-    classDef mcp fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef rag fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef proc fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef service fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
-    classDef storage fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-
-    class MCP,INIT mcp
-    class RAG,EMB,VDB,IDX rag
-    class LOAD,PDF,WORD,EPUB,MOBI,EMLX,OLM proc
-    class MON,WEB,LOCK service
-    class BOOKS,LOGS,CACHE storage
+    style CD fill:#e1f5fe
+    style MCP fill:#e1f5fe
+    style RAG fill:#f3e5f5
+    style VDB fill:#f3e5f5
+    style LOAD fill:#fff3e0
+    style PDF fill:#fff3e0
+    style MON fill:#e8f5e9
+    style WEB fill:#e8f5e9
+    style BOOKS fill:#fce4ec
 ```
 
 ## MCP Protocol Implementation
@@ -127,32 +103,23 @@ sequenceDiagram
 ### Prompts Workflow
 
 ```mermaid
-flowchart LR
-    subgraph "Prompt Templates"
-        P1[analyze_theme]
-        P2[compare_authors]
-        P3[extract_practices]
-        P4[research_topic]
-        P5[daily_wisdom]
-    end
-
-    subgraph "Prompt Processing"
-        GET[prompts/get]
-        LIST[prompts/list]
-        ARG[Argument Resolution]
-    end
-
-    subgraph "Execution"
-        TOOL[Tool Execution]
-        SYNTH[Result Synthesis]
-    end
+graph LR
+    P1[analyze_theme]
+    P2[compare_authors]
+    P3[extract_practices]
+    P4[research_topic]
+    P5[daily_wisdom]
+    GET[prompts/get]
+    LIST[prompts/list]
+    ARG[Argument Resolution]
+    TOOL[Tool Execution]
+    SYNTH[Result Synthesis]
 
     P1 --> GET
     P2 --> GET
     P3 --> GET
     P4 --> GET
     P5 --> GET
-
     LIST --> GET
     GET --> ARG
     ARG --> TOOL
@@ -162,38 +129,27 @@ flowchart LR
 ### Resources Workflow
 
 ```mermaid
-flowchart TB
-    subgraph "Dynamic Resources"
-        R1[library://stats<br/>Real-time metrics]
-        R2[library://recent<br/>Recent additions]
-        R3[library://search-tips<br/>Usage examples]
-        R4[library://config<br/>Current settings]
-    end
-
-    subgraph "Resource Generation"
-        LIST[resources/list]
-        READ[resources/read]
-        GEN[Dynamic Generation]
-    end
-
-    subgraph "Data Sources"
-        DB[(ChromaDB)]
-        IDX[Book Index]
-        CFG[Config]
-    end
+graph TD
+    R1[library://stats]
+    R2[library://recent]
+    R3[library://search-tips]
+    R4[library://config]
+    LIST[resources/list]
+    READ[resources/read]
+    GEN[Dynamic Generation]
+    DB[(ChromaDB)]
+    IDX[Book Index]
+    CFG[Config]
 
     LIST --> R1
     LIST --> R2
     LIST --> R3
     LIST --> R4
-
     R1 --> READ
     R2 --> READ
     R3 --> READ
     R4 --> READ
-
     READ --> GEN
-
     GEN --> DB
     GEN --> IDX
     GEN --> CFG
@@ -205,21 +161,35 @@ flowchart TB
 
 #### 1. `search` Tool Flow
 ```mermaid
-flowchart TD
-    START[search request] --> PARAMS[Parse parameters:<br/>query, limit, book_filter, synthesize]
-    PARAMS --> INIT_CHECK{RAG<br/>initialized?}
-    INIT_CHECK -->|No| INIT_RAG[Initialize SharedRAG<br/>Load embeddings model]
+graph TD
+    START[search request]
+    PARAMS[Parse parameters]
+    INIT_CHECK{RAG initialized?}
+    INIT_RAG[Initialize SharedRAG]
+    EMBED[Generate embedding]
+    FILTER{book_filter?}
+    FILTERED_SEARCH[Filtered search]
+    FULL_SEARCH[Full search]
+    RETRIEVE[Retrieve chunks]
+    SYNTH_CHECK{synthesize?}
+    SYNTHESIZE[Generate summaries]
+    FORMAT[Format results]
+    RESPONSE[Return response]
+
+    START --> PARAMS
+    PARAMS --> INIT_CHECK
+    INIT_CHECK -->|No| INIT_RAG
     INIT_CHECK -->|Yes| EMBED
-    INIT_RAG --> EMBED[Generate query embedding<br/>768-dim vector]
-    EMBED --> FILTER{book_filter<br/>provided?}
-    FILTER -->|Yes| FILTERED_SEARCH[Search with metadata filter<br/>book_name = filter]
-    FILTER -->|No| FULL_SEARCH[Search all documents]
-    FILTERED_SEARCH --> RETRIEVE[Retrieve top k chunks<br/>Cosine similarity]
+    INIT_RAG --> EMBED
+    EMBED --> FILTER
+    FILTER -->|Yes| FILTERED_SEARCH
+    FILTER -->|No| FULL_SEARCH
+    FILTERED_SEARCH --> RETRIEVE
     FULL_SEARCH --> RETRIEVE
-    RETRIEVE --> SYNTH_CHECK{synthesize<br/>enabled?}
-    SYNTH_CHECK -->|Yes| SYNTHESIZE[Group by source<br/>Generate summaries]
-    SYNTH_CHECK -->|No| FORMAT[Format raw results]
-    SYNTHESIZE --> RESPONSE[Return formatted response<br/>with sources & pages]
+    RETRIEVE --> SYNTH_CHECK
+    SYNTH_CHECK -->|Yes| SYNTHESIZE
+    SYNTH_CHECK -->|No| FORMAT
+    SYNTHESIZE --> RESPONSE
     FORMAT --> RESPONSE
 ```
 
@@ -231,20 +201,32 @@ flowchart TD
 
 #### 2. `list_books` Tool Flow
 ```mermaid
-flowchart TD
-    START[list_books request] --> PARAMS[Parse parameters:<br/>pattern, author, directory]
-    PARAMS --> LOAD_INDEX[Load book_index.json]
-    LOAD_INDEX --> FILTER_TYPE{Filter<br/>type?}
-    FILTER_TYPE -->|pattern| PATTERN_MATCH[fnmatch pattern<br/>on book names]
-    FILTER_TYPE -->|author| AUTHOR_SEARCH[Search author<br/>in filenames]
-    FILTER_TYPE -->|directory| DIR_FILTER[Filter by<br/>directory path]
-    FILTER_TYPE -->|none| ALL_BOOKS[List all books]
-    PATTERN_MATCH --> SORT[Sort alphabetically]
+graph TD
+    START[list_books request]
+    PARAMS[Parse parameters]
+    LOAD_INDEX[Load book_index.json]
+    FILTER_TYPE{Filter type?}
+    PATTERN_MATCH[Pattern match]
+    AUTHOR_SEARCH[Author search]
+    DIR_FILTER[Directory filter]
+    ALL_BOOKS[List all books]
+    SORT[Sort alphabetically]
+    ENRICH[Add metadata]
+    RESPONSE[Return book list]
+
+    START --> PARAMS
+    PARAMS --> LOAD_INDEX
+    LOAD_INDEX --> FILTER_TYPE
+    FILTER_TYPE -->|pattern| PATTERN_MATCH
+    FILTER_TYPE -->|author| AUTHOR_SEARCH
+    FILTER_TYPE -->|directory| DIR_FILTER
+    FILTER_TYPE -->|none| ALL_BOOKS
+    PATTERN_MATCH --> SORT
     AUTHOR_SEARCH --> SORT
     DIR_FILTER --> SORT
     ALL_BOOKS --> SORT
-    SORT --> ENRICH[Add metadata:<br/>chunks, pages, indexed_at]
-    ENRICH --> RESPONSE[Return book list]
+    SORT --> ENRICH
+    ENRICH --> RESPONSE
 ```
 
 **Internal Implementation:**
@@ -254,13 +236,13 @@ flowchart TD
 
 #### 3. `recent_books` Tool Flow
 ```mermaid
-flowchart TD
-    START[recent_books request] --> PARAMS[Parse parameters:<br/>hours or days]
-    PARAMS --> CALC_TIME[Calculate cutoff time:<br/>now - timedelta]
+graph TD
+    START[recent_books request] --> PARAMS[Parse parameters: hours or days]
+    PARAMS --> CALC_TIME[Calculate cutoff time: now - timedelta]
     CALC_TIME --> LOAD_INDEX[Load book_index.json]
-    LOAD_INDEX --> FILTER_TIME[Filter books where<br/>indexed_at > cutoff]
-    FILTER_TIME --> SORT_TIME[Sort by indexed_at<br/>descending]
-    SORT_TIME --> FORMAT[Format with relative time<br/>"2 hours ago"]
+    LOAD_INDEX --> FILTER_TIME[Filter books where: indexed_at > cutoff]
+    FILTER_TIME --> SORT_TIME[Sort by indexed_at: descending]
+    SORT_TIME --> FORMAT[Format with relative time: "2 hours ago"]
     FORMAT --> RESPONSE[Return recent books list]
 ```
 
@@ -271,11 +253,11 @@ flowchart TD
 
 #### 4. `find_practices` Tool Flow
 ```mermaid
-flowchart TD
+graph TD
     START[find_practices request] --> PARAM[Parse practice_type]
-    PARAM --> BUILD_QUERY[Build semantic query:<br/>"practical exercises {practice_type}"]
-    BUILD_QUERY --> SEARCH_CAT[Search with category filter:<br/>category = 'practice']
-    SEARCH_CAT --> EXTRACT[Extract practice descriptions<br/>from chunks]
+    PARAM --> BUILD_QUERY[Build semantic query: "practical exercises {practice_type}"]
+    BUILD_QUERY --> SEARCH_CAT[Search with category filter: category = 'practice']
+    SEARCH_CAT --> EXTRACT[Extract practice descriptions: from chunks]
     EXTRACT --> DEDUPE[Deduplicate similar practices]
     DEDUPE --> GROUP[Group by practice type]
     GROUP --> RESPONSE[Return practices with sources]
@@ -290,17 +272,17 @@ flowchart TD
 
 #### 5. `extract_pages` Tool Flow
 ```mermaid
-flowchart TD
-    START[extract_pages request] --> PARAMS[Parse parameters:<br/>book_pattern, pages]
-    PARAMS --> FIND_BOOK[Find matching book<br/>in book_index.json]
-    FIND_BOOK --> FOUND{Book<br/>found?}
-    FOUND -->|No| ERROR[Return error:<br/>Book not found]
-    FOUND -->|Yes| PARSE_PAGES[Parse page specification:<br/>int, list, or range]
+graph TD
+    START[extract_pages request] --> PARAMS[Parse parameters: book_pattern, pages]
+    PARAMS --> FIND_BOOK[Find matching book: in book_index.json]
+    FIND_BOOK --> FOUND{Book: found?}
+    FOUND -->|No| ERROR[Return error: Book not found]
+    FOUND -->|Yes| PARSE_PAGES[Parse page specification: int, list, or range]
     PARSE_PAGES --> LOAD_PDF[Load PDF with PyPDF2]
     LOAD_PDF --> EXTRACT_LOOP[For each page number]
     EXTRACT_LOOP --> EXTRACT_TEXT[Extract page text]
     EXTRACT_TEXT --> APPEND[Append to results]
-    APPEND --> MORE{More<br/>pages?}
+    APPEND --> MORE{More: pages?}
     MORE -->|Yes| EXTRACT_LOOP
     MORE -->|No| RESPONSE[Return extracted text]
 ```
@@ -312,14 +294,14 @@ flowchart TD
 
 #### 6. `extract_quotes` Tool Flow
 ```mermaid
-flowchart TD
-    START[extract_quotes request] --> PARAMS[Parse parameters:<br/>topic, max_quotes]
-    PARAMS --> SEARCH_QUOTES[Search for:<br/>"quotes about {topic}"]
+graph TD
+    START[extract_quotes request] --> PARAMS[Parse parameters: topic, max_quotes]
+    PARAMS --> SEARCH_QUOTES[Search for: "quotes about {topic}"]
     SEARCH_QUOTES --> RETRIEVE[Retrieve relevant chunks]
-    RETRIEVE --> QUOTE_DETECT[Detect quote patterns:<br/>quotation marks, attribution]
-    QUOTE_DETECT --> SCORE[Score by relevance<br/>and quote quality]
+    RETRIEVE --> QUOTE_DETECT[Detect quote patterns: quotation marks, attribution]
+    QUOTE_DETECT --> SCORE[Score by relevance: and quote quality]
     SCORE --> SELECT[Select top max_quotes]
-    SELECT --> FORMAT[Format with context<br/>and attribution]
+    SELECT --> FORMAT[Format with context: and attribution]
     FORMAT --> RESPONSE[Return quotes list]
 ```
 
@@ -330,16 +312,16 @@ flowchart TD
 
 #### 7. `summarize_book` Tool Flow
 ```mermaid
-flowchart TD
-    START[summarize_book request] --> PARAMS[Parse parameters:<br/>book_name, summary_length]
+graph TD
+    START[summarize_book request] --> PARAMS[Parse parameters: book_name, summary_length]
     PARAMS --> FIND_BOOK[Find book in index]
-    FIND_BOOK --> GET_CHUNKS[Retrieve all book chunks<br/>from ChromaDB]
+    FIND_BOOK --> GET_CHUNKS[Retrieve all book chunks: from ChromaDB]
     GET_CHUNKS --> SAMPLE{summary_length?}
-    SAMPLE -->|brief| SAMPLE_CHUNKS[Sample key chunks<br/>~10-15 chunks]
+    SAMPLE -->|brief| SAMPLE_CHUNKS[Sample key chunks: ~10-15 chunks]
     SAMPLE -->|detailed| ALL_CHUNKS[Use all chunks]
-    SAMPLE_CHUNKS --> EXTRACT_THEMES[Extract main themes<br/>via frequency analysis]
+    SAMPLE_CHUNKS --> EXTRACT_THEMES[Extract main themes: via frequency analysis]
     ALL_CHUNKS --> EXTRACT_THEMES
-    EXTRACT_THEMES --> BUILD_SUMMARY[Build structured summary:<br/>Overview, Key Points, Themes]
+    EXTRACT_THEMES --> BUILD_SUMMARY[Build structured summary: Overview, Key Points, Themes]
     BUILD_SUMMARY --> RESPONSE[Return formatted summary]
 ```
 
@@ -352,11 +334,11 @@ flowchart TD
 
 #### 8. `compare_perspectives` Tool Flow
 ```mermaid
-flowchart TD
+graph TD
     START[compare_perspectives request] --> PARAM[Parse topic parameter]
-    PARAM --> SEARCH_MULTI[Search across all sources<br/>for topic]
+    PARAM --> SEARCH_MULTI[Search across all sources: for topic]
     SEARCH_MULTI --> GROUP_SOURCE[Group results by source book]
-    GROUP_SOURCE --> EXTRACT_VIEW[Extract viewpoint<br/>from each source]
+    GROUP_SOURCE --> EXTRACT_VIEW[Extract viewpoint: from each source]
     EXTRACT_VIEW --> IDENTIFY_SIM[Identify similarities]
     IDENTIFY_SIM --> IDENTIFY_DIFF[Identify differences]
     IDENTIFY_DIFF --> BUILD_COMP[Build comparison matrix]
@@ -371,9 +353,9 @@ flowchart TD
 
 #### 9. `question_answer` Tool Flow
 ```mermaid
-flowchart TD
-    START[question_answer request] --> PARAMS[Parse parameters:<br/>question, detail_level]
-    PARAMS --> ANALYZE_Q[Analyze question type:<br/>factual, conceptual, practical]
+graph TD
+    START[question_answer request] --> PARAMS[Parse parameters: question, detail_level]
+    PARAMS --> ANALYZE_Q[Analyze question type: factual, conceptual, practical]
     ANALYZE_Q --> BUILD_QUERY[Build optimized query]
     BUILD_QUERY --> SEARCH[Semantic search]
     SEARCH --> RANK[Rank results by relevance]
@@ -393,11 +375,11 @@ flowchart TD
 
 #### 10. `daily_reading` Tool Flow
 ```mermaid
-flowchart TD
-    START[daily_reading request] --> PARAMS[Parse parameters:<br/>theme, length]
-    PARAMS --> CHECK_HISTORY[Check reading history<br/>in logs]
+graph TD
+    START[daily_reading request] --> PARAMS[Parse parameters: theme, length]
+    PARAMS --> CHECK_HISTORY[Check reading history: in logs]
     CHECK_HISTORY --> AVOID_RECENT[Filter out recent selections]
-    AVOID_RECENT --> THEME{theme<br/>provided?}
+    AVOID_RECENT --> THEME{theme: provided?}
     THEME -->|Yes| THEMED_SEARCH[Search for theme]
     THEME -->|No| RANDOM_SELECT[Random selection]
     THEMED_SEARCH --> LENGTH{length?}
@@ -421,14 +403,14 @@ flowchart TD
 
 #### 11. `library_stats` Tool Flow
 ```mermaid
-flowchart TD
-    START[library_stats request] --> INIT_CHECK{RAG<br/>initialized?}
+graph TD
+    START[library_stats request] --> INIT_CHECK{RAG: initialized?}
     INIT_CHECK -->|No| INIT_RAG[Initialize SharedRAG]
     INIT_CHECK -->|Yes| GATHER
     INIT_RAG --> GATHER[Gather statistics]
     GATHER --> COUNT_BOOKS[Count books in index]
-    COUNT_BOOKS --> COUNT_CHUNKS[Query ChromaDB<br/>for chunk count]
-    COUNT_CHUNKS --> COUNT_PAGES[Sum page counts<br/>from metadata]
+    COUNT_BOOKS --> COUNT_CHUNKS[Query ChromaDB: for chunk count]
+    COUNT_CHUNKS --> COUNT_PAGES[Sum page counts: from metadata]
     COUNT_PAGES --> CHECK_FAILED[Check failed_pdfs.json]
     CHECK_FAILED --> CHECK_STATUS[Check index_status.json]
     CHECK_STATUS --> CALC_SIZE[Calculate DB size]
@@ -443,14 +425,14 @@ flowchart TD
 
 #### 12. `index_status` Tool Flow
 ```mermaid
-flowchart TD
+graph TD
     START[index_status request] --> READ_STATUS[Read index_status.json]
     READ_STATUS --> READ_PROGRESS[Read indexing_progress.json]
     READ_PROGRESS --> CHECK_LOCK[Check lock file status]
-    CHECK_LOCK --> LOCKED{Lock<br/>exists?}
+    CHECK_LOCK --> LOCKED{Lock: exists?}
     LOCKED -->|Yes| CHECK_PID[Check if PID active]
     LOCKED -->|No| STATUS_IDLE
-    CHECK_PID --> ACTIVE{Process<br/>active?}
+    CHECK_PID --> ACTIVE{Process: active?}
     ACTIVE -->|Yes| STATUS_ACTIVE[Status: Indexing active]
     ACTIVE -->|No| STATUS_STALE[Status: Stale lock]
     STATUS_ACTIVE --> FORMAT_PROGRESS[Include progress details]
@@ -468,7 +450,7 @@ flowchart TD
 
 #### 13. `refresh_cache` Tool Flow
 ```mermaid
-flowchart TD
+graph TD
     START[refresh_cache request] --> CLEAR_CACHE[Clear in-memory caches]
     CLEAR_CACHE --> RELOAD_INDEX[Reload book_index.json]
     RELOAD_INDEX --> RELOAD_FAILED[Reload failed_pdfs.json]
@@ -485,12 +467,12 @@ flowchart TD
 
 #### 14. `warmup` Tool Flow
 ```mermaid
-flowchart TD
+graph TD
     START[warmup request] --> INIT_RAG[Initialize SharedRAG]
-    INIT_RAG --> LOAD_MODEL[Load embedding model<br/>~4GB memory]
+    INIT_RAG --> LOAD_MODEL[Load embedding model: ~4GB memory]
     LOAD_MODEL --> CONNECT_DB[Connect to ChromaDB]
     CONNECT_DB --> LOAD_INDEX[Load book index]
-    LOAD_INDEX --> TEST_QUERY[Run test query<br/>"test warmup"]
+    LOAD_INDEX --> TEST_QUERY[Run test query: "test warmup"]
     TEST_QUERY --> MEASURE[Measure load times]
     MEASURE --> RESPONSE[Return warmup stats]
 ```
@@ -502,14 +484,14 @@ flowchart TD
 
 #### 15. `find_unindexed` Tool Flow
 ```mermaid
-flowchart TD
-    START[find_unindexed request] --> SCAN_DIR[Scan books directory<br/>for supported formats]
+graph TD
+    START[find_unindexed request] --> SCAN_DIR[Scan books directory: for supported formats]
     SCAN_DIR --> LOAD_INDEX[Load book_index.json]
     LOAD_INDEX --> COMPARE[Compare file lists]
     COMPARE --> FILTER_NEW[Filter unindexed files]
     FILTER_NEW --> CHECK_FAILED[Check against failed_pdfs.json]
-    CHECK_FAILED --> CATEGORIZE[Categorize:<br/>New, Modified, Failed]
-    CATEGORIZE --> FORMAT_LIST[Format with file sizes<br/>and modification times]
+    CHECK_FAILED --> CATEGORIZE[Categorize: New, Modified, Failed]
+    CATEGORIZE --> FORMAT_LIST[Format with file sizes: and modification times]
     FORMAT_LIST --> RESPONSE[Return unindexed list]
 ```
 
@@ -520,12 +502,12 @@ flowchart TD
 
 #### 16. `reindex_book` Tool Flow
 ```mermaid
-flowchart TD
+graph TD
     START[reindex_book request] --> PARAM[Parse book_name]
     PARAM --> FIND_BOOK[Find book in index]
     FIND_BOOK --> FOUND{Found?}
     FOUND -->|No| ERROR[Return error]
-    FOUND -->|Yes| REMOVE_CHUNKS[Delete chunks from ChromaDB<br/>by metadata filter]
+    FOUND -->|Yes| REMOVE_CHUNKS[Delete chunks from ChromaDB: by metadata filter]
     REMOVE_CHUNKS --> REMOVE_INDEX[Remove from book_index.json]
     REMOVE_INDEX --> PROCESS_DOC[Process document again]
     PROCESS_DOC --> CHUNK[Chunk text]
@@ -542,7 +524,7 @@ flowchart TD
 
 #### 17. `clear_failed` Tool Flow
 ```mermaid
-flowchart TD
+graph TD
     START[clear_failed request] --> BACKUP[Backup failed_pdfs.json]
     BACKUP --> CLEAR[Clear failed list]
     CLEAR --> SAVE[Save empty failed_pdfs.json]
@@ -580,16 +562,16 @@ flowchart TD
 ### Document Processing Pipeline
 
 ```mermaid
-flowchart LR
+graph LR
     DOC[Document]
     HASH[MD5 Hash]
-    CHECK{Already<br/>Indexed?}
+    CHECK{Already: Indexed?}
     LOAD[Load Document]
-    CHUNK[Chunk Text<br/>1200 chars]
+    CHUNK[Chunk Text: 1200 chars]
     CAT[Categorize]
-    EMB[Generate<br/>Embeddings]
-    STORE[Store in<br/>ChromaDB]
-    INDEX[Update<br/>Book Index]
+    EMB[Generate: Embeddings]
+    STORE[Store in: ChromaDB]
+    INDEX[Update: Book Index]
 
     DOC --> HASH
     HASH --> CHECK
