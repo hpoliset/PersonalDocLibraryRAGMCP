@@ -1,187 +1,270 @@
-# Project Structure
+# Project Structure - Ragdex
 
 ## Repository Overview
 ```
-spiritual-library-mcp/
-├── 📁 Core Components
-│   ├── mcp_complete_server.py     # Main MCP server (9 tools, full features)
-│   ├── shared_rag.py             # Core RAG functionality 
-│   ├── index_monitor.py          # Background indexing service
-│   └── monitor_web_simple.py     # Web monitoring dashboard
+DocumentIndexerMCP/ (or ~/ragdex_env/ for PyPI installation)
+├── 📁 Source Code (src/personal_doc_library/)
+│   ├── __init__.py               # Package initialization
+│   ├── cli.py                    # Command-line interface (ragdex)
+│   │
+│   ├── 📁 Core Components
+│   │   ├── config.py             # Configuration management
+│   │   ├── shared_rag.py         # Core RAG functionality
+│   │   ├── logging_config.py     # Logging setup
+│   │   └── timeout_handler.py    # Timeout management
+│   │
+│   ├── 📁 MCP Server
+│   │   └── servers/
+│   │       └── mcp_complete_server.py  # Main MCP server (17 tools, 5 prompts, 4 resources)
+│   │
+│   ├── 📁 Document Indexing
+│   │   └── indexing/
+│   │       ├── index_monitor.py        # Background indexing service
+│   │       ├── execute_indexing.py     # Indexing execution
+│   │       ├── complete_indexing.py    # Full indexing workflow
+│   │       ├── handle_large_pdf.py     # Large PDF processing
+│   │       ├── manage_failed_pdfs.py   # Failed document management
+│   │       └── clean_pdfs.py           # PDF cleaning utility
+│   │
+│   ├── 📁 Web Monitoring
+│   │   └── monitoring/
+│   │       └── monitor_web_enhanced.py # Web dashboard (localhost:8888)
+│   │
+│   └── 📁 Utilities
+│       └── utils/
+│           ├── check_indexing_status.py  # Status checking
+│           ├── find_unindexed.py        # Find unindexed docs
+│           ├── fix_skipped_file.py      # Fix skipped files
+│           ├── index_lock.py            # Lock management
+│           ├── ocr_manager.py           # OCR processing
+│           ├── show_config.py           # Display config
+│           └── fallback_search.py       # Fallback search logic
 │
 ├── 📁 Scripts Directory
 │   ├── Core Operations
-│   │   ├── run.sh                   # Swiss army knife - MCP server & indexing
-│   │   ├── serviceInstall.sh                 # Comprehensive setup script
-│   │   └── install_interactive_nonservicemode.sh           # Interactive setup for new users
+│   │   ├── run.sh                      # Main runner (MCP server & indexing)
+│   │   ├── serviceInstall.sh           # Comprehensive setup script
+│   │   └── install_interactive_nonservicemode.sh  # Interactive setup
 │   │
 │   ├── Background Monitoring
-│   │   ├── index_monitor.sh         # Manual background monitor (Ctrl+C to stop)
-│   │   ├── stop_monitor.sh          # Stop background monitor gracefully
-│   │   └── index_monitor_service.sh # Service wrapper (run by LaunchAgent)
+│   │   ├── index_monitor.sh            # Manual background monitor
+│   │   ├── stop_monitor.sh             # Stop background monitor
+│   │   └── index_monitor_service.sh    # Service wrapper (LaunchAgent)
 │   │
 │   ├── Service Management
-│   │   ├── install_service.sh       # Install index monitor as LaunchAgent
-│   │   ├── uninstall_service.sh     # Remove index monitor service
-│   │   └── service_status.sh        # Check index monitor health
+│   │   ├── install_service.sh          # Install index monitor service
+│   │   ├── uninstall_service.sh        # Remove index monitor service
+│   │   └── service_status.sh           # Check service health
 │   │
 │   ├── Web Monitor Services
-│   │   ├── install_webmonitor_service.sh    # Install web monitor service
-│   │   ├── uninstall_webmonitor_service.sh  # Remove web monitor service
-│   │   ├── webmonitor_service_status.sh     # Check web monitor status
-│   │   └── start_web_monitor.sh             # Manual web dashboard start
+│   │   ├── install_webmonitor_service.sh     # Install web monitor service
+│   │   ├── uninstall_webmonitor_service.sh   # Remove web monitor service
+│   │   ├── webmonitor_service_status.sh      # Check web monitor status
+│   │   └── start_web_monitor.sh              # Manual web dashboard start
 │   │
 │   ├── Indexing Control
-│   │   ├── pause_indexing.sh        # Pause indexing (creates pause file)
-│   │   ├── resume_indexing.sh       # Resume indexing (removes pause file)
-│   │   └── indexing_status.sh       # Check indexing status/progress
+│   │   ├── pause_indexing.sh           # Pause indexing
+│   │   ├── resume_indexing.sh          # Resume indexing
+│   │   └── indexing_status.sh          # Check indexing progress
 │   │
 │   └── Debugging & Maintenance
-│       ├── view_mcp_logs.sh         # View MCP logs in real-time
-│       ├── test_logs.sh             # Test log viewing functionality
-│       └── execute_fresh_indexing.sh # Full reset: backup & fresh index
+│       ├── view_mcp_logs.sh            # View MCP logs
+│       ├── test_logs.sh                # Test log viewing
+│       ├── manage_failed_docs.sh       # Manage failed documents
+│       └── cleanup_failed_list.sh      # Clean failed list
 │
-├── 📁 Utilities (Python)
-│   └── clean_pdfs.py               # PDF cleaning utility
-│
-├── 📁 Alternative Servers
-│   └── mcp_final_server.py      # Minimal server (fallback option)
+├── 📁 Package Configuration
+│   ├── pyproject.toml                  # Package metadata and build config
+│   ├── requirements.txt                # Python dependencies
+│   ├── MANIFEST.in                     # Package distribution config
+│   └── .gitignore                      # Git ignore patterns
 │
 ├── 📁 Documentation
-│   ├── README.md                # Main project documentation
-│   ├── CLAUDE.md               # Claude Code instructions
-│   ├── CHANGELOG.md            # Version history
-│   ├── CONTRIBUTING.md         # Contribution guidelines
-│   ├── LICENSE                 # MIT License
-│   └── SERVER_COMPARISON.md    # Server comparison guide
+│   ├── README.md                       # Main documentation
+│   ├── CLAUDE.md                       # Claude Code instructions
+│   ├── PROJECT_STRUCTURE.md            # This file
+│   ├── QUICK_REFERENCE.md              # Command reference
+│   ├── docs/
+│   │   ├── ARCHITECTURE.md             # System architecture
+│   │   └── images/                     # Screenshots
+│   └── config/
+│       └── claude_desktop_config.json.template  # Config template
 │
-├── 📁 Configuration
-│   ├── requirements.txt        # Python dependencies
-│   ├── .gitignore             # Git ignore patterns
-│   └── backup/                # Legacy/backup files
+├── 📁 Testing
+│   ├── test_mcp_features.py            # MCP protocol tests
+│   ├── test_resources.py               # Resources functionality tests
+│   └── test_pypi_deployment.py         # PyPI deployment tests
 │
-├── 📁 GitHub Infrastructure
-│   └── .github/
-│       ├── workflows/test.yml  # CI/CD pipeline
-│       ├── ISSUE_TEMPLATE/     # Bug report & feature templates
-│       └── PULL_REQUEST_TEMPLATE.md
+├── 📁 PyPI Service Scripts
+│   ├── install_ragdex_services.sh      # Install services from PyPI
+│   ├── uninstall_ragdex_services.sh    # Uninstall services
+│   └── ragdex_status.sh                # Check ragdex installation
 │
 └── 📁 Runtime (created automatically)
-    ├── books/                  # PDF library directory
-    ├── chroma_db/             # Vector database storage
-    ├── venv_mcp/              # ARM64 virtual environment
-    └── logs/                  # Application logs
+    ├── books/                           # Document library
+    ├── chroma_db/                       # Vector database
+    ├── venv_mcp/                        # Virtual environment (source)
+    ├── ~/ragdex_env/                    # Virtual environment (PyPI)
+    └── logs/                            # Application logs
+```
+
+## Package Structure
+
+The project is now structured as a proper Python package (`personal_doc_library`) with the following entry points:
+
+### CLI Commands
+- `pdlib-cli` - Main command-line interface
+- `pdlib-mcp` - Start MCP server
+- `pdlib-indexer` - Start background indexer
+- `pdlib-webmonitor` - Start web dashboard
+
+### Python Modules
+```python
+# MCP Server
+from personal_doc_library.servers.mcp_complete_server import main
+
+# Core RAG
+from personal_doc_library.core.shared_rag import SharedRAG
+
+# Configuration
+from personal_doc_library.core.config import config
+
+# Indexing
+from personal_doc_library.indexing.index_monitor import IndexMonitor
+```
+
+## MCP Protocol Implementation
+
+### MCP Complete Server (`mcp_complete_server.py`)
+- **Purpose**: Main Model Context Protocol server for Claude Desktop
+- **Features**:
+  - 17 tools for document interaction
+  - 5 prompt templates for workflows
+  - 4 dynamic resources for real-time info
+  - Lazy initialization (< 1s startup)
+  - ARM64 compatible
+
+### Tools (17 total)
+```
+Search & Discovery:
+- search              # Semantic search with synthesis
+- list_books          # List books by pattern/author
+- recent_books        # Find recently indexed books
+- find_practices      # Find specific techniques
+
+Content Extraction:
+- extract_pages       # Extract specific pages
+- extract_quotes      # Find notable quotes
+- summarize_book      # Generate AI summaries
+
+Analysis & Synthesis:
+- compare_perspectives # Compare across sources
+- question_answer     # Direct Q&A
+- daily_reading       # Suggested passages
+
+System Management:
+- library_stats       # Library statistics
+- index_status        # Indexing progress
+- refresh_cache       # Refresh search cache
+- warmup              # Initialize RAG system
+- find_unindexed      # Find unindexed docs
+- reindex_book        # Force reindex
+- clear_failed        # Clear failed list
+```
+
+### Prompts (5 templates)
+```
+- analyze_theme       # Theme analysis across library
+- compare_authors     # Author comparison
+- extract_practices   # Extract techniques
+- research_topic      # Deep research
+- daily_wisdom        # Daily wisdom passages
+```
+
+### Resources (4 dynamic)
+```
+- library://stats     # Current statistics
+- library://recent    # Recent additions
+- library://search-tips # Usage examples
+- library://config    # Configuration
 ```
 
 ## Core Components
 
-### MCP Server (`mcp_complete_server.py`)
-- **Purpose**: Main Model Context Protocol server
-- **Features**: 9 tools, lazy initialization, ARM64 compatible
-- **Tools**: search, find_practices, compare_perspectives, library_stats, index_status, summarize_book, extract_quotes, daily_reading, question_answer
-
 ### Shared RAG (`shared_rag.py`)
-- **Purpose**: Core RAG functionality used by both server and monitor
-- **Features**: ChromaDB integration, PDF processing, lock management
-- **Embedding**: sentence-transformers/all-mpnet-base-v2 (768-dim)
+- **Purpose**: Core RAG functionality shared across all components
+- **Features**:
+  - ChromaDB integration (768-dim embeddings)
+  - Document processing pipeline
+  - Lock management (30-min timeout)
+  - MD5 hash-based tracking
+- **Embedding**: sentence-transformers/all-mpnet-base-v2
+
+### Configuration (`config.py`)
+- **Purpose**: Centralized configuration management
+- **Features**:
+  - Environment variable support
+  - Default path configuration
+  - Platform-specific paths
+  - Configuration validation
 
 ### Index Monitor (`index_monitor.py`)
 - **Purpose**: Background service for automatic indexing
-- **Features**: File watching, automatic PDF processing, service mode
-- **Usage**: Optional for instant indexing when books are added
+- **Features**:
+  - File system event watching
+  - Automatic document processing
+  - Service mode with LaunchAgent
+  - Progress tracking and status updates
 
-### Web Monitor (`monitor_web_simple.py`)
-- **Purpose**: Real-time status dashboard
-- **Features**: Live statistics, indexing progress, health monitoring
+### Web Monitor (`monitor_web_enhanced.py`)
+- **Purpose**: Real-time monitoring dashboard
+- **Features**:
+  - Live statistics and progress
+  - Search interface with Enter key
+  - Document library browsing
+  - Failed document management
 - **Access**: http://localhost:8888
 
-## Scripts Overview
+## Script Connection Map
 
-### Script Connection Map
 ```
 User has 3 ways to run the system:
 
-1. MANUAL MODE (run.sh)
-   └── Direct execution, no background processes
+1. PACKAGE MODE (pip install -e .)
+   ├── pdlib-mcp        → MCP server
+   ├── pdlib-indexer    → Background indexer
+   └── pdlib-webmonitor → Web dashboard
 
-2. MANUAL BACKGROUND MODE (index_monitor.sh)
-   └── Runs in terminal, stays active until Ctrl+C
+2. MANUAL MODE (scripts/)
+   ├── run.sh           → Direct execution
+   ├── index_monitor.sh → Terminal background
+   └── start_web_monitor.sh → Manual web start
 
-3. SERVICE MODE (install_service.sh → index_monitor_service.sh)
-   └── Runs as system service, survives reboots
+3. SERVICE MODE (LaunchAgent)
+   ├── install_service.sh → Install services
+   └── service_status.sh  → Check status
 ```
 
-### Key Scripts Explained
+## Data Flow
 
-#### **run.sh** (Swiss Army Knife)
-- **Purpose**: Main entry point for manual/ad-hoc usage
-- **Usage Modes**:
-  - `./run.sh` - Run the MCP server (for Claude Desktop)
-  - `./run.sh --index-only` - Just index documents once and exit
-  - `./run.sh --index-only --retry` - Index with retry logic and memory monitoring
-- **When to use**: Testing, one-time indexing, or running the MCP server
-
-#### **index_monitor.sh** (Manual Background Mode)
-- **Purpose**: Manually start the background file watcher
-- **What it does**: 
-  - Runs the Python index_monitor.py directly
-  - Watches for new/changed documents in real-time
-  - Stays running until you press Ctrl+C
-- **When to use**: When you want background monitoring but don't want a system service
-
-#### **index_monitor_service.sh** (Service Worker)
-- **Purpose**: The actual service executable run by macOS LaunchAgent
-- **What it does**: Same as index_monitor.sh but with:
-  - Better signal handling for system shutdown
-  - Service-specific logging
-  - PID file management
-  - CloudDocs permission workaround
-- **When to use**: Never run directly - it's run by the system
-
-#### **install_service.sh** (Service Installer)
-- **Purpose**: One-time installation of the background service
-- **What it does**: 
-  - Installs a LaunchAgent that runs index_monitor_service.sh
-  - Service starts automatically on boot
-  - Runs in background without terminal
-- **When to use**: For "set and forget" operation
-
-### Service Chain
+### Document Processing Pipeline
 ```
-install_service.sh (run once)
-    ↓ creates
-LaunchAgent plist file
-    ↓ which runs
-index_monitor_service.sh (continuously)
-    ↓ which runs
-python -m personal_doc_library.indexing.index_monitor
+Document → MD5 Hash → Check Index → Load Document
+→ Chunk Text (1200 chars) → Categorize → Generate Embeddings
+→ Store in ChromaDB → Update Book Index
 ```
 
-## Usage Modes
-
-### 1. Developer/Testing Mode
-```bash
-./scripts/run.sh                    # Run MCP server
-./scripts/run.sh --index-only       # One-time indexing
+### Search Flow
+```
+Query → Generate Embedding → Vector Similarity Search
+→ Retrieve Chunks → Load Book Metadata → Rank Results
+→ Format Response → Return to Claude
 ```
 
-### 2. Casual User Mode
-```bash
-./scripts/index_monitor.sh          # Start monitoring (Ctrl+C to stop)
-./scripts/start_web_monitor.sh      # View web dashboard
+### MCP Protocol Flow
 ```
-
-### 3. Power User Mode (Service)
-```bash
-./scripts/install_service.sh        # Install once
-./scripts/service_status.sh         # Check status
-# Runs automatically on boot
-```
-
-### 4. Claude Desktop Only
-```bash
-# Just configure Claude Desktop - no scripts needed
-# Indexing happens automatically on first query
+Claude Desktop → MCP Protocol → Tool Handler → SharedRAG
+→ ChromaDB → Process Results → MCP Response → Claude Desktop
 ```
 
 ## File Dependencies
@@ -190,13 +273,14 @@ python -m personal_doc_library.indexing.index_monitor
 graph TD
     A[mcp_complete_server.py] --> B[shared_rag.py]
     C[index_monitor.py] --> B
-    D[monitor_web_simple.py] --> B
-    E[clean_pdfs.py] --> B
+    D[monitor_web_enhanced.py] --> B
+    E[cli.py] --> B
     B --> F[ChromaDB]
     B --> G[sentence-transformers]
-    B --> H[Direct RAG Results]
+    B --> H[config.py]
     A --> I[Claude Desktop]
     C --> J[LaunchAgent Service]
+    E --> K[Command Line]
 ```
 
 ## Configuration Files
@@ -204,46 +288,54 @@ graph TD
 ### Claude Desktop Config
 - **Location**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Purpose**: MCP server integration with Claude Desktop
-- **Critical**: Must use ARM64 virtual environment path
+- **Format**:
+```json
+{
+  "mcpServers": {
+    "personal-library": {
+      "command": "/path/to/venv_mcp/bin/python",
+      "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
+      "env": {
+        "PYTHONPATH": "/path/to/src",
+        "CHROMA_TELEMETRY": "false"
+      }
+    }
+  }
+}
+```
 
-### Service Configuration  
-- **Location**: `~/Library/LaunchAgents/com.spiritual-library.index-monitor.plist`
+### Service Configuration
+- **Location**: `~/Library/LaunchAgents/com.personal-library.*.plist`
 - **Purpose**: Background service configuration
-- **Created by**: `install_service.sh`
+- **Created by**: Installation scripts
 
-### Environment Files
-- **requirements.txt**: Python package dependencies
-- **serviceInstall.sh**: Comprehensive environment setup
-- **.gitignore**: Excludes runtime data and logs
-
-## Data Flow
-
-1. **PDF Input**: Place PDFs in `books/` directory
-2. **Processing**: PyPDF2 extracts text, RecursiveCharacterTextSplitter chunks
-3. **Embedding**: sentence-transformers generates 768-dim vectors  
-4. **Storage**: ChromaDB stores vectors with metadata
-5. **Search**: Claude queries via MCP → semantic search → LLM synthesis
-6. **Response**: Structured results with sources and page numbers
+### Environment Variables
+```bash
+PERSONAL_LIBRARY_DOC_PATH    # Document library path
+PERSONAL_LIBRARY_DB_PATH     # Database path
+PERSONAL_LIBRARY_LOGS_PATH   # Logs directory
+CHROMA_TELEMETRY            # Disable telemetry (false)
+```
 
 ## Development Workflow
 
-1. **Setup**: Run `./serviceInstall.sh` for initial environment
-2. **Development**: Edit source files, test with `./run.sh`
-3. **Testing**: Use web monitor for debugging
+1. **Setup**: Install package with `pip install -e .`
+2. **Development**: Edit source files in `src/personal_doc_library/`
+3. **Testing**: Run test scripts (`test_mcp_features.py`)
 4. **Integration**: Test with Claude Desktop
-5. **Service**: Install as service for production use
-
-## Backup Strategy
-
-- **Legacy files**: Stored in `backup/` directory
-- **Configuration**: Document in CLAUDE.md for reproducibility  
-- **Database**: ChromaDB can be rebuilt from books/ directory
-- **Code**: Version controlled with git
+5. **Service**: Install as service for production
 
 ## Performance Characteristics
 
-- **Startup**: <2 seconds (lazy initialization)
+- **Startup**: < 1 second (lazy initialization)
 - **Search**: ~1.75s per query (768-dim embeddings)
-- **Indexing**: ~10-30 minutes for full library rebuild
+- **Indexing**: ~10-30 minutes for full library
 - **Memory**: ~4GB for embeddings model
 - **Storage**: ~55MB ChromaDB for 68 books, 38K chunks
+
+## Security Architecture
+
+- **Local Processing**: No data leaves machine
+- **User Permissions**: Services run as user
+- **No Network**: All processing is offline
+- **Sandboxed**: MCP runs in separate process

@@ -3,21 +3,30 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "personal-doc-library"
-version = "0.1.0"
-description = "Installable Personal Document Library MCP server and tooling"
+name = "ragdex"
+version = "0.1.1"
+description = "RAG-powered document indexing and search for MCP (Model Context Protocol)"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-  { name = "Kenny and contributors" }
+  { name = "hpoliset and contributors", email = "hpoliset@users.noreply.github.com" }
 ]
 license = { file = "LICENSE" }
-keywords = ["rag", "mcp", "documents", "personal-library"]
+keywords = ["rag", "mcp", "documents", "personal-library", "claude", "ai", "semantic-search", "chromadb"]
 classifiers = [
-  "Programming Language :: Python :: 3",
-  "License :: OSI Approved :: MIT License",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence"
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Text Processing :: Indexing",
+  "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
   "langchain==0.1.0",
@@ -40,7 +49,12 @@ dependencies = [
   "platformdirs>=4.0.0"
 ]
 
-dynamic = []
+[project.urls]
+Homepage = "https://github.com/hpoliset/DocumentIndexerMCP"
+Documentation = "https://github.com/hpoliset/DocumentIndexerMCP#readme"
+Issues = "https://github.com/hpoliset/DocumentIndexerMCP/issues"
+Repository = "https://github.com/hpoliset/DocumentIndexerMCP"
+Changelog = "https://github.com/hpoliset/DocumentIndexerMCP/releases"
 
 [project.optional-dependencies]
 document-processing = [
@@ -52,10 +66,10 @@ services = [
 ]
 
 [project.scripts]
-pdlib-mcp = "personal_doc_library.servers.mcp_complete_server:main"
-pdlib-indexer = "personal_doc_library.indexing.index_monitor:main"
-pdlib-webmonitor = "personal_doc_library.monitoring.monitor_web_enhanced:main"
-pdlib-cli = "personal_doc_library.cli:main"
+ragdex = "personal_doc_library.cli:main"
+ragdex-mcp = "personal_doc_library.servers.mcp_complete_server:main"
+ragdex-index = "personal_doc_library.indexing.index_monitor:main"
+ragdex-web = "personal_doc_library.monitoring.monitor_web_enhanced:main"
 
-[tool.hatch.build]
+[tool.hatch.build.targets.wheel]
 packages = ["src/personal_doc_library"]

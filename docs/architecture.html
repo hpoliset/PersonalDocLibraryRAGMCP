@@ -10,20 +10,20 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
             color: #333;
             background: #f5f5f5;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -33,17 +33,17 @@
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
-        
+
         header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
         }
-        
+
         header p {
             font-size: 1.2em;
             opacity: 0.9;
         }
-        
+
         .section {
             background: white;
             padding: 30px;
@@ -51,7 +51,7 @@
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         h2 {
             color: #667eea;
             margin-bottom: 20px;
@@ -59,13 +59,13 @@
             border-bottom: 2px solid #667eea;
             padding-bottom: 10px;
         }
-        
+
         h3 {
             color: #764ba2;
             margin: 20px 0 10px 0;
             font-size: 1.3em;
         }
-        
+
         .architecture-diagram {
             background: #f8f9fa;
             padding: 20px;
@@ -73,7 +73,7 @@
             margin: 20px 0;
             border: 2px solid #e9ecef;
         }
-        
+
         .component {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -82,47 +82,47 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
-        
+
         .component h4 {
             margin-bottom: 5px;
             color: white;
         }
-        
+
         .component p, .component ul, .component li {
             color: white;
         }
-        
+
         .component ul {
             padding-left: 20px;
         }
-        
+
         .component pre, .component code {
             background: rgba(255, 255, 255, 0.1);
             color: #f0f0f0;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .file-list {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 5px;
             margin: 10px 0;
         }
-        
+
         .file-list ul {
             list-style-type: none;
             padding-left: 20px;
         }
-        
+
         .file-list li {
             padding: 5px 0;
             border-bottom: 1px solid #e9ecef;
         }
-        
+
         .file-list li:last-child {
             border-bottom: none;
         }
-        
+
         code {
             background: #f8f9fa;
             padding: 2px 6px;
@@ -130,7 +130,7 @@
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
         }
-        
+
         pre {
             background: #f8f9fa;
             padding: 15px;
@@ -139,14 +139,14 @@
             margin: 10px 0;
             border: 1px solid #e9ecef;
         }
-        
+
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin: 20px 0;
         }
-        
+
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -155,18 +155,18 @@
             text-align: center;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
-        
+
         .stat-card h3 {
             color: white;
             font-size: 2em;
             margin: 0;
         }
-        
+
         .stat-card p {
             margin-top: 5px;
             opacity: 0.9;
         }
-        
+
         .flow-diagram {
             display: flex;
             align-items: center;
@@ -174,7 +174,7 @@
             flex-wrap: wrap;
             margin: 20px 0;
         }
-        
+
         .flow-item {
             flex: 1;
             min-width: 150px;
@@ -185,13 +185,13 @@
             margin: 10px;
             border: 2px solid #667eea;
         }
-        
+
         .flow-arrow {
             font-size: 2em;
             color: #667eea;
             margin: 0 10px;
         }
-        
+
         .warning {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -200,7 +200,7 @@
             border-radius: 5px;
             margin: 10px 0;
         }
-        
+
         .success {
             background: #d4edda;
             border: 1px solid #c3e6cb;
@@ -208,6 +208,25 @@
             padding: 15px;
             border-radius: 5px;
             margin: 10px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin: 0 3px;
+        }
+
+        .badge-new {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-count {
+            background: #17a2b8;
+            color: white;
         }
     </style>
 </head>
@@ -217,26 +236,26 @@
             <h1>🔮 Personal Document Library MCP Server</h1>
             <p>Production-Ready Architecture Documentation</p>
             <div style="background: rgba(255,255,255,0.2); padding: 10px; border-radius: 5px; margin-top: 15px;">
-                <strong>✅ FULLY OPERATIONAL</strong> - ARM64 compatible, 768-dim embeddings, 14 MCP tools working
+                <strong>✅ FULLY OPERATIONAL</strong> - Package structure, 17 tools, 5 prompts, 4 resources, 768-dim embeddings
             </div>
         </header>
 
         <div class="section">
             <h2>System Overview</h2>
-            <p>The Personal Document Library MCP Server is a sophisticated system that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). It supports PDFs, Word documents, EPUBs, MOBI/Kindle ebooks, and more. The system provides semantic search, vector storage, and intelligent synthesis capabilities.</p>
-            
+            <p>The Personal Document Library MCP Server is a sophisticated system that enables Claude to access and analyze a personal collection of documents through RAG (Retrieval-Augmented Generation). Now distributed as a Python package with enhanced MCP protocol support including tools, prompts, and resources.</p>
+
             <div class="stats">
                 <div class="stat-card">
-                    <h3>XX</h3>
-                    <p>Indexed Books</p>
+                    <h3>17</h3>
+                    <p>MCP Tools</p>
                 </div>
                 <div class="stat-card">
-                    <h3>XX,XXX</h3>
-                    <p>Text Chunks</p>
+                    <h3>5</h3>
+                    <p>Prompt Templates</p>
                 </div>
                 <div class="stat-card">
-                    <h3>~XX,XXX</h3>
-                    <p>Total Pages</p>
+                    <h3>4</h3>
+                    <p>Dynamic Resources</p>
                 </div>
                 <div class="stat-card">
                     <h3>100%</h3>
@@ -246,8 +265,8 @@
         </div>
 
         <div class="section">
-            <h2>Architecture Components</h2>
-            
+            <h2>Package Architecture</h2>
+
             <div class="architecture-diagram">
                 <h3>System Flow</h3>
                 <div class="flow-diagram">
@@ -258,64 +277,152 @@
                     <span class="flow-arrow">→</span>
                     <div class="flow-item">
                         <strong>MCP Server</strong>
-                        <p>Protocol Handler</p>
+                        <p>17 Tools + 5 Prompts + 4 Resources</p>
                     </div>
                     <span class="flow-arrow">→</span>
                     <div class="flow-item">
-                        <strong>RAG System</strong>
+                        <strong>SharedRAG</strong>
                         <p>Search & Synthesis</p>
                     </div>
                     <span class="flow-arrow">→</span>
                     <div class="flow-item">
-                        <strong>Vector DB</strong>
-                        <p>ChromaDB</p>
+                        <strong>ChromaDB</strong>
+                        <p>Vector Storage</p>
                     </div>
                 </div>
             </div>
 
             <div class="component">
-                <h4>1. MCP Complete Server (mcp_complete_server.py) - CURRENT</h4>
-                <p>✅ Production MCP server with 14 tools, lazy initialization, and ARM64 compatibility. Proper MCP protocol compliance with serverInfo format and JSON-RPC error handling.</p>
+                <h4>1. Python Package Structure <span class="badge badge-new">NEW</span></h4>
+                <p>✅ Properly structured as `personal_doc_library` package with pyproject.toml configuration</p>
+                <ul>
+                    <li>CLI commands: pdlib-cli, pdlib-mcp, pdlib-indexer, pdlib-webmonitor</li>
+                    <li>Package installation: pip install -e .</li>
+                    <li>Module imports: from personal_doc_library.core.shared_rag import SharedRAG</li>
+                </ul>
             </div>
 
             <div class="component">
-                <h4>2. Vector Database (ChromaDB) - UPDATED</h4>
-                <p>✅ Stores 768-dimensional embeddings using sentence-transformers/all-mpnet-base-v2. Maintains index of text chunks with proper dimension compatibility. ARM64 native dependencies.</p>
+                <h4>2. MCP Complete Server <span class="badge badge-count">17 Tools</span></h4>
+                <p>✅ Full MCP protocol implementation with tools, prompts, and resources</p>
+                <p>Location: src/personal_doc_library/servers/mcp_complete_server.py</p>
             </div>
 
             <div class="component">
-                <h4>3. Document Processing System</h4>
-                <p>Processes multiple document formats from configurable directory. Uses adaptive timeout protection for large/corrupted files. Chunks text into 1200-character segments with 150-character overlap. Automatically categorizes content.</p>
+                <h4>3. Vector Database (ChromaDB)</h4>
+                <p>✅ Stores 768-dimensional embeddings using sentence-transformers/all-mpnet-base-v2</p>
+                <p>Telemetry disabled via CHROMA_TELEMETRY=false</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>MCP Protocol Features</h2>
+
+            <h3>🔧 Tools <span class="badge badge-count">17</span></h3>
+
+            <div class="architecture-diagram">
+                <h4>Search & Discovery</h4>
+                <ul>
+                    <li><strong>search</strong> - Semantic search with optional book filtering and synthesis</li>
+                    <li><strong>list_books</strong> - List books by pattern, author, or directory</li>
+                    <li><strong>recent_books</strong> - Find recently indexed books by time period</li>
+                    <li><strong>find_practices</strong> - Find specific practices or techniques</li>
+                </ul>
             </div>
 
-            <div class="component">
-                <h4>4. Real-time Monitoring</h4>
-                <p>Web dashboard at http://localhost:8888 with live progress tracking, chunk generation display, page extraction monitoring, and searchable document library. Updates every 2 seconds via AJAX polling.</p>
+            <div class="architecture-diagram">
+                <h4>Content Extraction</h4>
+                <ul>
+                    <li><strong>extract_pages</strong> - Extract specific pages from any book</li>
+                    <li><strong>extract_quotes</strong> - Find notable quotes on specific topics</li>
+                    <li><strong>summarize_book</strong> - Generate AI summary of entire books</li>
+                </ul>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>Analysis & Synthesis</h4>
+                <ul>
+                    <li><strong>compare_perspectives</strong> - Compare perspectives across multiple sources</li>
+                    <li><strong>question_answer</strong> - Direct Q&A from your library</li>
+                    <li><strong>daily_reading</strong> - Get suggested passages for daily reading</li>
+                </ul>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>System Management</h4>
+                <ul>
+                    <li><strong>library_stats</strong> - Get library statistics and indexing status</li>
+                    <li><strong>index_status</strong> - Get detailed indexing progress</li>
+                    <li><strong>refresh_cache</strong> - Refresh search cache and reload book index</li>
+                    <li><strong>warmup</strong> - Initialize RAG system to prevent timeouts</li>
+                    <li><strong>find_unindexed</strong> - Find documents not yet indexed <span class="badge badge-new">NEW</span></li>
+                    <li><strong>reindex_book</strong> - Force reindex of specific book <span class="badge badge-new">NEW</span></li>
+                    <li><strong>clear_failed</strong> - Clear failed document list <span class="badge badge-new">NEW</span></li>
+                </ul>
+            </div>
+
+            <h3>📝 Prompts <span class="badge badge-count">5</span> <span class="badge badge-new">NEW</span></h3>
+
+            <div class="architecture-diagram">
+                <ul>
+                    <li><strong>analyze_theme</strong> - Analyze a theme across your library</li>
+                    <li><strong>compare_authors</strong> - Compare writing styles and perspectives</li>
+                    <li><strong>extract_practices</strong> - Extract practical techniques from books</li>
+                    <li><strong>research_topic</strong> - Deep research on a specific topic</li>
+                    <li><strong>daily_wisdom</strong> - Get daily wisdom from your library</li>
+                </ul>
+            </div>
+
+            <h3>📊 Resources <span class="badge badge-count">4</span> <span class="badge badge-new">NEW</span></h3>
+
+            <div class="architecture-diagram">
+                <ul>
+                    <li><strong>library://stats</strong> - Current library statistics and metrics</li>
+                    <li><strong>library://recent</strong> - Recently indexed documents</li>
+                    <li><strong>library://search-tips</strong> - Search tips and query examples</li>
+                    <li><strong>library://config</strong> - Current configuration settings</li>
+                </ul>
             </div>
         </div>
 
         <div class="section">
             <h2>Current File Structure</h2>
-            
+
             <div class="file-list">
-                <h3>Source Files</h3>
+                <h3>Package Structure <span class="badge badge-new">NEW</span></h3>
                 <ul>
-                    <li><strong>src/</strong> - Main source code directory
+                    <li><strong>src/personal_doc_library/</strong> - Main package directory
                         <ul>
-                            <li><strong>servers/mcp_complete_server.py</strong> - ✅ Main MCP server (14 tools, ARM64 compatible)</li>
-                            <li><strong>core/shared_rag.py</strong> - ✅ Core RAG with 768-dim embeddings & timeout protection</li>
-                            <li><strong>core/config.py</strong> - Centralized configuration management</li>
-                            <li><strong>core/logging_setup.py</strong> - Logging configuration</li>
-                            <li><strong>indexing/index_monitor.py</strong> - Background indexing service with progress monitoring</li>
-                            <li><strong>monitoring/monitor_web_enhanced.py</strong> - Real-time web dashboard with progress tracking</li>
-                            <li><strong>utils/clean_pdfs.py</strong> - Automatic PDF cleaning utility</li>
+                            <li><strong>__init__.py</strong> - Package initialization</li>
+                            <li><strong>cli.py</strong> - Command-line interface</li>
+                            <li><strong>core/</strong> - Core functionality
+                                <ul>
+                                    <li>config.py - Configuration management</li>
+                                    <li>shared_rag.py - RAG implementation</li>
+                                    <li>logging_config.py - Logging setup</li>
+                                </ul>
+                            </li>
+                            <li><strong>servers/</strong> - MCP server
+                                <ul>
+                                    <li>mcp_complete_server.py - Main MCP server</li>
+                                </ul>
+                            </li>
+                            <li><strong>indexing/</strong> - Document indexing
+                                <ul>
+                                    <li>index_monitor.py - Background monitor</li>
+                                    <li>execute_indexing.py - Indexing logic</li>
+                                </ul>
+                            </li>
+                            <li><strong>monitoring/</strong> - Web dashboard
+                                <ul>
+                                    <li>monitor_web_enhanced.py - Web interface</li>
+                                </ul>
+                            </li>
+                            <li><strong>utils/</strong> - Utility modules</li>
                         </ul>
                     </li>
-                    <li><strong>scripts/</strong> - Utility and management scripts</li>
-                    <li><strong>config/</strong> - Configuration templates</li>
-                    <li><strong>docs/</strong> - Documentation and images</li>
-                    <li><strong>README.md</strong> - Complete deployment guide</li>
-                    <li><strong>CLAUDE.md</strong> - Claude Code instructions</li>
+                    <li><strong>pyproject.toml</strong> - Package configuration</li>
+                    <li><strong>requirements.txt</strong> - Dependencies</li>
                 </ul>
             </div>
 
@@ -326,264 +433,126 @@
                     <li><strong>chroma_db/</strong> - Vector database storage (768-dim embeddings)</li>
                     <li><strong>venv_mcp/</strong> - ✅ Python 3.12 virtual environment (ARM64 compatible)</li>
                     <li><strong>logs/</strong> - Application and service logs</li>
-                    <li><strong>config/</strong> - Configuration files</li>
-                    <li><strong>scripts/</strong> - Utility and management scripts</li>
-                    <li><strong>docs/</strong> - Documentation and images</li>
                 </ul>
             </div>
         </div>
 
         <div class="section">
-            <h2>🔧 Usage Modes - Choose Your Workflow</h2>
-            
+            <h2>🔧 Installation - Package-Based Approach</h2>
+
             <div class="architecture-diagram">
-                <h3>Three Flexible Modes</h3>
-                
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
-                    <div class="component">
-                        <h4>Mode 1: Automatic</h4>
-                        <p><strong>For:</strong> Most users</p>
-                        <p><strong>How:</strong> Just use Claude normally</p>
-                        <p><strong>When indexing happens:</strong> First query after adding books</p>
-                        <code>./run.sh</code>
-                    </div>
-                    
-                    <div class="component">
-                        <h4>Mode 2: Background</h4>
-                        <p><strong>For:</strong> Power users</p>
-                        <p><strong>How:</strong> Run monitor service</p>
-                        <p><strong>When indexing happens:</strong> Instantly on file changes</p>
-                        <p><strong>Control:</strong> Pause/Resume support</p>
-                        <code>./index_monitor.sh</code>
-                    </div>
-                    
-                    <div class="component">
-                        <h4>Mode 3: Manual</h4>
-                        <p><strong>For:</strong> Full control</p>
-                        <p><strong>How:</strong> Run when you want</p>
-                        <p><strong>When indexing happens:</strong> When you trigger it</p>
-                        <code>./run.sh --index-only</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>✅ Available MCP Tools (14 Tools - All Working)</h2>
-            
-            <h3>Search & Discovery (4 tools)</h3>
-            <div class="component">
-                <h4>1. search</h4>
-                <p>✅ Semantic search with optional book filtering and synthesis</p>
-                <p><em>Parameters:</em> query, limit, book_filter, synthesize</p>
-            </div>
-
-            <div class="component">
-                <h4>2. list_books</h4>
-                <p>List books by pattern, author, or directory</p>
-                <p><em>Parameters:</em> pattern, author, directory</p>
-            </div>
-
-            <div class="component">
-                <h4>3. recent_books</h4>
-                <p>Find recently indexed books by time period</p>
-                <p><em>Parameters:</em> hours, days</p>
-            </div>
-
-            <div class="component">
-                <h4>4. find_practices</h4>
-                <p>Find specific practices or techniques</p>
-                <p><em>Parameter:</em> practice_type</p>
-            </div>
-
-            <h3>Content Extraction (3 tools)</h3>
-            <div class="component">
-                <h4>5. extract_pages</h4>
-                <p>Extract specific pages from any book</p>
-                <p><em>Parameters:</em> book_pattern, pages (int/list/range)</p>
-            </div>
-
-            <div class="component">
-                <h4>6. extract_quotes</h4>
-                <p>Find notable quotes on specific topics</p>
-                <p><em>Parameters:</em> topic, max_quotes</p>
-            </div>
-
-            <div class="component">
-                <h4>7. summarize_book</h4>
-                <p>Generate AI summary of entire books</p>
-                <p><em>Parameters:</em> book_name, summary_length (brief/detailed)</p>
-            </div>
-
-            <h3>Analysis & Synthesis (3 tools)</h3>
-            <div class="component">
-                <h4>8. compare_perspectives</h4>
-                <p>Compare perspectives across multiple sources</p>
-                <p><em>Parameter:</em> topic</p>
-            </div>
-
-            <div class="component">
-                <h4>9. question_answer</h4>
-                <p>Direct Q&A from your library</p>
-                <p><em>Parameters:</em> question, detail_level (concise/detailed)</p>
-            </div>
-
-            <div class="component">
-                <h4>10. daily_reading</h4>
-                <p>Get suggested passages for daily reading</p>
-                <p><em>Parameters:</em> theme, length (short/medium/long)</p>
-            </div>
-
-            <h3>System Management (4 tools)</h3>
-            <div class="component">
-                <h4>11. library_stats</h4>
-                <p>Get library statistics and indexing status</p>
-                <p><em>Shows:</em> Books, chunks, categories, status</p>
-            </div>
-
-            <div class="component">
-                <h4>12. index_status</h4>
-                <p>Get detailed indexing progress</p>
-                <p><em>Shows:</em> Current activity, queue, history</p>
-            </div>
-
-            <div class="component">
-                <h4>13. refresh_cache</h4>
-                <p>Refresh search cache and reload book index</p>
-                <p><em>Purpose:</em> Clear cache after adding new books</p>
-            </div>
-
-            <div class="component">
-                <h4>14. warmup</h4>
-                <p>Initialize RAG system to prevent timeouts</p>
-                <p><em>Purpose:</em> Pre-load models for faster response</p>
-            </div>
-        </div>
-
-
-        <div class="section">
-            <h2>🚀 Installation & Setup</h2>
-            
-            <div class="architecture-diagram">
-                <h3>Setup Options</h3>
+                <h3>Installation Options</h3>
                 <div class="flow-diagram">
                     <div class="flow-item">
-                        <strong>Option 1</strong>
-                        <p>serviceInstall.sh</p>
-                        <p style="font-size: 0.9em;">Complete with services</p>
+                        <strong>Development</strong>
+                        <p>pip install -e .</p>
+                        <p style="font-size: 0.9em;">Editable install</p>
                     </div>
                     <span class="flow-arrow">OR</span>
                     <div class="flow-item">
-                        <strong>Option 2</strong>
-                        <p>Automated flags</p>
-                        <p style="font-size: 0.9em;">Non-interactive setup</p>
+                        <strong>With Extras</strong>
+                        <p>pip install -e ".[services]"</p>
+                        <p style="font-size: 0.9em;">All features</p>
                     </div>
                     <span class="flow-arrow">OR</span>
                     <div class="flow-item">
-                        <strong>Option 3</strong>
-                        <p>install_interactive_nonservicemode.sh</p>
-                        <p style="font-size: 0.9em;">No background services</p>
+                        <strong>Traditional</strong>
+                        <p>./serviceInstall.sh</p>
+                        <p style="font-size: 0.9em;">Shell scripts</p>
                     </div>
                 </div>
             </div>
 
-            <h3>Option 1: Comprehensive Setup (Recommended)</h3>
-            <pre><code># Clone and setup with services
+            <h3>Package Installation <span class="badge badge-new">RECOMMENDED</span></h3>
+            <pre><code># Clone and install as package
 git clone https://github.com/hpoliset/PersonalDocLibraryRAGMCP
 cd PersonalDocLibraryRAGMCP
-./serviceInstall.sh</code></pre>
-            
-            <div class="component">
-                <h4>What serviceInstall.sh does:</h4>
-                <ul>
-                    <li>✅ Checks for Python 3.12 (installs if missing)</li>
-                    <li>✅ Creates virtual environment</li>
-                    <li>✅ Installs Python dependencies</li>
-                    <li>✅ Auto-installs system dependencies (ocrmypdf, LibreOffice, pandoc)</li>
-                    <li>✅ Configures paths interactively</li>
-                    <li>✅ Generates configuration files</li>
-                    <li>✅ Installs background indexing service (optional)</li>
-                    <li>✅ Installs web monitor service (optional)</li>
-                    <li>✅ Runs initial indexing (optional)</li>
-                </ul>
-            </div>
+pip install -e .
 
-            <h3>Option 2: Automated Setup</h3>
-            <pre><code># Non-interactive setup with all services
-./serviceInstall.sh --books-path /path/to/books \
-  --install-service --start-web-monitor --non-interactive</code></pre>
+# Or with optional extras
+pip install -e ".[document-processing,services]"
 
-            <h3>Option 3: Interactive Without Services</h3>
-            <pre><code># For manual control without background services
-./install_interactive_nonservicemode.sh</code></pre>
+# Use CLI commands from anywhere
+pdlib-cli --help
+pdlib-mcp            # Start MCP server
+pdlib-indexer        # Start indexer
+pdlib-webmonitor     # Start web dashboard</code></pre>
 
             <h3>✅ Claude Desktop Configuration</h3>
             <div class="success">
-                <p>After installation, add to Claude Desktop's config (~/.Library/Application Support/Claude/claude_desktop_config.json):</p>
+                <p>After installation, update Claude Desktop config:</p>
                 <pre><code>{
   "mcpServers": {
     "personal-library": {
-      "command": "/path/to/your/DocumentIndexerMCP/venv_mcp/bin/python",
+      "command": "/path/to/venv_mcp/bin/python",
       "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
       "env": {
-        "PYTHONPATH": "/path/to/your/DocumentIndexerMCP/src",
-        "PYTHONUNBUFFERED": "1"
+        "PYTHONPATH": "/path/to/DocumentIndexerMCP/src",
+        "PYTHONUNBUFFERED": "1",
+        "CHROMA_TELEMETRY": "false"
       }
     }
   }
 }</code></pre>
-                <p><strong>Note:</strong> The config file is auto-generated in config/claude_desktop_config.json during setup</p>
-            </div>
-
-            <h3>Manual Operations</h3>
-            <div class="component">
-                <h4>Running the MCP Server Manually</h4>
-                <pre><code># Start MCP server for Claude Desktop
-./scripts/run.sh
-
-# Index documents only
-./scripts/run.sh --index-only
-
-# Index with retry for large collections
-./scripts/run.sh --index-only --retry</code></pre>
-                
-                <h4>When to use manual mode:</h4>
-                <ul>
-                    <li>See real-time indexing progress</li>
-                    <li>Force complete re-indexing</li>
-                    <li>Debug issues</li>
-                    <li>Process large document batches</li>
-                </ul>
             </div>
         </div>
 
         <div class="section">
-            <h2>📖 Adding New Books - Workflow</h2>
-            
+            <h2>CLI Commands <span class="badge badge-new">NEW</span></h2>
+
+            <div class="component">
+                <h4>Main CLI Tool: pdlib-cli</h4>
+                <pre><code>pdlib-cli --help                    # Show all commands
+pdlib-cli ensure-dirs                # Create necessary directories
+pdlib-cli config                     # View configuration
+pdlib-cli check-indexing-status      # Check indexing progress
+pdlib-cli find-unindexed            # Find unindexed documents
+pdlib-cli manage-failed-pdfs        # Manage failed documents
+pdlib-cli show-config               # Display detailed config</code></pre>
+            </div>
+
+            <div class="component">
+                <h4>Service Launchers</h4>
+                <pre><code>pdlib-mcp            # Start MCP server
+pdlib-indexer        # Start background indexer
+pdlib-webmonitor     # Start web dashboard (localhost:8888)</code></pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📚 Document Processing Pipeline</h2>
+
             <div class="architecture-diagram">
-                <h3>When You Add New Books/Documents</h3>
+                <h3>Processing Workflow</h3>
                 <div class="flow-diagram">
                     <div class="flow-item">
-                        <strong>Add Documents</strong>
-                        <p>Copy to books/</p>
+                        <strong>Document</strong>
+                        <p>PDF/DOCX/EPUB/MOBI</p>
                     </div>
                     <span class="flow-arrow">→</span>
-                    <div class="flow-item" style="background: #fff3cd; border-color: #ffc107;">
-                        <strong>Choose Method</strong>
-                        <p>Auto or Manual?</p>
+                    <div class="flow-item">
+                        <strong>MD5 Hash</strong>
+                        <p>Change Detection</p>
                     </div>
-                </div>
-                
-                <div style="display: flex; justify-content: space-around; margin-top: 20px;">
-                    <div class="flow-item" style="flex: 1; margin: 10px;">
-                        <strong>Automatic</strong>
-                        <p>Just use Claude normally</p>
-                        <p style="font-size: 0.9em; color: #666;">First query will be slower</p>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-item">
+                        <strong>Text Extraction</strong>
+                        <p>Format-specific</p>
                     </div>
-                    <div class="flow-item" style="flex: 1; margin: 10px;">
-                        <strong>Manual</strong>
-                        <p>Run ./run.sh</p>
-                        <p style="font-size: 0.9em; color: #666;">See indexing progress</p>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-item">
+                        <strong>Chunking</strong>
+                        <p>1200 chars</p>
+                    </div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-item">
+                        <strong>Embedding</strong>
+                        <p>768-dim vectors</p>
+                    </div>
+                    <span class="flow-arrow">→</span>
+                    <div class="flow-item">
+                        <strong>ChromaDB</strong>
+                        <p>Vector Storage</p>
                     </div>
                 </div>
             </div>
@@ -595,512 +564,362 @@ cd PersonalDocLibraryRAGMCP
                     <li>Word (.docx, .doc) - Requires LibreOffice</li>
                     <li>PowerPoint (.pptx, .ppt) - Requires LibreOffice</li>
                     <li>EPUB (.epub) - Requires pandoc</li>
-                    <li>MOBI/Kindle (.mobi, .azw, .azw3) - Uses Calibre if available</li>
+                    <li>MOBI/Kindle (.mobi, .azw, .azw3) - Uses Calibre</li>
                     <li>Text (.txt) - Plain text files</li>
                 </ul>
             </div>
-
-            <h3>🔧 Automatic PDF Cleaning</h3>
-            <div class="success">
-                <h4>✨ No Manual Intervention Needed!</h4>
-                <p>The system automatically handles problematic PDFs via <code>shared_rag.py</code>:</p>
-                
-                <div class="flow-diagram">
-                    <div class="flow-item">
-                        <strong>PDF Fails</strong>
-                        <p>During indexing</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>Auto Clean</strong>
-                        <p>Via Ghostscript</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>Backup Original</strong>
-                        <p>to books/originals/</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>Index Cleaned</strong>
-                        <p>On next start</p>
-                    </div>
-                </div>
-                
-                <p><strong>Automatically fixes:</strong></p>
-                <ul>
-                    <li>✅ Very large PDFs (>100MB)</li>
-                    <li>✅ Complex formatting or embedded objects</li>
-                    <li>✅ Corrupted or malformed PDFs</li>
-                    <li>✅ Font embedding issues</li>
-                </ul>
-            </div>
-            
-            <div class="component">
-                <h4>Manual Cleaning (Optional)</h4>
-                <p>For specific PDFs or batch processing:</p>
-                <pre><code># Force clean specific PDFs
-python clean_pdfs.py</code></pre>
-                
-                <p><strong>Status tracking:</strong> Check <code>failed_pdfs.json</code> for processing history</p>
-                
-                <div class="warning">
-                    <strong>Prerequisite:</strong> Install Ghostscript with <code>brew install ghostscript</code>
-                </div>
-            </div>
         </div>
 
         <div class="section">
-            <h2>📚 Indexing Process - How It Works</h2>
-            
+            <h2>🖥️ Web Monitoring Interface</h2>
+
             <div class="architecture-diagram">
-                <h3>Indexing Workflow</h3>
-                <div class="flow-diagram">
-                    <div class="flow-item">
-                        <strong>PDF Files</strong>
-                        <p>books/*.pdf</p>
+                <h3>Real-Time Dashboard</h3>
+                <p>Access at <strong>http://localhost:8888</strong></p>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">
+                    <div class="component">
+                        <h4>Live Information</h4>
+                        <ul style="list-style: none; padding: 10px 0;">
+                            <li>📊 Current indexing status</li>
+                            <li>📈 Progress with percentage</li>
+                            <li>📚 Library statistics</li>
+                            <li>🔒 Lock status and health</li>
+                            <li>📄 Page extraction progress</li>
+                            <li>📦 Chunk generation count</li>
+                        </ul>
                     </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>PyPDF2</strong>
-                        <p>Extract Text</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>LangChain</strong>
-                        <p>Chunk Text</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>HuggingFace</strong>
-                        <p>Create Embeddings</p>
-                    </div>
-                    <span class="flow-arrow">→</span>
-                    <div class="flow-item">
-                        <strong>ChromaDB</strong>
-                        <p>Store Vectors</p>
+
+                    <div class="component">
+                        <h4>Interactive Features</h4>
+                        <ul style="list-style: none; padding: 10px 0;">
+                            <li>🔍 Search with Enter key</li>
+                            <li>🔄 Auto-refresh (2s)</li>
+                            <li>📝 Activity log</li>
+                            <li>⚠️ Failed document alerts</li>
+                            <li>⏸️ Pause/Resume controls</li>
+                            <li>📊 Sortable book table</li>
+                        </ul>
                     </div>
                 </div>
-            </div>
-
-            <div class="component">
-                <h4>🔍 Where Indexing Happens</h4>
-                <p>The indexing logic is in <code>src/personal_doc_library/core/shared_rag.py</code> in the <strong>SpiritualLibraryRAG</strong> class. When documents are processed, it automatically:</p>
-                <ol>
-                    <li>Checks for new documents in the configured directory</li>
-                    <li>Compares file hashes with <code>chroma_db/book_index.json</code></li>
-                    <li>Indexes any new or modified documents</li>
-                    <li>Supports PDF, Word, EPUB, MOBI, and text formats</li>
-                </ol>
-            </div>
-
-            <h3>Library Roles & Responsibilities</h3>
-            
-            <div class="component">
-                <h4>1. PyPDF2 - PDF Text Extraction</h4>
-                <p><strong>Purpose:</strong> Extracts raw text from PDF files</p>
-                <p><strong>Process:</strong> Reads each page and converts to plain text, handling various PDF formats and encodings</p>
-                <pre><code># Example usage in the code:
-pdf_reader = PyPDF2.PdfReader(pdf_file)
-for page in pdf_reader.pages:
-    text = page.extract_text()</code></pre>
-            </div>
-
-            <div class="component">
-                <h4>2. LangChain - Text Processing & Chunking</h4>
-                <p><strong>Purpose:</strong> Intelligently splits text into manageable chunks for embedding</p>
-                <p><strong>Configuration:</strong></p>
-                <ul>
-                    <li>Chunk size: 1000 characters</li>
-                    <li>Chunk overlap: 200 characters</li>
-                    <li>Preserves context across chunk boundaries</li>
-                </ul>
-                <pre><code># Text splitting configuration:
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1200,
-    chunk_overlap=150,
-    length_function=len
-)</code></pre>
-            </div>
-
-            <div class="component">
-                <h4>3. HuggingFace Transformers - Creating Embeddings</h4>
-                <p><strong>Purpose:</strong> Converts text chunks into numerical vectors for semantic search</p>
-                <p><strong>Model:</strong> sentence-transformers/all-mpnet-base-v2 (CURRENT)</p>
-                <p><strong>Why this model:</strong></p>
-                <ul>
-                    <li>Higher quality embeddings</li>
-                    <li>768-dimensional vectors</li>
-                    <li>Compatible with existing ChromaDB</li>
-                    <li>Better semantic understanding</li>
-                </ul>
-                <pre><code># Embedding creation:
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-mpnet-base-v2",
-    model_kwargs={'device': device},
-    encode_kwargs={'normalize_embeddings': True}
-)</code></pre>
-            </div>
-
-            <div class="component">
-                <h4>4. ChromaDB - Vector Storage & Retrieval</h4>
-                <p><strong>Purpose:</strong> Stores embeddings and enables fast similarity search</p>
-                <p><strong>Features:</strong></p>
-                <ul>
-                    <li>Persistent storage in <code>chroma_db/</code></li>
-                    <li>Metadata filtering (by book, type, etc.)</li>
-                    <li>Efficient k-nearest neighbor search</li>
-                </ul>
-                <pre><code># Vector storage:
-vector_store = Chroma(
-    persist_directory="./chroma_db",
-    embedding_function=embeddings
-)</code></pre>
-            </div>
-
-            <div class="component">
-                <h4>5. Local LLM Integration (Optional)</h4>
-                <p><strong>Purpose:</strong> Can optionally use local LLMs for enhanced synthesis</p>
-                <p><strong>Integration:</strong> Works with Ollama or other local models</p>
-                <p><strong>Status:</strong> ⚠️ <strong>OPTIONAL</strong> - Not required for core functionality</p>
-                <p><strong>Usage when enabled:</strong></p>
-                <ul>
-                    <li>Enhanced synthesis across multiple sources</li>
-                    <li>Advanced question answering with context</li>
-                    <li>Comparative analysis across documents</li>
-                    <li>All processing happens locally</li>
-                </ul>
-                <p><strong>Note:</strong> The system works fully without Ollama. All 14 MCP tools function using vector search and retrieval alone.</p>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🔄 Complete Data Flow</h2>
-            
-            <div class="architecture-diagram">
-                <h3>From Query to Response</h3>
-                <ol>
-                    <li><strong>User Query</strong> → Claude Desktop sends query via MCP protocol</li>
-                    <li><strong>Query Processing</strong> → mcp_complete_server.py receives and parses request</li>
-                    <li><strong>Embedding Creation</strong> → HuggingFace converts query to vector</li>
-                    <li><strong>Vector Search</strong> → ChromaDB finds similar chunks (cosine similarity)</li>
-                    <li><strong>Context Retrieval</strong> → Top k chunks retrieved with metadata</li>
-                    <li><strong>Response Assembly</strong> → Results formatted and returned (LLM synthesis optional)</li>
-                    <li><strong>Response Delivery</strong> → Formatted response sent back to Claude</li>
-                </ol>
-            </div>
-
-            <div class="warning">
-                <strong>⚠️ Indexing Triggers:</strong>
-                <ul>
-                    <li>First server start (initial indexing)</li>
-                    <li>New PDF added to books/ directory</li>
-                    <li>Existing PDF modified (hash mismatch)</li>
-                    <li>Manual re-indexing (delete chroma_db/book_index.json)</li>
-                </ul>
             </div>
         </div>
 
         <div class="section">
             <h2>Technical Details</h2>
-            
+
             <div class="success">
                 <strong>✅ Current Performance:</strong>
                 <ul>
-                    <li>Startup time: <2 seconds (lazy initialization)</li>
+                    <li>Startup time: < 1 second (lazy initialization)</li>
                     <li>Search latency: ~1.75s per query (768-dim embeddings)</li>
                     <li>Memory usage: ~4GB for embedding model</li>
-                    <li>ARM64 native: All dependencies optimized for Apple Silicon</li>
-                    <li>Supports: PDF, Word, EPUB, MOBI, PowerPoint, Text files</li>
+                    <li>Package-based distribution with pyproject.toml</li>
+                    <li>Full MCP protocol support (tools, prompts, resources)</li>
                 </ul>
+            </div>
+
+            <div class="component">
+                <h4>Embedding Model</h4>
+                <p><strong>Model:</strong> sentence-transformers/all-mpnet-base-v2</p>
+                <p><strong>Dimensions:</strong> 768</p>
+                <p><strong>Chunk Size:</strong> 1200 characters</p>
+                <p><strong>Overlap:</strong> 150 characters</p>
             </div>
 
             <div class="warning">
-                <strong>⚠️ Important Notes:</strong>
+                <strong>⚠️ Environment Variables:</strong>
                 <ul>
-                    <li>First-time indexing can take 10-30 minutes</li>
-                    <li>All processing is local - no external API calls</li>
-                    <li>Documents indexed automatically or via background service</li>
-                    <li>Ollama/LLM integration is optional, not required</li>
+                    <li>PERSONAL_LIBRARY_DOC_PATH - Document directory</li>
+                    <li>PERSONAL_LIBRARY_DB_PATH - Database directory</li>
+                    <li>PERSONAL_LIBRARY_LOGS_PATH - Logs directory</li>
+                    <li>CHROMA_TELEMETRY=false - Disable telemetry</li>
                 </ul>
             </div>
+        </div>
+
+        <div class="section">
+            <h2>🔒 Security & Privacy</h2>
 
             <div class="success">
-                <strong>✅ System Features:</strong>
+                <h4>✅ Privacy Features</h4>
                 <ul>
-                    <li>Semantic search with context-aware results</li>
-                    <li>Automatic content categorization</li>
-                    <li>Multi-source synthesis capabilities</li>
-                    <li>Fact-checking against authoritative texts</li>
-                    <li>Chapter outline generation</li>
+                    <li>100% local processing - no external API calls</li>
+                    <li>No telemetry (CHROMA_TELEMETRY=false)</li>
+                    <li>User permissions only</li>
+                    <li>Sandboxed MCP process</li>
+                    <li>File-based locking with 30-minute timeout</li>
                 </ul>
             </div>
         </div>
 
         <div class="section">
-            <h2>🔒 Lock Management & Conflict Resolution</h2>
-            
-            <div class="architecture-diagram">
-                <h3>How Lock Conflicts are Prevented</h3>
-                
-                <div class="component">
-                    <h4>File-Based Locking System</h4>
-                    <p><strong>Lock File:</strong> /tmp/spiritual_library_index.lock</p>
-                    <p><strong>Contains:</strong> Process ID and timestamp</p>
-                    <p><strong>Auto-cleanup:</strong> Detects and removes stale locks from dead processes</p>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
-                    <div class="component">
-                        <h4>MCP Server Behavior</h4>
-                        <p>When lock is held by another process:</p>
-                        <ul style="list-style: none; padding: 10px 0;">
-                            <li>✅ Proceeds immediately with existing index</li>
-                            <li>✅ No delay for users</li>
-                            <li>✅ Logs that another process is indexing</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="component">
-                        <h4>Background Monitor Behavior</h4>
-                        <p>When lock is held by another process:</p>
-                        <ul style="list-style: none; padding: 10px 0;">
-                            <li>⏱️ Schedules retry after delay</li>
-                            <li>⏱️ 2s delay (normal) or 5s (service mode)</li>
-                            <li>⏱️ Keeps trying until successful</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="warning" style="margin-top: 20px;">
-                    <strong>Stale Lock Detection:</strong>
-                    <ul>
-                        <li>Checks if lock holder process is still alive</li>
-                        <li>Considers locks older than 30 minutes as stale</li>
-                        <li>Automatically cleans up on next access attempt</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+            <h2>🔧 Detailed Tool Implementation Flows</h2>
 
-        <div class="section">
-            <h2>🖥️ Web Monitoring Interface - How It Works</h2>
-            
+            <h3>Search & Discovery Tools</h3>
+
             <div class="architecture-diagram">
-                <h3>System Architecture</h3>
-                <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace;">
-┌─────────────────┐     JSON Files      ┌──────────────────┐
-│  Index Monitor  │───────────────────>  │ index_status.json│
-│   (Backend)     │                      │indexing_progress │
-└─────────────────┘                      └──────────────────┘
-                                                 ↑
-                                                 │ Reads every 2s
-                                                 │
-┌─────────────────┐      Flask API       ┌──────────────────┐
-│   Web Browser   │<─────────────────────│  Web Monitor     │
-│  (localhost:8888)│     JSON Response   │  (Flask Server)  │
-└─────────────────┘                      └──────────────────┘
+                <h4>1. search Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Query Input  │────▶│ Embedding Gen   │────▶│ Vector Search│
+│              │     │ (768-dim)       │     │ (ChromaDB)   │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Format Output│◀────│ Apply Filters   │◀────│ Rank Results │
+│              │     │ (book/category) │     │ (similarity) │
+└──────────────┘     └─────────────────┘     └──────────────┘
                 </pre>
-            </div>
-
-            <div class="component">
-                <h4>1. Data Flow Architecture</h4>
-                <p><strong>Backend Updates:</strong> The indexing service (index_monitor.py) continuously writes status to JSON files:</p>
-                <ul>
-                    <li><code>chroma_db/index_status.json</code> - Overall indexing status</li>
-                    <li><code>chroma_db/indexing_progress.json</code> - Detailed progress (pages, chunks, stage)</li>
-                </ul>
-                <p><strong>Web Monitor Reads:</strong> Flask server reads these files and serves via REST API</p>
-                <p><strong>Frontend Polling:</strong> Browser fetches updates every 2 seconds via AJAX</p>
-            </div>
-
-            <div class="component">
-                <h4>2. REST API Endpoints</h4>
-                <ul style="list-style: none; padding: 10px 0;">
-                    <li><code>/</code> - Main dashboard HTML interface</li>
-                    <li><code>/api/status</code> - Current indexing status with progress</li>
-                    <li><code>/api/stats</code> - Library statistics (books, chunks)</li>
-                    <li><code>/api/books</code> - List of indexed books</li>
-                    <li><code>/api/failed</code> - Failed documents list</li>
-                </ul>
-            </div>
-
-            <div class="component">
-                <h4>3. Real-Time Updates (JavaScript)</h4>
-                <pre><code>// Frontend polls every 2 seconds
-setInterval(async () => {
-    const response = await fetch('/api/status');
-    const data = await response.json();
-    updateUI(data);
-}, 2000);</code></pre>
-                <p>Updates happen without page refresh using JavaScript DOM manipulation</p>
-            </div>
-
-            <div class="component">
-                <h4>4. Progress Tracking Details</h4>
-                <p>The monitor displays multiple levels of progress:</p>
-                <ul>
-                    <li><strong>Document Progress:</strong> 318/1121 (28.4%)</li>
-                    <li><strong>Current File:</strong> Name of document being processed</li>
-                    <li><strong>Processing Stage:</strong>
-                        <ul>
-                            <li>📖 Loading - Reading document from disk</li>
-                            <li>✂️ Chunking - Splitting into text chunks</li>
-                            <li>🔄 Embedding - Creating vectors</li>
-                            <li>✅ Completed - Successfully indexed</li>
-                        </ul>
-                    </li>
-                    <li><strong>Page Progress:</strong> For PDFs, shows actual page numbers (e.g., 5576/39883)</li>
-                    <li><strong>Chunks Generated:</strong> Number of text chunks created</li>
-                    <li><strong>Batch Progress:</strong> During embedding (e.g., Batch 5/8)</li>
-                </ul>
+                <p><strong>Key Operations:</strong> Lazy RAG initialization, HuggingFace embedding generation, cosine similarity search, optional synthesis</p>
             </div>
 
             <div class="architecture-diagram">
-                <h3>Real-Time Status Dashboard</h3>
-                <p>Access at <strong>http://localhost:8888</strong> when running <code>monitor_web_enhanced.py</code></p>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">
-                    <div class="component">
-                        <h4>Live Information Display</h4>
-                        <ul style="list-style: none; padding: 10px 0;">
-                            <li>📊 Current indexing status</li>
-                            <li>📈 Progress bar with percentage</li>
-                            <li>📚 Library statistics</li>
-                            <li>🔒 Lock status and health</li>
-                            <li>📁 Pending files queue</li>
-                            <li>📄 Current page extraction progress</li>
-                            <li>📦 Chunk generation count</li>
-                            <li>💾 Memory usage tracking</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="component">
-                        <h4>Interactive Features</h4>
-                        <ul style="list-style: none; padding: 10px 0;">
-                            <li>🔄 Manual index trigger button</li>
-                            <li>⚡ Auto-refresh (2s when indexing)</li>
-                            <li>📝 Recent activity log</li>
-                            <li>⚠️ Failed document alerts</li>
-                            <li>🎨 Modern, responsive UI</li>
-                            <li>⏸️ Pause/Resume controls</li>
-                            <li>🔍 Searchable book table</li>
-                            <li>⌨️ Enter key for search</li>
-                        </ul>
-                    </div>
-                </div>
+                <h4>2. list_books Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Pattern/     │────▶│ Load Book Index │────▶│ Apply Filter │
+│ Author/Dir   │     │ (JSON file)     │     │ (fnmatch)    │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+                                              ┌──────────────┐
+                                              │ Enrich with  │
+                                              │ Metadata     │
+                                              └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> JSON index reading, pattern matching, metadata enrichment (chunks, pages, indexed_at)</p>
             </div>
 
-            <div class="success">
-                <h4>5. Decoupled Architecture Benefits</h4>
-                <p>The web monitor is completely decoupled from the indexer:</p>
-                <ul>
-                    <li>✅ Read-only observation - doesn't interfere with indexing</li>
-                    <li>✅ Can start/stop independently of indexer</li>
-                    <li>✅ Multiple monitors can run simultaneously</li>
-                    <li>✅ No performance impact on indexing process</li>
-                    <li>✅ Works with any process that writes to the JSON files</li>
-                </ul>
-            </div>
-
-            <div class="warning">
-                <h4>6. Visual Progress Indicators</h4>
-                <p>The interface uses emojis and colors to indicate status:</p>
-                <ul>
-                    <li>🟢 Green progress bar for active indexing</li>
-                    <li>🔵 Blue indicators for processing stages</li>
-                    <li>🟡 Yellow for warnings or slow operations</li>
-                    <li>🔴 Red for errors or failures</li>
-                    <li>⏸️ Gray when paused</li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>🚀 Service Mode (LaunchAgent)</h2>
-            
-            <div class="success">
-                <h4>Run Index Monitor as System Service</h4>
-                <p>For users who want automatic background indexing on system startup:</p>
-            </div>
-            
             <div class="architecture-diagram">
-                <h3>Service Management Commands</h3>
-                <pre><code># Install and start service
-./install_service.sh
-
-# Check service status and health
-./service_status.sh
-
-# Stop and uninstall service
-./uninstall_service.sh</code></pre>
-                
-                <div class="component" style="margin-top: 20px;">
-                    <h4>Service Features</h4>
-                    <ul style="list-style: none; padding: 10px 0;">
-                        <li>🚀 Starts automatically on system boot</li>
-                        <li>🔄 Auto-restart on failure (30s delay)</li>
-                        <li>🎯 Lower priority (nice 10)</li>
-                        <li>⏱️ Longer retry delays (5s vs 2s)</li>
-                        <li>📝 Separate log files for stdout/stderr</li>
-                        <li>🛡️ Graceful shutdown handling</li>
-                        <li>⏸️ <strong>NEW:</strong> Pause/Resume support</li>
-                        <li>📊 <strong>NEW:</strong> Real-time progress tracking</li>
-                    </ul>
-                </div>
+                <h4>3. recent_books Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Time Period  │────▶│ Calculate       │────▶│ Filter Books │
+│ (hours/days) │     │ Cutoff Time     │     │ by Timestamp │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+                                              ┌──────────────┐
+                                              │ Format with  │
+                                              │ Relative Time│
+                                              └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Datetime parsing, relative time calculation, chronological sorting</p>
             </div>
 
-            <div class="success" style="margin-top: 30px;">
-                <h4>🎮 Pause/Resume Control (NEW)</h4>
-                <p>Control indexing without stopping the service:</p>
-                <pre><code># Pause indexing (completes current PDF first)
-./scripts/pause_indexing.sh
+            <div class="architecture-diagram">
+                <h4>4. find_practices Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Practice     │────▶│ Build Semantic  │────▶│ Category     │
+│ Type         │     │ Query           │     │ Filter       │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Group by     │◀────│ Deduplicate     │◀────│ Extract      │
+│ Type         │     │ Similar         │     │ Practices    │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Practice-focused queries, category filtering, similarity deduplication</p>
+            </div>
 
-# Resume indexing
-./scripts/resume_indexing.sh
+            <h3>Content Extraction Tools</h3>
 
-# Check comprehensive status
-./scripts/indexing_status.sh</code></pre>
-                
-                <div class="flow-diagram" style="margin-top: 20px;">
-                    <div class="flow-item">
-                        <strong>Running</strong>
-                        <p>Indexing active</p>
-                    </div>
-                    <span class="flow-arrow">⏸️</span>
-                    <div class="flow-item" style="background: #fff3cd;">
-                        <strong>Paused</strong>
-                        <p>Queues new files</p>
-                    </div>
-                    <span class="flow-arrow">▶️</span>
-                    <div class="flow-item">
-                        <strong>Resumed</strong>
-                        <p>Processes queue</p>
-                    </div>
-                </div>
+            <div class="architecture-diagram">
+                <h4>5. extract_pages Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Book Pattern │────▶│ Find Book       │────▶│ Parse Page   │
+│ + Pages      │     │ in Index        │     │ Specification│
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Return Text  │◀────│ Extract Text    │◀────│ Load PDF     │
+│              │     │ per Page        │     │ (PyPDF2)     │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Book resolution, page range parsing, PDF text extraction</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>6. extract_quotes Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Topic        │────▶│ Search for      │────▶│ Detect Quote │
+│              │     │ Quotes          │     │ Patterns     │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Format with  │◀────│ Select Top      │◀────│ Score by     │
+│ Attribution  │     │ Quotes          │     │ Relevance    │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Quote pattern regex, relevance scoring, attribution preservation</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>7. summarize_book Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Book Name    │────▶│ Find Book       │────▶│ Get All      │
+│ + Length     │     │ in Index        │     │ Chunks       │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Build        │◀────│ Extract Themes  │◀────│ Sample/Use   │
+│ Summary      │     │ (TF-IDF)        │     │ All Chunks   │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Chunk retrieval by metadata, theme extraction, structured summarization</p>
+            </div>
+
+            <h3>Analysis & Synthesis Tools</h3>
+
+            <div class="architecture-diagram">
+                <h4>8. compare_perspectives Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Topic        │────▶│ Search All      │────▶│ Group by     │
+│              │     │ Sources         │     │ Source Book  │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Format as    │◀────│ Build           │◀────│ Extract      │
+│ Comparison   │     │ Comparison      │     │ Viewpoints   │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Multi-source search, viewpoint extraction, comparison matrix generation</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>9. question_answer Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Question     │────▶│ Analyze Q Type  │────▶│ Optimize     │
+│ + Detail     │     │ (fact/concept)  │     │ Query        │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Add Citations│◀────│ Synthesize      │◀────│ Rank & Select│
+│              │     │ Answer          │     │ Chunks       │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Question classification, relevance ranking, citation formatting</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>10. daily_reading Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Theme +      │────▶│ Check Reading   │────▶│ Filter Recent│
+│ Length       │     │ History         │     │ Selections   │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Log Selection│◀────│ Add Reflection  │◀────│ Select       │
+│              │     │ Prompts         │     │ Passages     │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> History tracking, weighted selection, reflection prompt generation</p>
+            </div>
+
+            <h3>System Management Tools</h3>
+
+            <div class="architecture-diagram">
+                <h4>11. library_stats Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Stats Request│────▶│ Initialize RAG  │────▶│ Count Books  │
+│              │     │ (if needed)     │     │ in Index     │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Format Stats │◀────│ Calculate       │◀────│ Query DB     │
+│              │     │ Metrics         │     │ Counts       │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Multi-source aggregation, storage calculation, comprehensive metrics</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>12. index_status Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Status Req   │────▶│ Read Status     │────▶│ Check Lock   │
+│              │     │ Files           │     │ File         │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Return Status│◀────│ Format Progress │◀────│ Check PID    │
+│              │     │ Info            │     │ Active       │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Status file reading, process verification, progress calculation</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>13. refresh_cache Tool - Internal Flow</h4>
+                <pre style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px;">
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Refresh Req  │────▶│ Clear Memory    │────▶│ Reload Index │
+│              │     │ Caches          │     │ Files        │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                                                     │
+                                                     ▼
+┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Return Status│◀────│ Get Updated     │◀────│ Reconnect DB │
+│              │     │ Counts          │     │              │
+└──────────────┘     └─────────────────┘     └──────────────┘
+                </pre>
+                <p><strong>Key Operations:</strong> Singleton clearing, forced reload, connectivity verification</p>
+            </div>
+
+            <div class="architecture-diagram">
+                <h4>14-17. Additional Management Tools</h4>
+                <ul style="list-style: none; padding: 10px;">
+                    <li><strong>14. warmup:</strong> Pre-loads embedding model (~4GB), runs test query, prevents timeout</li>
+                    <li><strong>15. find_unindexed:</strong> Directory scan, hash comparison, categorization (new/modified/failed)</li>
+                    <li><strong>16. reindex_book:</strong> Full cleanup, chunk deletion, re-processing pipeline</li>
+                    <li><strong>17. clear_failed:</strong> Backup creation, list reset, retry enablement</li>
+                </ul>
             </div>
         </div>
 
         <div class="section">
             <h2>Troubleshooting</h2>
-            
+
+            <h3>Package Installation Issues</h3>
+            <pre><code># Ensure editable install
+pip install -e .
+
+# Set PYTHONPATH if needed
+export PYTHONPATH="/path/to/DocumentIndexerMCP/src:${PYTHONPATH:-}"</code></pre>
+
             <h3>Common Issues</h3>
             <ul>
-                <li><strong>Import errors:</strong> Ensure virtual environment is activated</li>
-                <li><strong>Memory issues:</strong> Ensure ~4GB RAM for embedding model</li>
-                <li><strong>Search not working:</strong> Check if documents are properly indexed in ChromaDB</li>
-                <li><strong>Ollama (if used):</strong> Optional - install with <code>brew install ollama</code></li>
-                <li><strong>Lock conflicts:</strong> Check lock status with <code>./service_status.sh</code></li>
-                <li><strong>Service won't start:</strong> Check logs in <code>index_monitor_stderr.log</code></li>
+                <li><strong>Import errors:</strong> Ensure package is installed with pip install -e .</li>
+                <li><strong>Telemetry errors:</strong> Set CHROMA_TELEMETRY=false</li>
+                <li><strong>MCP not responding:</strong> Check capability advertisement in initialize</li>
+                <li><strong>Resources not visible:</strong> Claude Desktop UI limitation (use other MCP clients)</li>
             </ul>
 
             <h3>Logs Location</h3>
             <ul>
-                <li><code>mcp_startup.log</code> - Startup logs</li>
-                <li><code>mcp_server_stdout.log</code> - Server output</li>
-                <li><code>mcp_server_stderr.log</code> - Error logs</li>
-                <li><code>index_monitor_stdout.log</code> - Background monitor output</li>
-                <li><code>index_monitor_stderr.log</code> - Background monitor errors</li>
+                <li><code>logs/mcp_server_stdout.log</code> - Server output</li>
+                <li><code>logs/mcp_server_stderr.log</code> - Error logs</li>
+                <li><code>logs/index_monitor_stdout.log</code> - Indexer output</li>
+                <li><code>logs/webmonitor_stdout.log</code> - Web dashboard logs</li>
             </ul>
         </div>
     </div>

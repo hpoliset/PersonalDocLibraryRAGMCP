@@ -17,6 +17,7 @@ PYTHON_CMD="$PROJECT_ROOT/venv_mcp/bin/python"
 # Set up environment variables if not already set
 export PERSONAL_LIBRARY_DOC_PATH="${PERSONAL_LIBRARY_DOC_PATH:-$PROJECT_ROOT/books}"
 export PERSONAL_LIBRARY_DB_PATH="${PERSONAL_LIBRARY_DB_PATH:-$PROJECT_ROOT/chroma_db}"
+export CHROMA_TELEMETRY=false
 
 # Set up logging
 LOG_DIR="$PROJECT_ROOT/logs"

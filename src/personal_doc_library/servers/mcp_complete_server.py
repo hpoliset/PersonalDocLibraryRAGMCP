@@ -9,6 +9,7 @@ import sys
 import os
 import logging
 import select
+import time
 from typing import Dict, List, Any
 from datetime import datetime
 
@@ -82,7 +83,11 @@ class CompleteMCPServer:
                         "version": "1.0.0"
                     },
                     "capabilities": {
-                        "tools": {}
+                        "tools": {},
+                        "prompts": {},
+                        "resources": {
+                            "subscribe": False
+                        }
                     }
                 }
             }
@@ -355,9 +360,231 @@ class CompleteMCPServer:
             }
         
         elif method == "resources/list":
+            # Provide available resources for document access
             return {
                 "result": {
-                    "resources": []
+                    "resources": [
+                        {
+                            "uri": "library://stats",
+                            "name": "Library Statistics",
+                            "description": "Current library statistics and indexing status",
+                            "mimeType": "application/json"
+                        },
+                        {
+                            "uri": "library://recent",
+                            "name": "Recent Documents",
+                            "description": "Recently indexed documents (last 7 days)",
+                            "mimeType": "application/json"
+                        },
+                        {
+                            "uri": "library://bibliography",
+                            "name": "Complete Bibliography",
+                            "description": "Full bibliography of all indexed books",
+                            "mimeType": "text/plain"
+                        },
+                        {
+                            "uri": "library://failed",
+                            "name": "Failed Documents",
+                            "description": "List of documents that failed to index",
+                            "mimeType": "application/json"
+                        }
+                    ]
+                }
+            }
+
+        elif method == "resources/read":
+            uri = params.get("uri", "")
+
+            if uri == "library://stats":
+                self.ensure_rag_initialized()
+                stats = self.rag.get_stats()
+                return {
+                    "result": {
+                        "contents": [{
+                            "uri": uri,
+                            "mimeType": "application/json",
+                            "text": json.dumps(stats, indent=2)
+                        }]
+                    }
+                }
+
+            elif uri == "library://recent":
+                self.ensure_rag_initialized()
+                recent_books = []
+                days = 7
+                cutoff_time = time.time() - (days * 24 * 3600)
+
+                for book_path in self.rag.book_index.keys():
+                    full_path = os.path.join(self.rag.books_directory, book_path)
+                    if os.path.exists(full_path):
+                        mtime = os.path.getmtime(full_path)
+                        if mtime > cutoff_time:
+                            recent_books.append({
+                                "name": os.path.basename(book_path),
+                                "path": book_path,
+                                "modified": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(mtime))
+                            })
+
+                return {
+                    "result": {
+                        "contents": [{
+                            "uri": uri,
+                            "mimeType": "application/json",
+                            "text": json.dumps(recent_books, indent=2)
+                        }]
+                    }
+                }
+
+            elif uri == "library://bibliography":
+                self.ensure_rag_initialized()
+                bibliography = []
+                for book_path in sorted(self.rag.book_index.keys()):
+                    bibliography.append(f"• {os.path.basename(book_path)}")
+
+                return {
+                    "result": {
+                        "contents": [{
+                            "uri": uri,
+                            "mimeType": "text/plain",
+                            "text": "Personal Document Library Bibliography\n" +
+                                   "=" * 40 + "\n\n" +
+                                   "\n".join(bibliography)
+                        }]
+                    }
+                }
+
+            elif uri == "library://failed":
+                failed_list_path = os.path.join(os.path.dirname(self.rag.db_directory), "failed_documents.json")
+                failed_docs = []
+                if os.path.exists(failed_list_path):
+                    with open(failed_list_path, 'r') as f:
+                        failed_docs = json.load(f)
+
+                return {
+                    "result": {
+                        "contents": [{
+                            "uri": uri,
+                            "mimeType": "application/json",
+                            "text": json.dumps(failed_docs, indent=2)
+                        }]
+                    }
+                }
+
+            return {
+                "error": {
+                    "code": -32602,
+                    "message": f"Unknown resource URI: {uri}"
+                }
+            }
+
+        elif method == "prompts/list":
+            # Provide useful prompt templates for document analysis
+            return {
+                "result": {
+                    "prompts": [
+                        {
+                            "name": "comparative_analysis",
+                            "description": "Compare perspectives on a topic across multiple sources",
+                            "arguments": [
+                                {"name": "topic", "description": "Topic to analyze", "required": True},
+                                {"name": "sources", "description": "Number of sources to compare", "required": False}
+                            ]
+                        },
+                        {
+                            "name": "research_synthesis",
+                            "description": "Synthesize research on a topic from the library",
+                            "arguments": [
+                                {"name": "topic", "description": "Research topic", "required": True},
+                                {"name": "depth", "description": "Analysis depth (brief/detailed)", "required": False}
+                            ]
+                        },
+                        {
+                            "name": "study_guide",
+                            "description": "Create a study guide for a book or topic",
+                            "arguments": [
+                                {"name": "book", "description": "Book name or topic", "required": True},
+                                {"name": "chapters", "description": "Specific chapters (optional)", "required": False}
+                            ]
+                        },
+                        {
+                            "name": "citation_finder",
+                            "description": "Find citations and quotes on a specific topic",
+                            "arguments": [
+                                {"name": "topic", "description": "Topic for citations", "required": True},
+                                {"name": "count", "description": "Number of citations", "required": False}
+                            ]
+                        },
+                        {
+                            "name": "concept_map",
+                            "description": "Build a concept map showing relationships between ideas",
+                            "arguments": [
+                                {"name": "concepts", "description": "List of concepts to map", "required": True}
+                            ]
+                        }
+                    ]
+                }
+            }
+
+        elif method == "prompts/get":
+            prompt_name = params.get("name", "")
+            arguments = params.get("arguments", {})
+
+            prompts = {
+                "comparative_analysis": """Please search the library for information about {topic} and compare perspectives from {sources} different sources.
+Focus on:
+1. Key differences in approach or interpretation
+2. Common themes across sources
+3. Unique insights from each source
+4. Synthesis of the overall understanding""",
+
+                "research_synthesis": """Research {topic} using the library and provide a {depth} synthesis covering:
+1. Main concepts and definitions
+2. Key findings or teachings
+3. Practical applications
+4. References to source materials with page numbers""",
+
+                "study_guide": """Create a study guide for {book} {chapters} including:
+1. Key concepts and terms
+2. Main themes and ideas
+3. Important quotes with page references
+4. Practice questions for review
+5. Suggested further reading from the library""",
+
+                "citation_finder": """Find {count} citations about {topic} from the library. For each citation provide:
+- Exact quote
+- Source book and page number
+- Context of the quote
+- Relevance to the topic""",
+
+                "concept_map": """Create a concept map for the following concepts: {concepts}
+Show:
+1. How each concept is defined in the library
+2. Relationships between concepts
+3. Examples from different sources
+4. Hierarchical organization if applicable"""
+            }
+
+            if prompt_name in prompts:
+                template = prompts[prompt_name]
+                # Simple template substitution
+                for key, value in arguments.items():
+                    template = template.replace(f"{{{key}}}", str(value))
+
+                return {
+                    "result": {
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": {"type": "text", "text": template}
+                            }
+                        ]
+                    }
+                }
+
+            return {
+                "error": {
+                    "code": -32602,
+                    "message": f"Unknown prompt: {prompt_name}"
                 }
             }
         

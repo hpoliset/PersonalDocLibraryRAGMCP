@@ -1,0 +1,42 @@
+include LICENSE
+include README.md
+include requirements.txt
+include pyproject.toml
+include PYPI_PUBLICATION_PLAN.md
+
+# Include configuration templates
+recursive-include config *.json.template
+
+# Include documentation
+recursive-include docs *.md *.html
+include CLAUDE.md
+include QUICK_REFERENCE.md
+include PROJECT_STRUCTURE.md
+
+# Include shell scripts for reference (users may need these)
+recursive-include scripts *.sh
+
+# Include test files
+include test_mcp_features.py
+include test_resources.py
+
+# Exclude development and runtime directories
+recursive-exclude logs *
+recursive-exclude books *
+recursive-exclude chroma_db *
+recursive-exclude venv_mcp *
+recursive-exclude .git *
+recursive-exclude __pycache__ *
+recursive-exclude *.pyc
+recursive-exclude *.pyo
+recursive-exclude .DS_Store
+
+# Exclude build artifacts
+recursive-exclude dist *
+recursive-exclude build *
+recursive-exclude *.egg-info *
+
+# Include package data
+recursive-include src/personal_doc_library *.py
+recursive-include src/personal_doc_library *.json
+recursive-include src/personal_doc_library *.txt

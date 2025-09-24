@@ -93,6 +93,7 @@ if [[ -z "${PYTHONPATH:-}" ]]; then
 else
     export PYTHONPATH="$PROJECT_ROOT/src:$PYTHONPATH"
 fi
+export CHROMA_TELEMETRY=false
 
 echo "📌 Using Python from venv_mcp..."
 
