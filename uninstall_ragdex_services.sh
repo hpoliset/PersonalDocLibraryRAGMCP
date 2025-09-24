@@ -6,6 +6,13 @@ echo "🔧 Ragdex Service Uninstaller"
 echo "============================"
 echo ""
 
+# Load saved configuration if it exists
+CONFIG_FILE="$HOME/.ragdex/service_config"
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+    echo "📋 Loaded configuration from $CONFIG_FILE"
+fi
+
 # Colors
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

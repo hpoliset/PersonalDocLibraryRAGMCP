@@ -110,18 +110,64 @@ curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/unins
 curl -O https://raw.githubusercontent.com/hpoliset/DocumentIndexerMCP/main/ragdex_status.sh
 chmod +x *.sh
 
-# Install services
+# Install services (interactive - will prompt for paths)
 ./install_ragdex_services.sh
+
+# OR install with custom paths
+./install_ragdex_services.sh \
+  --docs-path /path/to/documents \
+  --db-path /path/to/database \
+  --logs-path /path/to/logs
+
+# OR install using environment variables
+export PERSONAL_LIBRARY_DOC_PATH="/path/to/documents"
+export PERSONAL_LIBRARY_DB_PATH="/path/to/database"
+export PERSONAL_LIBRARY_LOGS_PATH="/path/to/logs"
+./install_ragdex_services.sh --non-interactive
 
 # Check status
 ./ragdex_status.sh
 ```
 
-The service installer script provides:
-- ✅ Automatic service installation for background indexing
-- ✅ Web monitor dashboard at http://localhost:8888
-- ✅ Automatic startup on system boot
-- ✅ Log rotation and monitoring
+The service installer script (v0.1.3+) provides:
+- ✅ **Interactive path configuration** - prompts for custom paths if not set
+- ✅ **Environment variable support** - respects your exported paths
+- ✅ **Command-line options** - specify paths directly
+- ✅ **Configuration saving** - saves your paths for future use
+- ✅ **Automatic service installation** for background indexing
+- ✅ **Web monitor dashboard** at http://localhost:8888
+- ✅ **Automatic startup** on system boot
+
+#### Service Installation Options
+
+1. **Interactive Mode** (default):
+   ```bash
+   ./install_ragdex_services.sh
+   # Will prompt for paths if not set in environment
+   ```
+
+2. **Environment Variables** (automatic):
+   ```bash
+   export PERSONAL_LIBRARY_DOC_PATH="/your/documents"
+   export PERSONAL_LIBRARY_DB_PATH="/your/database"
+   export PERSONAL_LIBRARY_LOGS_PATH="/your/logs"
+   ./install_ragdex_services.sh
+   # Uses your exported paths automatically
+   ```
+
+3. **Command-Line Arguments**:
+   ```bash
+   ./install_ragdex_services.sh \
+     --docs-path /your/documents \
+     --db-path /your/database \
+     --logs-path /your/logs
+   ```
+
+4. **Non-Interactive Mode** (for automation):
+   ```bash
+   ./install_ragdex_services.sh --non-interactive
+   # Uses env vars or defaults without prompting
+   ```
 
 ### Post-Installation
 
