@@ -97,20 +97,22 @@ Ragdex intelligently filters out noise from your email archives:
 
 ## 🚀 Quick Start
 
-### Installation (30 seconds)
+### Installation (2-5 minutes)
 
 ```bash
-# Using uv (fastest)
+# Using uv (faster, ~2 minutes)
 uv venv ~/ragdex_env
 uv pip install ragdex
 
-# Or standard pip
+# Or standard pip (~5 minutes)
 python -m venv ~/ragdex_env
 source ~/ragdex_env/bin/activate
 pip install ragdex
 ```
 
-### Setup Services (2 minutes)
+**Note**: First run will download ~2GB of embedding models (5-10 minutes on broadband)
+
+### Setup Services (2-3 minutes)
 
 ```bash
 # Download installer
@@ -165,10 +167,20 @@ chmod +x update_claude_config.sh
 
 ### System Requirements
 
-- **Python 3.10+** (3.10, 3.11, or 3.12)
-- **macOS** or **Linux**
-- **4GB RAM** for embeddings
-- **Claude Desktop** or MCP client
+- **Python 3.10-3.12** (3.13 not supported due to dependency conflicts)
+- **macOS** (primary) or **Linux** (Windows not yet supported)
+- **8GB RAM minimum** (16GB recommended)
+  - Embedding model uses ~4GB
+  - Document processing can spike to 6-8GB for large PDFs
+- **Storage**:
+  - ~500MB for Ragdex installation
+  - ~2GB for embedding models (auto-downloaded on first run)
+  - 1-10GB for vector database (depends on library size)
+- **Claude Desktop** (required for MCP integration)
+- **Optional dependencies**:
+  - Calibre (for MOBI/AZW ebooks)
+  - LibreOffice (for .doc files)
+  - ocrmypdf (for scanned PDFs)
 
 ### Configuration Options
 
@@ -389,10 +401,20 @@ black src/
 
 ## 📊 Stats & Performance
 
-- **Indexing Speed**: ~100 documents/minute
-- **Search Latency**: <100ms for most queries
-- **Memory Usage**: ~2GB base + 2GB for embeddings
-- **Storage**: ~1MB per 100 pages indexed
+- **Indexing Speed**:
+  - ~10-20 documents/minute (varies by size and format)
+  - Large PDFs (>100MB): 2-5 minutes each
+  - OCR processing: 1-2 pages/minute
+- **Search Latency**:
+  - First search: 2-5 seconds (model loading)
+  - Subsequent searches: 100-500ms
+- **Memory Usage**:
+  - Idle: ~500MB
+  - Active indexing: 4-8GB
+  - With embeddings loaded: 4-6GB constant
+- **Storage**:
+  - Vector DB: ~10MB per 1000 pages
+  - Metadata index: ~1MB per 100 documents
 
 ---
 
