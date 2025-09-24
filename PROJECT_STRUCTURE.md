@@ -154,7 +154,7 @@ LaunchAgent plist file
     ↓ which runs
 index_monitor_service.sh (continuously)
     ↓ which runs
-python src/indexing/index_monitor.py
+python -m personal_doc_library.indexing.index_monitor
 ```
 
 ## Usage Modes

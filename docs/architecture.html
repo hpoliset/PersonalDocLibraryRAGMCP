@@ -524,8 +524,9 @@ cd PersonalDocLibraryRAGMCP
   "mcpServers": {
     "personal-library": {
       "command": "/path/to/your/DocumentIndexerMCP/venv_mcp/bin/python",
-      "args": ["/path/to/your/DocumentIndexerMCP/src/servers/mcp_complete_server.py"],
+      "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
       "env": {
+        "PYTHONPATH": "/path/to/your/DocumentIndexerMCP/src",
         "PYTHONUNBUFFERED": "1"
       }
     }
@@ -684,7 +685,7 @@ python clean_pdfs.py</code></pre>
 
             <div class="component">
                 <h4>🔍 Where Indexing Happens</h4>
-                <p>The indexing logic is in <code>src/core/shared_rag.py</code> in the <strong>SpiritualLibraryRAG</strong> class. When documents are processed, it automatically:</p>
+                <p>The indexing logic is in <code>src/personal_doc_library/core/shared_rag.py</code> in the <strong>SpiritualLibraryRAG</strong> class. When documents are processed, it automatically:</p>
                 <ol>
                     <li>Checks for new documents in the configured directory</li>
                     <li>Compares file hashes with <code>chroma_db/book_index.json</code></li>

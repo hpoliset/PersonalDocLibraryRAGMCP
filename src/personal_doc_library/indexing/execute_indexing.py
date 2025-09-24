@@ -9,14 +9,13 @@ import argparse
 import logging
 from datetime import datetime
 
-# Add current directory to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from shared_rag import SharedRAG
+from personal_doc_library.core.shared_rag import SharedRAG
+from personal_doc_library.core.config import config
 
 # Configure logging
-os.makedirs('logs', exist_ok=True)
-log_filename = f'logs/indexing_{datetime.now():%Y%m%d_%H%M%S}.log'
+log_directory = config.logs_directory
+os.makedirs(log_directory, exist_ok=True)
+log_filename = log_directory / f'indexing_{datetime.now():%Y%m%d_%H%M%S}.log'
 
 # Set up both console and file logging
 logging.basicConfig(

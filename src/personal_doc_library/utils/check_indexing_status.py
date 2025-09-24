@@ -4,17 +4,11 @@ Check and diagnose indexing status
 """
 
 import os
-import sys
 import json
-import time
 from datetime import datetime
-from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from src.core.config import config
-from index_lock import IndexLock
+from personal_doc_library.core.config import config
+from personal_doc_library.utils.index_lock import IndexLock
 
 def main():
     print("🔍 Checking Indexing Status")

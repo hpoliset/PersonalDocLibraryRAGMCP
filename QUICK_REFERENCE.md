@@ -30,7 +30,7 @@
 ```bash
 # Start web monitor
 source venv_mcp/bin/activate
-python src/monitoring/monitor_web_enhanced.py
+python -m personal_doc_library.monitoring.monitor_web_enhanced
 # Open http://localhost:8888
 ```
 
@@ -45,22 +45,25 @@ python tests/test_search_simple.py
 ```bash
 source venv_mcp/bin/activate
 
+# Ensure package imports work when running from the repo
+export PYTHONPATH="$(pwd)/src:${PYTHONPATH:-}"
+
 # Index specific files
-python src/indexing/index_specific.py "book name pattern"
+python -m personal_doc_library.indexing.index_specific "book name pattern"
 
 # Force re-index
-python src/indexing/index_specific.py "book name" --force
+python -m personal_doc_library.indexing.index_specific "book name" --force
 
 # List matching files only
-python src/indexing/index_specific.py "pattern" --list-only
+python -m personal_doc_library.indexing.index_specific "pattern" --list-only
 ```
 
 ## File Locations
 
 ### Core Components
-- **MCP Server**: `src/servers/mcp_complete_server.py`
-- **RAG System**: `src/core/shared_rag.py`
-- **Configuration**: `src/core/config.py`
+- **MCP Server**: `src/personal_doc_library/servers/mcp_complete_server.py`
+- **RAG System**: `src/personal_doc_library/core/shared_rag.py`
+- **Configuration**: `src/personal_doc_library/core/config.py`
 
 ### Data Directories
 - **Books**: `books/` (place PDFs here)
@@ -74,8 +77,9 @@ Update your `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "spiritual-library": {
       "command": "/Users/KDP/AITools/venv_mcp/bin/python",
-      "args": ["/Users/KDP/AITools/src/servers/mcp_complete_server.py"],
+      "args": ["-m", "personal_doc_library.servers.mcp_complete_server"],
       "env": {
+        "PYTHONPATH": "/Users/KDP/AITools/src",
         "PYTHONUNBUFFERED": "1",
         "OMP_NUM_THREADS": "4"
       }
@@ -89,14 +93,14 @@ Update your `~/Library/Application Support/Claude/claude_desktop_config.json`:
 ### Import Errors
 All Python scripts now use proper imports:
 ```python
-from src.core.shared_rag import SharedRAG
-from src.core.config import config
+from personal_doc_library.core.shared_rag import SharedRAG
+from personal_doc_library.core.config import config
 ```
 
 ### Path Issues
-- Always run scripts from the project root directory
-- Shell scripts in `scripts/` automatically handle paths
-- Python modules add the project root to sys.path
+- Install via `pip install personal-doc-library` to avoid manual path tweaks
+- Entry points (`pdlib-mcp`, `pdlib-indexer`, `pdlib-webmonitor`, `pdlib-cli`) work from any directory
+- Legacy shell scripts in `scripts/` remain available if you prefer the original workflow
 
 ### Service Installation
 ```bash

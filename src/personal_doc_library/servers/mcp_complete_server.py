@@ -11,10 +11,9 @@ import logging
 import select
 from typing import Dict, List, Any
 from datetime import datetime
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from src.core.shared_rag import SharedRAG, IndexLock
-from src.core.config import config
+
+from ..core.shared_rag import SharedRAG, IndexLock
+from ..core.config import config
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(message)s', stream=sys.stderr)
@@ -1050,17 +1049,22 @@ Failed: {details.get('failed', 0)}"""
                 print(json.dumps(error_response))
                 sys.stdout.flush()
 
-if __name__ == "__main__":
+def main() -> int:
+    """Command-line entry point for launching the MCP server."""
     try:
-        # Ensure we're running from the project root
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        os.chdir(project_root)
-        logger.info(f"Working directory: {os.getcwd()}")
-        
         logger.info("Starting CompleteMCPServer...")
+        config.ensure_directories()
         server = CompleteMCPServer()
         logger.info("Server initialized, starting main loop...")
         server.run()
-    except Exception as e:
-        logger.error(f"Server crashed: {e}", exc_info=True)
-        sys.exit(1)
+        return 0
+    except KeyboardInterrupt:
+        logger.info("Server interrupted by user")
+        return 0
+    except Exception as exc:
+        logger.error("Server crashed: %s", exc, exc_info=True)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

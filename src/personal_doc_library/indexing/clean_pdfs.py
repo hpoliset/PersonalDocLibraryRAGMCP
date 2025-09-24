@@ -12,7 +12,7 @@ import time
 import sys
 import json
 from pathlib import Path
-from src.core.config import config
+from personal_doc_library.core.config import config
 
 logging.basicConfig(
     level=logging.INFO,

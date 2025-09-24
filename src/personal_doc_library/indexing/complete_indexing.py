@@ -21,11 +21,8 @@ logging.basicConfig(
 # Maximum file size (500MB)
 MAX_FILE_SIZE = 500 * 1024 * 1024
 
-# Add the project directory to Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-
-from src.core.shared_rag import SharedRAG
-from src.core.config import config
+from personal_doc_library.core.shared_rag import SharedRAG
+from personal_doc_library.core.config import config
 
 def calculate_file_hash(filepath):
     """Calculate MD5 hash of a file."""

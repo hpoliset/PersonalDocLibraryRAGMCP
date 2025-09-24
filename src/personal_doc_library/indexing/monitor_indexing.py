@@ -4,13 +4,8 @@
 import json
 import time
 import os
-import sys
-from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from src.core.config import config
+from personal_doc_library.core.config import config
 
 def check_progress():
     """Check current indexing progress"""
@@ -59,15 +54,20 @@ def check_progress():
         print(f"Error: {e}")
         return 0, 0
 
-if __name__ == "__main__":
+def main() -> None:
+    """Continuously report indexing progress."""
     print("🔍 Monitoring indexing progress...")
     print("   Press Ctrl+C to stop")
-    
+
     while True:
         indexed, total = check_progress()
-        
+
         if indexed >= total and total > 0:
             print("\n✅ Indexing complete!")
             break
-            
+
         time.sleep(10)  # Check every 10 seconds
+
+
+if __name__ == "__main__":
+    main()

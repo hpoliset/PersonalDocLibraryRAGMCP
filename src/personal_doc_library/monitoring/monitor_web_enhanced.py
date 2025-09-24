@@ -9,7 +9,7 @@ import json
 import os
 from datetime import datetime
 import glob
-from src.core.config import config
+from personal_doc_library.core.config import config
 import math
 
 app = Flask(__name__)
@@ -1239,11 +1239,8 @@ def api_retry_book(book_name):
 def api_ocr_book():
     """Process OCR for a book"""
     try:
-        # Import OCR manager
-        import sys
-        import os
-        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        from utils.ocr_manager import OCRManager
+        # Import OCR manager lazily to avoid heavy dependencies at module import
+        from personal_doc_library.utils.ocr_manager import OCRManager
         
         data = request.json
         book_name = data.get('book_name', '')
@@ -1345,9 +1342,15 @@ def pause_status():
             "paused": False
         })
 
-if __name__ == '__main__':
+def main() -> int:
+    """Start the enhanced web monitor."""
     print("📚 Starting Enhanced Personal Document Library Web Monitor")
     print("📌 Open http://localhost:8888 in your browser")
     print("   Press Ctrl+C to stop")
-    
+
     app.run(host='0.0.0.0', port=8888, debug=False)
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
